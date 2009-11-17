@@ -6,12 +6,12 @@ package operator;
  * @author joerg
  * 
  * @param <OUTPUT>
- *            specifies the output type of Operator, for example row
+ *            Specifies the output type of Operator, for example Row
  */
 public interface Operator<OUTPUT> {
 
 	/**
-	 * close operator stream
+	 * Close operator stream
 	 * 
 	 */
 	void close();
@@ -24,7 +24,7 @@ public interface Operator<OUTPUT> {
 	OUTPUT next();
 
 	/**
-	 * open operator
+	 * Open operator
 	 */
 	void open();
 }

@@ -1,99 +1,158 @@
 package systeminterface;
 
+import metadata.Type;
 import operator.Operator;
-import util.Pair;
 import exceptions.ColumnAlreadyExistsException;
 import exceptions.NoSuchColumnException;
+import exceptions.NoSuchRowException;
+import exceptions.SchemaMismatchException;
 
 /**
- * 
- * 
- * @author myahya
- * 
+ *
  */
 public interface Table {
 
 	/**
-	 * Add a new column to a table.<br />
-	 * For fixed-size data types
+	 * Sets the name of specified column
 	 * 
-	 * @param column
-	 * @return columnID unique column identifier in this table instance
+	 * @param oldColumnName
+	 *            Old name
+	 * @param newColumnName
+	 *            New name
 	 * @throws ColumnAlreadyExistsException
+	 *             ColumnAlreadyExistsException
+	 * @throws NoSuchColumnException
+	 *             NoSuchColumnException
 	 */
-	public int addColumn(Column column) throws ColumnAlreadyExistsException;
+	public void renameColumn(String oldColumnName, String newColumnName)
+			throws ColumnAlreadyExistsException, NoSuchColumnException;
+
+	/**
+	 * Add a new column to a table.
+	 * 
+	 * @param columnName
+	 *            Column name
+	 * @param columnType
+	 *            Column type
+	 * @throws ColumnAlreadyExistsException
+	 *             ColumnAlreadyExistsException
+	 */
+	public void addColumn(String columnName, Type columnType)
+			throws ColumnAlreadyExistsException;
 
 	/**
 	 * inserts a row in this table
 	 * 
 	 * @param row
+	 *            New row
+	 * @return int unique tupleID (can be useful for indexing later on)
+	 * @throws SchemaMismatchException
+	 *             Schema of supplied row does not match that of table
 	 */
-	public void addRow(Row row);
+	public int addRow(Row row) throws SchemaMismatchException;
 
 	/**
-	 * 
 	 * Assign an extent to this table
 	 * 
 	 * @param extent
+	 *            Extent where table will be persisted
 	 */
 	public void assignExtent(PersistentExtent extent);
 
 	/**
-	 * 
-	 * delete matching rows
+	 * Delete rows with matching contents
 	 * 
 	 * @param row
+	 *            Row containing contents to be deleted
+	 * @throws NoSuchRowException
+	 *             NoSuchRowException
+	 * @throws SchemaMismatchException
+	 *             SchemaMismatchException
 	 */
-	public void deleteRow(Row row);
+	public void deleteRow(Row row) throws NoSuchRowException,
+			SchemaMismatchException;
 
 	/**
-	 * @param columnID
-	 * @throws NoSuchColumnException
+	 * Delete matching rows
+	 * 
+	 * @param tupleID
+	 *            Tuple id of row to be deleted
+	 * 
+	 * @throws NoSuchRowException
+	 *             Row does not exist
 	 */
-	public void dropColumnByID(int columnID) throws NoSuchColumnException;
-
-	/**
-	 * @param columnID
-	 * @return a reference to the column
-	 * @throws NoSuchColumnException
-	 */
-	public Column getColumnByID(int columnID) throws NoSuchColumnException;
-
-	/**
-	 * @param columnName
-	 *            name of column
-	 * @return column ID
-	 */
-	public int getColumnIDByName(String columnName);
+	public void deleteRow(int tupleID) throws NoSuchRowException;
 
 	/**
 	 * 
-	 * @return operator of (columnID, column instance)-pairs
+	 * Drop a column
+	 * 
+	 * @param columnName
+	 *            Column to be dropped
+	 * @throws NoSuchColumnException
+	 *             NoSuchColumn
 	 */
-	public Operator<Pair<Integer, Column>> getColumns();
+	public void dropColumnByName(String columnName)
+			throws NoSuchColumnException;
 
 	/**
-	 * @return name of the column
+	 * 
+	 * Get a reference to a column
+	 * 
+	 * @param columnName
+	 *            Name of column
+	 * @return A reference to the column
+	 * @throws NoSuchColumnException
+	 *             NoSuchColumn
 	 */
-	public String getName();
+	public Column getColumnByName(String columnName)
+			throws NoSuchColumnException;
 
 	/**
-	 * @return an operator that supplies the rows of the table
+	 * @param columnNames
+	 *            Names of columns to get
+	 * @return Operator of column instances
+	 * @throws NoSuchColumnException
+	 *             Column does not exist
+	 */
+	public Operator<Column> getColumns(String... columnNames)
+			throws NoSuchColumnException;
+
+	/**
+	 * @return Operator of column instances
+	 */
+	public Operator<Column> getAllColumns();
+
+	/**
+	 * @return Name of the table
+	 */
+	public String getTableName();
+
+	/**
+	 * @return An operator that supplies the rows of the table
 	 */
 	public Operator<Row> getRows();
 
 	/**
-	 * @param name
-	 *            name of table
+	 * @param predicate
+	 *            The root node of a predicate tree
+	 * @return An operator that supplies the rows of the table matching the
+	 *         predicate
+	 * @throws SchemaMismatchException
+	 *             Any mismatch between predicate and table schema
 	 */
-	public void setName(String name);
+	public Operator<Row> getRows(PredicateTreeNode predicate)
+			throws SchemaMismatchException;
 
 	/**
 	 * @param oldRow
-	 *            old row to replace
+	 *            Old row to replace
 	 * @param newRow
-	 *            new row
+	 *            New row
+	 * @throws SchemaMismatchException
+	 *             Schema of supplied rows does not match that of table
 	 */
-	public void updateRow(Row oldRow, Row newRow);
+	public void updateRow(Row oldRow, Row newRow)
+			throws SchemaMismatchException;
 
 }

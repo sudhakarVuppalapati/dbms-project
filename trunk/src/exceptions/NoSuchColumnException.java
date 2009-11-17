@@ -1,7 +1,7 @@
 package exceptions;
 
 /**
- * @author myahya
+ *  
  * 
  */
 public class NoSuchColumnException extends Exception {

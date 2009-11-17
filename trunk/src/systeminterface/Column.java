@@ -3,69 +3,59 @@ package systeminterface;
 import metadata.Type;
 
 /**
- * Column 
+ * Column
  * 
- * @author joerg.schad@gmail.com ISG Universität des Saarlandes
- * @version 0.1
  */
 public interface Column {
 
 	/**
+	 * getColumnName used to retrieve the name of the column
+	 * 
+	 * @return String Name
+	 */
+	public String getColumnName();
+
+	/**
 	 * getColumnType used to retrieve the type of column
 	 * 
-	 * @return type of column
+	 * @return Type of column
 	 */
-	public abstract Type getColumnType();
+	public Type getColumnType();
 
 	/**
 	 * getDataArrayAsObject used to retrieve an array of the entire column as an
 	 * object
 	 * 
-	 * @return data array of column tuples
-	 * @throws Exception
+	 * @return Data array of column tuples
 	 */
-	public abstract Object getDataArrayAsObject() throws Exception;
+	public Object getDataArrayAsObject();
 
 	/**
-	 * used to retrieve a specific element in the column
+	 * Used to retrieve a specific element in the column
 	 * 
 	 * @param rowNumber
-	 *            row number of element to return
+	 *            Row number of element to return
 	 * @return String Name
 	 */
-	public abstract Object getElement(int rowNumber);
+	public Object getElement(int rowNumber);
 
 	/**
-	 * getName used to retrieve the name of the column used to retrieve a
-	 * specific column Name
 	 * 
-	 * @return String Name
+	 * getRowCount() return the number of rows in this column
+	 * 
+	 * @return Number of rows in column
 	 */
-	public abstract String getName();
+	public int getRowCount();
 
 	/**
-	 * 
-	 * getRowCount() return the number of rows in this column returns the number
-	 * of rows in this column
-	 * 
-	 * @return number of rows in column
-	 */
-	public abstract int getRowCount();
-
-	/**
-	 * sets the name
+	 * Sets the name of the column
 	 * 
 	 * @param columnName
-	 *            name of column
-	 */
-	public abstract void setColumnName(String columnName);
-
-	/**
-	 * setColumnType(Type columnType) set the type set the type of this column
+	 *            Name of column
 	 * 
-	 * @param columnType
-	 *            type of column
+	 *            <b>Note: Column itself is not aware of other columns, hence
+	 *            this should be called only via table rename </b>
 	 */
-	public abstract void setColumnType(Type columnType);
+	public void setColumnName(String columnName);
 
 }

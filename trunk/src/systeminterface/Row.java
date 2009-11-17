@@ -1,39 +1,42 @@
 package systeminterface;
 
 import metadata.Type;
+import exceptions.NoSuchColumnException;
 
 /**
- * Row represents horizontal representation for tuple (similar to datablock
- * interface)
+ * Row represents horizontal representation for tuple
  * 
- * @author joerg.schad@gmail.com ISG Universität des Saarlandes
- * @version 0.1
  */
 public interface Row {
 
 	/**
 	 * getColumnCount() return the number of columns in this row
 	 * 
-	 * @return number of columns in the row
+	 * @return Number of columns in the row
 	 */
-	public abstract int getColumnCount();
+	public int getColumnCount();
 
 	/**
-	 * getColumnType(int column) used to retrieve the type of a specific column
+	 * Get column type by column name
 	 * 
-	 * @param columnID
-	 *            number of column to be queried
-	 * @return type of specified column
+	 * @param columnName
+	 *            Column name
+	 * @return Type of column
+	 * @throws NoSuchColumnException
+	 *             If column does not exist
 	 */
-	public abstract Type getColumnType(int columnID);
+	public Type getColumnType(String columnName) throws NoSuchColumnException;
 
 	/**
-	 * getRow(int column) used to retrieve a specific column
+	 * Get value stored in a the column at current row by column name
 	 * 
-	 * @param columnID
-	 *            number of column to be returned
-	 * @return Object array of column tuples
-	 * @throws Exception
+	 * @param columnName
+	 *            Name of column
+	 * @return An object containing the value stored in that column (with the
+	 *         correct type)
+	 * @throws NoSuchColumnException
+	 *             If column does not exist
 	 */
-	public abstract Object getColumnValue(int columnID) throws Exception;
+	public Object getColumnValue(String columnName)
+			throws NoSuchColumnException;
 }

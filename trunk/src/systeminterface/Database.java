@@ -1,54 +1,68 @@
 package systeminterface;
 
-import sampleDB.SampleStorageLayer;
+import java.io.IOException;
+import myDB.MyStorageLayer;
 
 /**
  * The main interface to the database system. Through this class you can access
  * the different components of the database.
  * 
- * @author myahya
+ * 
  */
-final public class Database {
+public final class Database {
 
 	/**
 	 * To retrieve static singleton
 	 * 
 	 * @return database instance
 	 */
-	public static Database getInstance() {
+	public static final Database getInstance() {
 		return singleton;
 	}
 
 	private final StorageLayer storageLayer;
-
-	private static Database singleton;
+	private final static Database singleton = new Database();
 
 	/************************************************************************************************
 	 * Static methods instance is singleton
 	 */
-
-	/**
-	 * Initializes Database
-	 */
-	public static void initDatabase() {
-
-		/*
-		 * TODO make sure only one is created?
-		 */
-		singleton = new Database();
-	}
-
 	/**
 	 * Constructor for Database, initializes the storage layer
 	 * 
 	 */
 	private Database() {
-		this.storageLayer = new SampleStorageLayer();
+		this.storageLayer = new MyStorageLayer();
 	}
 
 	/****************************************************************************************
 	 * Non-static methods
+	 * 
+	 * @return storage layer of DB
 	 */
+
+	/**
+	 * 
+	 * Stop this database instance and write tables back to disk
+	 * 
+	 */
+	public void shutdownSystem() {
+		try {
+			storageLayer.writeTablesFromMainMemoryBackToExtent(this
+					.getStorageInterface().getTables());
+		} catch (IOException ex) {
+		}
+	}
+
+	/**
+	 * Start this database instance and get any tables that were previously
+	 * stored on disk back to main memory
+	 */
+	public void startSystem() {
+		try {
+			storageLayer.loadTablesFromExtentIntoMainMemory();
+		} catch (IOException ex) {
+		}
+	}
 
 	/**
 	 * Gives access to the singleton storage layer instance of the database
@@ -57,21 +71,6 @@ final public class Database {
 	 */
 	public StorageLayer getStorageInterface() {
 		return storageLayer;
-	}
-
-	/**
-	 * Stop this database instance and write tables back to disk
-	 */
-	public void shutdownSystem() {
-		storageLayer.writeTablesFromMainMemoryBackToExtent();
-	}
-
-	/**
-	 * Start this database instance and get any tables that were previously
-	 * stored on disk back to main memory
-	 */
-	public void startSystem() {
-		storageLayer.loadTablesFromExtentIntoMainMemory();
 	}
 
 }

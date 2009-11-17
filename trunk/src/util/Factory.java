@@ -3,9 +3,8 @@ package util;
 /**
  * 
  * 
- * @author myahya
- * 
  * @param <E>
+ *            E
  */
 public interface Factory<E> {
 

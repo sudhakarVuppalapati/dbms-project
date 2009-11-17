@@ -1,7 +1,6 @@
 package exceptions;
 
 /**
- * @author myahya
  * 
  */
 public class ColumnAlreadyExistsException extends Exception {

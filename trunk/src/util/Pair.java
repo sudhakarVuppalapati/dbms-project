@@ -1,12 +1,13 @@
 package util;
 
 /**
- * A pair inteface
+ * A pair interface
  * 
- * @author myahya
  * 
  * @param <LEFT>
+ *            LEFT
  * @param <RIGHT>
+ *            RIGHT
  */
 public interface Pair<LEFT, RIGHT> {
 
