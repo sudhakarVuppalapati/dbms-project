@@ -1,6 +1,7 @@
 package systeminterface;
 
 import metadata.Type;
+import exceptions.NoSuchRowException;
 
 /**
  * Column
@@ -33,11 +34,13 @@ public interface Column {
 	/**
 	 * Used to retrieve a specific element in the column
 	 * 
-	 * @param rowNumber
-	 *            Row number of element to return
+	 * @param rowID
+	 *            Row number of element to return (see Table.addRow)
 	 * @return String Name
+	 * @throws NoSuchRowException
+	 *             The supplied Row ID does not match a row in the table
 	 */
-	public Object getElement(int rowNumber);
+	public Object getElement(int rowID) throws NoSuchRowException;
 
 	/**
 	 * 

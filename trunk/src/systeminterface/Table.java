@@ -55,7 +55,7 @@ public interface Table {
 	 * Assign an extent to this table
 	 * 
 	 * @param extent
-	 *            Extent where table will be persisted
+	 *            An extent assigned to this table
 	 */
 	public void assignExtent(PersistentExtent extent);
 
@@ -145,14 +145,35 @@ public interface Table {
 			throws SchemaMismatchException;
 
 	/**
-	 * @param oldRow
-	 *            Old row to replace
+	 * 
+	 * Update a row matching with matching tuple ID using supplied values
+	 * 
+	 * @param tupleID
+	 *            ID of tuple to be updated
 	 * @param newRow
 	 *            New row
 	 * @throws SchemaMismatchException
 	 *             Schema of supplied rows does not match that of table
+	 * @throws NoSuchRowException
+	 *             Referenced row does not exist
+	 */
+	public void updateRow(int tupleID, Row newRow)
+			throws SchemaMismatchException, NoSuchRowException;
+
+	/**
+	 * 
+	 * Update a row matching with oldRow using supplied values
+	 * 
+	 * @param oldRow
+	 *            Old row
+	 * @param newRow
+	 *            New row
+	 * @throws SchemaMismatchException
+	 *             Schema of supplied rows does not match that of table
+	 * @throws NoSuchRowException
+	 *             Referenced row does not exist
 	 */
 	public void updateRow(Row oldRow, Row newRow)
-			throws SchemaMismatchException;
+			throws SchemaMismatchException, NoSuchRowException;
 
 }

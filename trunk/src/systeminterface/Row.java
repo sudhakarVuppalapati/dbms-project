@@ -28,6 +28,14 @@ public interface Row {
 	public Type getColumnType(String columnName) throws NoSuchColumnException;
 
 	/**
+	 * Get column type by column name
+	 * 
+	 * @return String[] name of all Columns in row
+	 * 
+	 */
+	public String[] getColumnNames();
+
+	/**
 	 * Get value stored in a the column at current row by column name
 	 * 
 	 * @param columnName
