@@ -3,7 +3,6 @@ package operator;
 /**
  * Abstract Operator
  * 
- * @author joerg
  * 
  * @param <OUTPUT>
  *            Output type of operator

@@ -3,7 +3,6 @@ package operator;
 /**
  * Pull Iterator-like Interface for Operator
  * 
- * @author joerg
  * 
  * @param <OUTPUT>
  *            Specifies the output type of Operator, for example Row
