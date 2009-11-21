@@ -7,9 +7,13 @@ import operator.Operator;
 
 public class MyOperator<OUTPUT> implements Operator<OUTPUT> {
 
-	private Collection<OUTPUT> data = new ArrayList<OUTPUT>();
+	private Collection<OUTPUT> data;
 	
 	private Iterator<OUTPUT> it;
+	
+	public MyOperator() {
+		data = new ArrayList<OUTPUT>();
+	}
 	
 	public void addDataElement(OUTPUT dataEl){
 		data.add(dataEl);
