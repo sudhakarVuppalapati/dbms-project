@@ -3,6 +3,9 @@
  */
 package myDB;
 
+import java.util.Collection;
+import java.util.Map;
+
 import metadata.Type;
 import operator.Operator;
 import exceptions.ColumnAlreadyExistsException;
@@ -25,13 +28,17 @@ public class MyTable implements Table {
 	 * @see systeminterface.Table#addColumn(java.lang.String, metadata.Type)
 	 */
 	private String name;
-	private Operator<Row> rows;
-	private Operator<Column> cols;
+	private Collection<Row> rows;
+	private Map<String, Column> cols;
 	@Override
 	public void addColumn(String columnName, Type columnType)
 			throws ColumnAlreadyExistsException {
-		// TODO Auto-generated method stub
 
+		if (!cols.containsKey(columnName)) {
+			cols.put(columnName, new MyColumn(columnName, columnType));
+		}
+		else 
+			throw new ColumnAlreadyExistsException();
 	}
 
 	/* (non-Javadoc)
@@ -57,8 +64,7 @@ public class MyTable implements Table {
 	@Override
 	public void deleteRow(Row row) throws NoSuchRowException,
 			SchemaMismatchException {
-		// TODO Auto-generated method stub
-
+		
 	}
 
 	/* (non-Javadoc)
@@ -84,8 +90,8 @@ public class MyTable implements Table {
 	 */
 	@Override
 	public Operator<Column> getAllColumns() {
-		// TODO Auto-generated method stub
-		return null;
+		Operator<Column> opCol = new MyOperator<Column>(cols.values());
+		return opCol;
 	}
 
 	/* (non-Javadoc)
@@ -94,8 +100,12 @@ public class MyTable implements Table {
 	@Override
 	public Column getColumnByName(String columnName)
 			throws NoSuchColumnException {
-		// TODO Auto-generated method stub
-		return null;
+		Column col = cols.get(columnName);
+		if (col != null)
+			return col;
+		else 
+			throw new NoSuchColumnException();
+		
 	}
 
 	/* (non-Javadoc)
@@ -103,9 +113,14 @@ public class MyTable implements Table {
 	 */
 	@Override
 	public Operator<Column> getColumns(String... columnNames)
-			throws NoSuchColumnException {
-		// TODO Auto-generated method stub
-		return null;
+			throws NoSuchColumnException {				
+		
+		MyOperator<Column> opCol = new MyOperator<Column>();
+		for (String tmp : columnNames) {
+			opCol.addDataElement(cols.get(tmp));
+		}
+		
+		return opCol;
 	}
 
 	/* (non-Javadoc)
@@ -113,7 +128,8 @@ public class MyTable implements Table {
 	 */
 	@Override
 	public Operator<Row> getRows() {
-		return rows;
+		Operator<Row> opRow = new MyOperator<Row>(rows);
+		return opRow;
 	}
 
 	/* (non-Javadoc)
