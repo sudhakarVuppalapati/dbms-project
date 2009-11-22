@@ -14,11 +14,12 @@ public class MyOperator<OUTPUT> implements Operator<OUTPUT> {
 	public MyOperator() {
 		data = new ArrayList<OUTPUT>();
 	}
-	
+
 	public MyOperator(Collection<OUTPUT> dataValue) {
 		data = dataValue;
 	}
 	
+
 	public void addDataElement(OUTPUT dataEl){
 		data.add(dataEl);
 	}
