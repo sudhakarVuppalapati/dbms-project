@@ -3,14 +3,17 @@
  */
 package myDB;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 import metadata.Type;
 import exceptions.NoSuchColumnException;
 import systeminterface.Row;
+import util.Pair;
 
 /**
- * @author tuanta
+ * @author razvan
  *
  */
 public class MyRow implements Row {
@@ -18,13 +21,21 @@ public class MyRow implements Row {
 	/* (non-Javadoc)
 	 * @see systeminterface.Row#getColumnCount()
 	 */
-	private Map<String, Object> cells;
 	
-	private Object data[colCount];
+	private Map<String,DataCell> data;
 	
+	//private byte status;
+	
+	public MyRow(){
+		data=new HashMap();
+	}
+	
+	public void addCell(String colName, Type type, Object value) {
+		data.put(colName, new DataCell(type,value));
+	}
 	@Override
 	public int getColumnCount() {
-		return 0;
+		return data.size();
 	}
 
 	/* (non-Javadoc)
@@ -33,7 +44,7 @@ public class MyRow implements Row {
 	@Override
 	public String[] getColumnNames() {
 		// TODO Auto-generated method stub
-		return null;
+		return (String[])data.keySet().toArray();
 	}
 
 	/* (non-Javadoc)
@@ -41,8 +52,10 @@ public class MyRow implements Row {
 	 */
 	@Override
 	public Type getColumnType(String columnName) throws NoSuchColumnException {
-		// TODO Auto-generated method stub
-		return null;
+		if(data.containsKey(columnName)){
+			return data.get(columnName).getType();
+		}
+		throw new NoSuchColumnException();
 	}
 
 	/* (non-Javadoc)
@@ -51,8 +64,10 @@ public class MyRow implements Row {
 	@Override
 	public Object getColumnValue(String columnName)
 			throws NoSuchColumnException {
-		// TODO Auto-generated method stub
-		return null;
+		if(data.containsKey(columnName)){
+			return data.get(columnName).getValue();
+		}
+		throw new NoSuchColumnException();
 	}
 
 }
