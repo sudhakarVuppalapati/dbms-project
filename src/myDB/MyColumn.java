@@ -5,7 +5,7 @@ package myDB;
 
 import java.util.ArrayList;
 import java.util.List;
-import metadata.Type;
+import metadata.*;
 import exceptions.NoSuchRowException;
 import systeminterface.Column;
 
@@ -25,43 +25,7 @@ public class MyColumn implements Column {
 	
 	private List data;
 	
-	@Override
-	public String getColumnName() {
-		return name;
-	}
-
-	/* (non-Javadoc)
-	 * @see systeminterface.Column#getColumnType()
-	 */
-	@Override
-	public Type getColumnType() {
-		return type;
-	}
-
-	/* (non-Javadoc)
-	 * @see systeminterface.Column#getDataArrayAsObject()
-	 */
-	@Override
-	public Object getDataArrayAsObject() {
-		return data.toArray();
-	}
-
-	/* (non-Javadoc)
-	 * @see systeminterface.Column#getElement(int)
-	 */
-	@Override
-	public Object getElement(int rowID) throws NoSuchRowException {
-		return data.get(rowID);
-	}
-
-	/* (non-Javadoc)
-	 * @see systeminterface.Column#getRowCount()
-	 */
-	@Override
-	public int getRowCount() {
-		return data.size();
-	}
-
+	
 	/**
 	 * @param name
 	 * @param type
@@ -84,6 +48,37 @@ public class MyColumn implements Column {
 		this.type = type;
 		this.data = data;
 	}
+	
+	@Override
+	public String getColumnName() {
+		return name;
+	}
+
+	/* (non-Javadoc)
+	 * @see systeminterface.Column#getColumnType()
+	 */
+	@Override
+	public Type getColumnType() {
+		return type;
+	}
+
+	
+
+	/* (non-Javadoc)
+	 * @see systeminterface.Column#getElement(int)
+	 */
+	@Override
+	public Object getElement(int rowID) throws NoSuchRowException {
+		return data.get(rowID);
+	}
+
+	/* (non-Javadoc)
+	 * @see systeminterface.Column#getRowCount()
+	 */
+	@Override
+	public int getRowCount() {
+		return data.size();
+	}
 
 	/* (non-Javadoc)
 	 * @see systeminterface.Column#setColumnName(java.lang.String)
@@ -91,6 +86,50 @@ public class MyColumn implements Column {
 	@Override
 	public void setColumnName(String columnName) {
 		name = columnName;
+	}
+
+	/* (non-Javadoc)
+	 * @see systeminterface.Column#getDataArrayAsObject()
+	 */
+	@Override
+	public Object getDataArrayAsObject() {
+		Class c=type.getClass();
+		int size=data.size();
+		int i;
+		
+		if(c == Types.getFloatType().getClass()){
+			float[] d=new float[size];
+			for(i=0; i<size;i++)
+				d[i]=(Float)data.get(i);
+			return d;
+			
+		}
+		
+		if(c == Types.getDoubleType().getClass()){
+			double[] d=new double[size];
+			for(i=0; i<size;i++)
+				d[i]=(Double)data.get(i);
+			return d;
+			
+		}
+		
+		if(c == Types.getIntegerType().getClass()){
+			int[] d=new int[size];
+			for(i=0; i<size;i++)
+				d[i]=(Integer)data.get(i);
+			return d;
+			
+		}
+		
+		if(c == Types.getLongType().getClass()){
+			long[] d=new long[size];
+			for(i=0; i<size;i++)
+				d[i]=(Long)data.get(i);
+			return d;
+			
+		}
+		
+		return data.toArray();
 	}
 
 }
