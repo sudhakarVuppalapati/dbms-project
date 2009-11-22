@@ -25,14 +25,11 @@ public class MyOperator<OUTPUT> implements Operator<OUTPUT> {
 	
 	@Override
 	public void close() {
-		// TODO Auto-generated method stub
 		it = null;
 	}
 
 	@Override
 	public OUTPUT next() {
-
-		// TODO Auto-generated method stub
 		if(it.hasNext()) {
 			return it.next();
 		}
@@ -42,7 +39,6 @@ public class MyOperator<OUTPUT> implements Operator<OUTPUT> {
 
 	@Override
 	public void open() {
-		// TODO Auto-generated method stub
 		it= data.iterator();
 	}
 
