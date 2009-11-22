@@ -27,9 +27,18 @@ public class MyTable implements Table {
 	/* (non-Javadoc)
 	 * @see systeminterface.Table#addColumn(java.lang.String, metadata.Type)
 	 */
+<<<<<<< .mine
+	/*private String name;
+	private Collection<Row> rows;
+	private Collection<Column> cols;*/
+	
+	
+	
+=======
 	private String name;
 	private Collection<Row> rows;
 	private Map<String, Column> cols;
+>>>>>>> .r52
 	@Override
 	public void addColumn(String columnName, Type columnType)
 			throws ColumnAlreadyExistsException {
