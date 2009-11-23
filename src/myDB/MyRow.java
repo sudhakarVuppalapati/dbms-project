@@ -3,14 +3,11 @@
  */
 package myDB;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
 import metadata.Type;
 import exceptions.NoSuchColumnException;
 import systeminterface.Row;
-import util.Pair;
 
 /**
  * @author razvan
