@@ -15,7 +15,7 @@ public class DataCell {
 	}
 
 	public Object getValue() {
-		return   value;
+		return value;
 	}
 
 	public void setValue(Object value) {
