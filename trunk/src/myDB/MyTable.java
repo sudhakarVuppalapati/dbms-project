@@ -4,9 +4,11 @@
 package myDB;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import metadata.Type;
+import metadata.Types;
 import operator.Operator;
 import exceptions.ColumnAlreadyExistsException;
 import exceptions.NoSuchColumnException;
@@ -29,15 +31,46 @@ public class MyTable implements Table {
 	 */
 
 	private String name;
-	private Collection<Row> rows;
+	private Map<String, Type> schema;
+	private List <Row> rows;
 	private Map<String, Column> cols;
 
+	public Map<String, Type> getTableSchema(){
+		return this.schema;
+	}
+		
 	@Override
 	public void addColumn(String columnName, Type columnType)
 			throws ColumnAlreadyExistsException {
-
+		
+		Class c=columnType.getClass();
+		
+		schema.put(columnName, columnType);
+		
 		if (!cols.containsKey(columnName)) {
-			cols.put(columnName,null);
+			
+			if(c== Types.getIntegerType().getClass()){
+				cols.put(columnName,new MyIntColumn(columnName,columnType));
+				return;
+			}
+			
+			if(c== Types.getLongType().getClass()){
+				cols.put(columnName,new MyLongColumn(columnName,columnType));
+				return;
+			}
+			
+			if(c== Types.getDoubleType().getClass()){
+				cols.put(columnName,new MyDoubleColumn(columnName,columnType));
+				return;
+		    }
+			
+			if(c== Types.getFloatType().getClass()){
+				cols.put(columnName,new MyFloatColumn(columnName,columnType));
+				return;
+			}
+			
+			cols.put(columnName,new MyObjectColumn(columnName,columnType));
+			
 		}
 		else 
 			throw new ColumnAlreadyExistsException();
@@ -48,7 +81,33 @@ public class MyTable implements Table {
 	 */
 	@Override
 	public int addRow(Row row) throws SchemaMismatchException {
-		return 0;
+		
+		int rowCount=row.getColumnCount();
+		if( rowCount!= cols.size()){
+			throw new SchemaMismatchException();
+		}
+		
+		String[] rowColNames=row.getColumnNames();
+		Type curType=null;
+		for(int i=0;i<rowCount;i++){
+			
+			curType=schema.get(rowColNames[i]);
+			
+			try {
+				if(curType==null || curType.getClass()!= 
+						row.getColumnType(rowColNames[i]).getClass()){
+					throw new SchemaMismatchException();
+				}
+			} catch (NoSuchColumnException e) {
+				throw new SchemaMismatchException();
+			}
+			
+		}
+		rows.add(row);
+		for(int i=0;i<rowCount;i++){
+			cols.get(rowColNames[i]).add(row.getColumnValue(rowColNames[i]));
+		}
+		return rows.size();
 	}
 
 	/* (non-Javadoc)
