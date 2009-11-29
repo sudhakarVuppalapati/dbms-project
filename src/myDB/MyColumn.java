@@ -12,7 +12,7 @@ import systeminterface.Column;
 /**
  * @author tuanta
  */
-public class MyColumn implements Column {
+public abstract class MyColumn implements Column {
 
 	/* (non-Javadoc)
 	 * @see systeminterface.Column#getColumnName()
@@ -23,31 +23,41 @@ public class MyColumn implements Column {
 	
 	private Type type;
 	
-	private List data;
+	protected final float FACTOR= 1.2f;
 	
+	protected final int defaulInitialCapacity=20;
+	//private List data;
 	
+	public MyColumn(){
+	}
+	
+	public MyColumn(String name, Type type) {
+		this.name = name;
+		this.type = type;
+	}
+
 	/**
 	 * @param name
 	 * @param type
 	 */
-	public MyColumn(String name, Type type) {
+	/*public MyColumn(String name, Type type) {
 		super();
 		this.name = name;
 		this.type = type;
 		this.data = new ArrayList();
-	}
+	}*/
 
 	/**
 	 * @param name
 	 * @param type
 	 * @param data
 	 */
-	public MyColumn(String name, Type type, List data) {
+	/*public MyColumn(String name, Type type, List data) {
 		super();
 		this.name = name;
 		this.type = type;
 		this.data = data;
-	}
+	}*/
 	
 	@Override
 	public String getColumnName() {
@@ -67,18 +77,23 @@ public class MyColumn implements Column {
 	/* (non-Javadoc)
 	 * @see systeminterface.Column#getElement(int)
 	 */
-	@Override
+	/*@Override
 	public Object getElement(int rowID) throws NoSuchRowException {
 		return data.get(rowID);
-	}
+	}*/
 
+	public abstract Object getElement(int rowID) throws NoSuchRowException;
+	
+	
 	/* (non-Javadoc)
 	 * @see systeminterface.Column#getRowCount()
 	 */
 	@Override
-	public int getRowCount() {
+	/*public int getRowCount() {
 		return data.size();
-	}
+	}*/
+	
+	public abstract int getRowCount();
 
 	/* (non-Javadoc)
 	 * @see systeminterface.Column#setColumnName(java.lang.String)
@@ -91,7 +106,7 @@ public class MyColumn implements Column {
 	/* (non-Javadoc)
 	 * @see systeminterface.Column#getDataArrayAsObject()
 	 */
-	@Override
+	/*@Override
 	public Object getDataArrayAsObject() {
 		Class c=type.getClass();
 		int size=data.size();
@@ -130,6 +145,11 @@ public class MyColumn implements Column {
 		}
 		
 		return data.toArray();
-	}
+	}*/
+	
+	public abstract Object getDataArrayAsObject();
+	
+	
+	public abstract void add(Object o);
 
 }
