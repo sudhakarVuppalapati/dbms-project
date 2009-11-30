@@ -10,9 +10,19 @@ public class MyObjectColumn extends MyColumn {
 	
 	private List data;
 	
+	public MyObjectColumn(String name, Type type) {
+		super(name,type);
+		data=new ArrayList(defaulInitialCapacity);
+	}
+	
 	public MyObjectColumn(String name, Type type, int initialCapacity) {
 		super(name,type);
 		data=new ArrayList(Math.round(initialCapacity*FACTOR));
+	}
+	
+	public MyObjectColumn(String name, Type type,List data) {
+		super(name,type);
+		this.data=data;
 	}
 	
 	@Override
@@ -33,6 +43,11 @@ public class MyObjectColumn extends MyColumn {
 	@Override
 	public int getRowCount() {
 		return data.size();
+	}
+
+	@Override
+	public void add(Object newObject) {
+		data.add(newObject);
 	}
 
 }

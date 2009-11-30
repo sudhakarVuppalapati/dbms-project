@@ -6,9 +6,26 @@ import exceptions.NoSuchRowException;
 public class MyFloatColumn extends MyColumn {
 	
 	private float[] data;
+	private byte[] statuses;
+	private int curSize;
 	
 	public MyFloatColumn(String name, Type type) {
+		super(name, type);
+		data= new float[this.defaulInitialCapacity];
+		statuses=new byte[this.defaulInitialCapacity];
+		curSize=0;
+	}
+	
+	public MyFloatColumn(String name, Type type,int initialCapacity) {
 		super(name,type);
+		data = new float[Math.round(initialCapacity*FACTOR)];
+		statuses=new byte[Math.round(initialCapacity*FACTOR)];
+		curSize=0;
+	}
+	
+	public MyFloatColumn(String name,Type type,float[] data){
+		super(name,type);
+		this.data=data;
 	}
 	
 	@Override
@@ -28,7 +45,22 @@ public class MyFloatColumn extends MyColumn {
 
 	@Override
 	public int getRowCount() {
-		return data.length;
+		return curSize;
+	}
+	
+	@Override
+	public void add(Object newData){
+		//check if there is place for a new value
+		if(curSize == data.length){
+			//if not, allocate a new array
+			float[] data1=new float[Math.round(FACTOR*curSize)];
+			System.arraycopy(data, 0, data1, 0, curSize);
+			data=data1;
+			data=null; // try to force garbage collection
+		}
+		
+		//add the new value
+		data[curSize++]=((Float)newData).floatValue();
 	}
 
 }
