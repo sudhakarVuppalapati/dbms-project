@@ -3,6 +3,9 @@ package myDB;
 import metadata.Type;
 import exceptions.NoSuchRowException;
 
+/**
+ * @author razvan
+ */
 public class MyIntColumn extends MyColumn {
 	
 	private int[] data;

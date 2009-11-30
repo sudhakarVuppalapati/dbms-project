@@ -3,6 +3,9 @@ package myDB;
 import metadata.Type;
 import exceptions.NoSuchRowException;
 
+/**
+ * @author razvan
+ */
 public class MyFloatColumn extends MyColumn {
 	
 	private float[] data;

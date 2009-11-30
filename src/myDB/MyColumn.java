@@ -10,7 +10,7 @@ import exceptions.NoSuchRowException;
 import systeminterface.Column;
 
 /**
- * @author tuanta
+ * @author razvan
  */
 public abstract class MyColumn implements Column {
 
