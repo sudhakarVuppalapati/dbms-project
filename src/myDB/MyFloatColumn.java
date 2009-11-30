@@ -9,7 +9,7 @@ import exceptions.NoSuchRowException;
 public class MyFloatColumn extends MyColumn {
 	
 	private float[] data;
-	private byte[] statuses;
+	private byte[] statuses; /* 0-newly added, 1-deleted, 2-updated*/
 	private int curSize;
 	
 	public MyFloatColumn(String name, Type type) {
@@ -29,6 +29,8 @@ public class MyFloatColumn extends MyColumn {
 	public MyFloatColumn(String name,Type type,float[] data){
 		super(name,type);
 		this.data=data;
+		curSize=data.length;
+		statuses=new byte[curSize];
 	}
 	
 	@Override
@@ -64,6 +66,17 @@ public class MyFloatColumn extends MyColumn {
 		
 		//add the new value
 		data[curSize++]=((Float)newData).floatValue();
+	}
+
+	@Override
+	public void remove(int rowID) {
+		statuses[rowID]=1;
+	}
+	
+	@Override
+	public void update(int rowID, Object value) {
+		data[rowID]=((Float)value).floatValue();
+		statuses[rowID]=2;
 	}
 
 }

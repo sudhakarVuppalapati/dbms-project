@@ -29,6 +29,8 @@ public class MyIntColumn extends MyColumn {
 	public MyIntColumn(String name,Type type,int[] data){
 		super(name,type);
 		this.data=data;
+		curSize=data.length;
+		statuses=new byte[curSize];
 	}
 	
 	@Override
@@ -66,5 +68,14 @@ public class MyIntColumn extends MyColumn {
 		data[curSize++]=((Integer)newData).intValue();
 	}
 	
+	@Override
+	public void remove(int rowID) {
+		statuses[rowID]=1;
+	}
 	
+	@Override
+	public void update(int rowID, Object value) {
+		data[rowID]=((Integer)value).intValue();
+		statuses[rowID]=2;
+	}
 }

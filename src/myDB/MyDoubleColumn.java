@@ -9,7 +9,7 @@ import exceptions.NoSuchRowException;
 public class MyDoubleColumn extends MyColumn {
 	
 	private double[] data;
-	private byte[] statuses;
+	private byte[] statuses; /* 0-unchanged, 1-deleted, 2-updated, 3-deleted*/
 	private int curSize;
 	
 	public MyDoubleColumn(String name, Type type){
@@ -29,6 +29,8 @@ public class MyDoubleColumn extends MyColumn {
 	public MyDoubleColumn(String name,Type type,double[] data){
 		super(name,type);
 		this.data=data;
+		curSize=data.length;
+		statuses=new byte[curSize];
 	}
 	
 	@Override
@@ -64,6 +66,17 @@ public class MyDoubleColumn extends MyColumn {
 		
 		//add the new value
 		data[curSize++]=((Double)newData).doubleValue();
+	}
+
+	@Override
+	public void remove(int rowID) {
+		statuses[rowID]=1;
+	}
+
+	@Override
+	public void update(int rowID, Object value) {
+		data[rowID]=((Double)value).doubleValue();
+		statuses[rowID]=2;
 	}
 
 }

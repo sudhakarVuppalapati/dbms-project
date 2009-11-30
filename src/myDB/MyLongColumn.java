@@ -29,6 +29,9 @@ public class MyLongColumn extends MyColumn {
 	public MyLongColumn(String name,Type type,long[] data){
 		super(name,type);
 		this.data=data;
+		curSize=data.length;
+		statuses=new byte[curSize];
+		
 	}
 	
 	@Override
@@ -63,7 +66,17 @@ public class MyLongColumn extends MyColumn {
 		}
 		
 		//add the new value
-		data[curSize++]=((Long)newData).intValue();
+		data[curSize++]=((Long)newData).longValue();
 	}
-
+	
+	@Override
+	public void remove(int rowID) {
+		statuses[rowID]=1;
+	}
+	
+	@Override
+	public void update(int rowID, Object value) {
+		data[rowID]=((Long)value).longValue();
+		statuses[rowID]=2;
+	}
 }
