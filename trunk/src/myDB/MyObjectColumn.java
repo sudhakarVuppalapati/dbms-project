@@ -6,6 +6,9 @@ import java.util.List;
 import metadata.Type;
 import exceptions.NoSuchRowException;
 
+/**
+ * @author razvan
+ */
 public class MyObjectColumn extends MyColumn {
 	
 	private List data;
