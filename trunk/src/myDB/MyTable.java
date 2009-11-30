@@ -407,11 +407,10 @@ public class MyTable implements Table {
 	public void renameColumn(String oldColumnName, String newColumnName)
 			throws ColumnAlreadyExistsException, NoSuchColumnException {
 		
-		Column col=cols.get(oldColumnName);
+		Column col=cols.remove(oldColumnName);
 		if(col!=null)
 			if(!cols.containsKey(newColumnName)){
 				cols.put(newColumnName, col);
-				cols.remove(oldColumnName);
 			}
 			else throw new ColumnAlreadyExistsException();
 		
