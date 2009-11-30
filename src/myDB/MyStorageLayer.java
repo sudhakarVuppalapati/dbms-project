@@ -1,6 +1,7 @@
 package myDB;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import metadata.Type;
@@ -17,36 +18,47 @@ import exceptions.TableAlreadyExistsException;
  */
 public class MyStorageLayer implements StorageLayer {
 
+	private HashMap<String,Table> tables;
 	/**
 	 * Constructor,
 	 */
 	public MyStorageLayer() {
-
+		tables=new HashMap<String,Table>();
 	}
 
 	@Override
 	public Table createTable(String tableName, Map<String, Type> schema)
 			throws TableAlreadyExistsException {
-		// TODO Auto-generated method stub
-		return null;
+		if(tables.containsKey(tableName))
+			throw new TableAlreadyExistsException();
+		
+		Table tab=new MyTable(tableName,schema);
+		tables.put(tableName,tab);
+		
+		return tab;
 	}
 
 	@Override
 	public void deleteTable(String tableName) throws NoSuchTableException {
-		// TODO Auto-generated method stub
-
+		if(tables.containsKey(tableName)){
+			tables.remove(tableName);
+		}
+		throw new NoSuchTableException();
+			
 	}
 
 	@Override
 	public Table getTableByName(String tableName) throws NoSuchTableException {
-		// TODO Auto-generated method stub
-		return null;
+		Table t=tables.get(tableName);
+		if(t!=null)
+			return t;
+		throw new NoSuchTableException();
 	}
 
 	@Override
 	public Operator<Table> getTables() {
 		// TODO Auto-generated method stub
-		return null;
+		return new MyOperator<Table>(tables.values());
 	}
 
 	@Override
@@ -59,8 +71,14 @@ public class MyStorageLayer implements StorageLayer {
 	@Override
 	public void renameTable(String oldName, String newName)
 			throws TableAlreadyExistsException, NoSuchTableException {
-		// TODO Auto-generated method stub
-
+		Table t=tables.remove(oldName);
+		if(t==null)
+			throw new NoSuchTableException();
+		
+		if(tables.containsKey(newName))
+			throw new TableAlreadyExistsException();
+		
+		tables.put(newName,t);
 	}
 
 	@Override
