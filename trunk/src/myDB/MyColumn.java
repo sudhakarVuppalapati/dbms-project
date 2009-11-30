@@ -151,5 +151,9 @@ public abstract class MyColumn implements Column {
 	
 	
 	public abstract void add(Object o);
+	
+	public abstract void remove(int rowID);
+	
+	public abstract void update(int rowID,Object value);
 
 }
