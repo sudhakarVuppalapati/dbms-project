@@ -9,7 +9,7 @@ import exceptions.NoSuchRowException;
 public class MyDoubleColumn extends MyColumn {
 	
 	private double[] data;
-	private byte[] statuses; /* 0-unchanged, 1-deleted, 2-updated, 3-deleted*/
+	private byte[] statuses; /* 0-unchanged, 1-deleted, 2-updated, 3-newly inserted*/
 	private int curSize;
 	
 	public MyDoubleColumn(String name, Type type){
@@ -37,7 +37,15 @@ public class MyDoubleColumn extends MyColumn {
 	public Object getDataArrayAsObject() {
 		return data;
 	}
+	
+	@Override
+	public void setData(Object data,int curSize){
+		this.data=(double[])data;
+		statuses=new byte[this.data.length];
+		this.curSize=curSize;
+	}
 
+	
 	@Override
 	public Double getElement(int rowID) throws NoSuchRowException {
 		try{
@@ -61,11 +69,19 @@ public class MyDoubleColumn extends MyColumn {
 			double[] data1=new double[Math.round(FACTOR*curSize)];
 			System.arraycopy(data, 0, data1, 0, curSize);
 			data=data1;
-			data=null; // try to force garbage collection
+			data1=null; // try to force garbage collection
+			
+			//the same for statuses
+			byte[] statuses1=new byte[Math.round(FACTOR*curSize)];
+			System.arraycopy(statuses, 0, statuses1, 0, curSize);
+			statuses=statuses1;
+			statuses1=null;
 		}
 		
 		//add the new value
-		data[curSize++]=((Double)newData).doubleValue();
+		//System.out.println("New data:"+newData);
+		data[curSize]=((Double)newData).doubleValue();
+		statuses[curSize++]=3;
 	}
 
 	@Override
