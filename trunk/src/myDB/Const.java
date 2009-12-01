@@ -7,6 +7,8 @@ import metadata.Types;
 
 public class Const {
 
+	public static final float FACTOR = 1.2f;
+	
 	public static final int NO_NUM = 0; 
 	public static final int DOUBLE_NUM = 1;
 	public static final int FLOAT_NUM = 2;
@@ -27,6 +29,8 @@ public class Const {
 		FLOAT_TYPE, INTEGER_TYPE, VARCHAR_TYPE, DATE_TYPE};
 
 	private static HashMap<Type, Integer> typeMapping = initMapping();
+
+	public static final String TABLE_NOT_EXIST_ERR = "The table is not in schemas !";
 
 	private static final HashMap<Type, Integer> initMapping() {
 		typeMapping = new HashMap<Type, Integer>();

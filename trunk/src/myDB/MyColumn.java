@@ -3,8 +3,6 @@
  */
 package myDB;
 
-import java.util.ArrayList;
-import java.util.List;
 import metadata.*;
 import exceptions.NoSuchRowException;
 import systeminterface.Column;
@@ -159,8 +157,6 @@ public abstract class MyColumn implements Column {
 	
 	public abstract void update(int rowID,Object value);
 	
-	/*public boolean isDeleted(){
-		return (status==1);
-	}*/
+	public abstract boolean isDeleted(int i);
 
 }
