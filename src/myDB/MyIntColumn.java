@@ -39,6 +39,13 @@ public class MyIntColumn extends MyColumn {
 	}
 
 	@Override
+	public void setData(Object data,int curSize){
+		this.data=(int[])data;
+		statuses=new byte[this.data.length];
+		this.curSize=curSize;
+	}
+	
+	@Override
 	public Integer getElement(int rowID) throws NoSuchRowException {
 		try{
 			return new Integer(data[rowID]);
@@ -61,11 +68,19 @@ public class MyIntColumn extends MyColumn {
 			int[] data1=new int[Math.round(FACTOR*curSize)];
 			System.arraycopy(data, 0, data1, 0, curSize);
 			data=data1;
-			data=null; // try to force garbage collection
+			data1=null; // try to force garbage collection
+			
+			//the same for statuses
+			byte[] statuses1=new byte[Math.round(FACTOR*curSize)];
+			System.arraycopy(statuses, 0, statuses1, 0, curSize);
+			statuses=statuses1;
+			statuses1=null;
 		}
 		
 		//add the new value
-		data[curSize++]=((Integer)newData).intValue();
+		//System.out.println("New data:"+newData);
+		data[curSize]=((Integer)newData).intValue();
+		statuses[curSize++]=3;
 	}
 	
 	@Override
