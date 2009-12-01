@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import metadata.Type;
 import metadata.Types;
@@ -18,6 +19,7 @@ import exceptions.NoSuchColumnException;
 import exceptions.NoSuchRowException;
 import exceptions.NotLeafNodeException;
 import exceptions.SchemaMismatchException;
+import firstmilestone.MyHelper;
 import systeminterface.Column;
 import systeminterface.PersistentExtent;
 import systeminterface.PredicateTreeNode;
@@ -39,9 +41,36 @@ public class MyTable implements Table {
 	private List <Row> rows;
 	private Map<String, Column> cols;
 	
+	
 	public MyTable(String tableName, Map<String,Type> tableSchema){
 		name=tableName;
 		schema=tableSchema;
+		rows=new ArrayList<Row>();
+		cols=new HashMap<String,Column>();
+		
+		/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!    */
+		Set<String> colNames=schema.keySet();
+		Type colType;
+		Column col;
+		for(String colName:colNames){
+			colType=schema.get(colName);
+			 
+			if(colType == Types.getIntegerType()){
+				col=new MyIntColumn(colName,colType);
+			}
+			else if(colType == Types.getDoubleType()){
+				col=new MyDoubleColumn(colName,colType);
+			}
+			else if(colType == Types.getFloatType()){
+				col=new MyFloatColumn(colName,colType);
+			}
+			else if(colType == Types.getLongType()){
+				col=new MyLongColumn(colName,colType);
+			}
+			else col=new MyObjectColumn(colName,colType);
+			
+			cols.put(colName,col);
+		}
 	}
 	
 	public Map<String, Type> getTableSchema(){
@@ -176,7 +205,7 @@ public class MyTable implements Table {
 		}
 		
 		//check if the name of the columns are the same
-		String[] schemaColNames=(String[])schema.keySet().toArray();
+		String[] schemaColNames=(String[])schema.keySet().toArray(new String[0]);
 		boolean found=false;
 		for(int i=0;i<schemaColNames.length;i++){
 			for(int j=0;j<colNames.length;j++)
@@ -206,8 +235,11 @@ public class MyTable implements Table {
 		
 		//add the row to the rows and the add to each column its correspondent values
 		rows.add(row);
+		//MyHelper.printArr(colNames);
+		MyColumn curCol;
 		for(int i=0;i<colNames.length;i++){
-				((MyColumn)cols.get(colNames[i])).add(tmpRowValues[i]);
+				curCol=((MyColumn)cols.get(colNames[i]));
+				if(curCol!=null) curCol.add(tmpRowValues[i]);
 		}
 		return rows.size()-1;
 	}
@@ -237,7 +269,7 @@ public class MyTable implements Table {
 		}
 		
 		//check if the name of the columns are the same
-		String[] schemaColNames=(String[])schema.keySet().toArray();
+		String[] schemaColNames=(String[])schema.keySet().toArray(new String[0]);
 		boolean col_found=false;
 		for(int i=0;i<schemaColNames.length;i++){
 			for(int j=0;j<colNames.length;j++)
@@ -289,6 +321,7 @@ public class MyTable implements Table {
 		if(found){
 			rows.remove(i); //think about this: if it makes sense to have this "rows" data structure;
 			Operator<Column> columns=getAllColumns();
+			columns.open();
 			Column curCol;
 			while((curCol=columns.next())!=null){
 				((MyColumn)curCol).remove(i);
@@ -303,6 +336,7 @@ public class MyTable implements Table {
 			throw new NoSuchRowException();
 		}
 		Operator<Column> columns=getAllColumns();
+		columns.open();
 		Column curCol;
 		while((curCol=columns.next())!=null){
 			((MyColumn)curCol).remove(tupleID);
@@ -434,7 +468,7 @@ public class MyTable implements Table {
 		}
 		
 		//check if the name of the columns are the same
-		String[] schemaColNames=(String[])schema.keySet().toArray();
+		String[] schemaColNames=(String[])schema.keySet().toArray(new String[0]);
 		boolean found=false;
 		for(int i=0;i<schemaColNames.length;i++){
 			for(int j=0;j<colNames.length;j++)
@@ -463,12 +497,13 @@ public class MyTable implements Table {
 
 		//Operator<Column> columns=getAllColumns();
 		
-		if(rows.get(tupleID)!=null) throw new NoSuchRowException();
-			
+		if(tupleID >= rows.size()) throw new NoSuchRowException();
+				/* rows.get(tupleID)!=null */
+		
 		Column col;
 		for(int i=0;i<colNames.length;i++){
 			col=cols.get(colNames[i]);
-			((MyColumn)col).update(tupleID,(colNames[i]));
+			((MyColumn)col).update(tupleID,tmpRowValues[i]);
 		}
 	}
 
@@ -481,13 +516,19 @@ public class MyTable implements Table {
 		String[] colNames=newRow.getColumnNames();
 		Object[] tmpRowValues=new Object[colNames.length];
 		
+		//MyHelper.printTable(this);
+		
+		MyHelper.printRow(oldRow);
+		System.out.println("-----");
+		MyHelper.printRow(newRow);
+		
 		//check size of the new rowSchema
 		if(colNames.length!=schema.size()){
 			throw new SchemaMismatchException();
 		}
 		
 		//check if the name of the columns are the same
-		String[] schemaColNames=(String[])schema.keySet().toArray();
+		String[] schemaColNames=(String[])schema.keySet().toArray(new String[0]);
 		boolean col_found=false;
 		for(int i=0;i<schemaColNames.length;i++){
 			for(int j=0;j<colNames.length;j++)
@@ -523,7 +564,8 @@ public class MyTable implements Table {
 			r=rows.get(i);
 			for(int j=0;j<colNames.length;j++){
 				try{
-					if(!r.getColumnValue(colNames[j]).equals(tmpRowValues[j])){
+					//System.out.println("Comparing "+r.getColumnValue(colNames[j])+" and "+tmpRowValues[j]);
+					if(!r.getColumnValue(colNames[j]).equals(oldRow.getColumnValue(colNames[j]))){
 						//throw new NoSuchRowException();
 						break;
 					}
@@ -538,10 +580,14 @@ public class MyTable implements Table {
 		
 		if(found){
 			//rows.remove(i); //think about this: if it makes sense to have this "rows" data structure;
+			System.out.println("updating ----->>>>>>>> updating");
 			Operator<Column> columns=getAllColumns();
 			Column curCol;
+			columns.open();
+			int j=0;//cur col in the row
 			while((curCol=columns.next())!=null){
-				((MyColumn)curCol).update(i,tmpRowValues[i]);
+				((MyColumn)curCol).update(i,tmpRowValues[j]);
+				j++;
 			}
 		}
 		else throw new NoSuchRowException();
