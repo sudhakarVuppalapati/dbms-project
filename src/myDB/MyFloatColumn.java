@@ -93,4 +93,8 @@ public class MyFloatColumn extends MyColumn {
 		statuses[rowID]=2;
 	}
 
+	@Override
+	public boolean isDeleted(int i) {
+		return (statuses[i] == 1);
+	}
 }

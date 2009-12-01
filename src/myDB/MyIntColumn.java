@@ -92,5 +92,10 @@ public class MyIntColumn extends MyColumn {
 	public void update(int rowID, Object value) {
 		data[rowID]=((Integer)value).intValue();
 		statuses[rowID]=2;
+	}	
+
+	@Override
+	public boolean isDeleted(int i) {
+		return (statuses[i] == 1);
 	}
 }

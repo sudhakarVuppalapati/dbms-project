@@ -4,7 +4,6 @@
 package myDB;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -17,6 +16,12 @@ import systeminterface.PersistentExtent;
 public class MyPersistentExtent implements PersistentExtent {
 
 	public static final String TABLES_METADATA_FILE = "disk/dbtables.dat";
+	
+	public static final String DISK_PREFIX = "disk/";
+	
+	public static final String TABLE_EXT = ".tbl";
+	
+	public static final String DISK = "disk";
 	
 	public static final int BUFF_SIZE = 1048576;
 	

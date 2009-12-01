@@ -57,7 +57,6 @@ public class MyStorageLayer implements StorageLayer {
 
 	@Override
 	public Operator<Table> getTables() {
-		// TODO Auto-generated method stub
 		return new MyOperator<Table>(tables.values());
 	}
 

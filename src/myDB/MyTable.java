@@ -73,44 +73,40 @@ public class MyTable implements Table {
 		}
 	}
 	
-	public Map<String, Type> getTableSchema(){
+	public Map<String, Type> getTableSchema() {
 		return this.schema;
 	}
-	
-	
+
 	//to be re-written without all the stupid comparison  of type
 	@Override
 	public void addColumn(String columnName, Type columnType)
-			throws ColumnAlreadyExistsException {
-		
-		Class c=columnType.getClass();
-		
+	throws ColumnAlreadyExistsException {
+
 		schema.put(columnName, columnType);
-		
+
 		if (!cols.containsKey(columnName)) {
-			
-			if(c== Types.getIntegerType().getClass()){
+
+			if(columnType == Types.getIntegerType()){
 				cols.put(columnName,new MyIntColumn(columnName,columnType));
 				return;
 			}
-			
-			if(c== Types.getLongType().getClass()){
+
+			if(columnType == Types.getLongType()){
 				cols.put(columnName,new MyLongColumn(columnName,columnType));
 				return;
 			}
-			
-			if(c== Types.getDoubleType().getClass()){
+
+			if(columnType == Types.getDoubleType()){
 				cols.put(columnName,new MyDoubleColumn(columnName,columnType));
 				return;
-		    }
-			
-			if(c== Types.getFloatType().getClass()){
+			}
+
+			if(columnType == Types.getFloatType()){
 				cols.put(columnName,new MyFloatColumn(columnName,columnType));
 				return;
 			}
-			
+
 			cols.put(columnName,new MyObjectColumn(columnName,columnType));
-			
 		}
 		else 
 			throw new ColumnAlreadyExistsException();
@@ -258,8 +254,8 @@ public class MyTable implements Table {
 	 */
 	@Override
 	public void deleteRow(Row row) throws NoSuchRowException,
-			SchemaMismatchException {
-		
+	SchemaMismatchException {
+
 		String[] colNames=row.getColumnNames();
 		Object[] tmpRowValues=new Object[colNames.length];
 		
@@ -332,6 +328,7 @@ public class MyTable implements Table {
 
 	@Override
 	public void deleteRow(int tupleID) throws NoSuchRowException {
+
 		if(tupleID>=rows.size()){
 			throw new NoSuchRowException();
 		}
@@ -346,7 +343,7 @@ public class MyTable implements Table {
 
 	@Override
 	public void dropColumnByName(String columnName)
-			throws NoSuchColumnException {
+	throws NoSuchColumnException {
 		if(! cols.containsKey(columnName)){
 			throw new NoSuchColumnException();
 		}
@@ -367,13 +364,13 @@ public class MyTable implements Table {
 	 */
 	@Override
 	public Column getColumnByName(String columnName)
-			throws NoSuchColumnException {
+	throws NoSuchColumnException {
 		Column col = cols.get(columnName);
 		if (col != null)
 			return col;
 		 
 		throw new NoSuchColumnException();
-		
+
 	}
 
 	/* (non-Javadoc)
@@ -405,7 +402,7 @@ public class MyTable implements Table {
 	 */
 	@Override
 	public Operator<Row> getRows(PredicateTreeNode predicate)
-			throws SchemaMismatchException {
+	throws SchemaMismatchException {
 		
 		Operator o;
 		
@@ -439,7 +436,7 @@ public class MyTable implements Table {
 	 */
 	@Override
 	public void renameColumn(String oldColumnName, String newColumnName)
-			throws ColumnAlreadyExistsException, NoSuchColumnException {
+	throws ColumnAlreadyExistsException, NoSuchColumnException {
 		
 		Column col=cols.remove(oldColumnName);
 		if(col!=null)
@@ -457,7 +454,7 @@ public class MyTable implements Table {
 	 */
 	@Override
 	public void updateRow(int tupleID, Row row)
-			throws SchemaMismatchException, NoSuchRowException {
+	throws SchemaMismatchException, NoSuchRowException {
 		
 		String[] colNames=row.getColumnNames();
 		Object[] tmpRowValues=new Object[colNames.length];
@@ -512,7 +509,7 @@ public class MyTable implements Table {
 	 */
 	@Override
 	public void updateRow(Row oldRow, Row newRow)
-			throws SchemaMismatchException, NoSuchRowException {
+	throws SchemaMismatchException, NoSuchRowException {
 		String[] colNames=newRow.getColumnNames();
 		Object[] tmpRowValues=new Object[colNames.length];
 		
@@ -592,5 +589,11 @@ public class MyTable implements Table {
 		}
 		else throw new NoSuchRowException();
 	}
-
+	/**
+	 * Need to be integrated with Razvan's code
+	 * @author tuanta
+	 */
+	public int getSize() {
+		return cols.size() * rows.size();
+	}
 }

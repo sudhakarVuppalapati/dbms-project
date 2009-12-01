@@ -92,4 +92,9 @@ public class MyLongColumn extends MyColumn {
 		data[rowID]=((Long)value).longValue();
 		statuses[rowID]=2;
 	}
+	
+	@Override
+	public boolean isDeleted(int i) {
+		return (statuses[i] == 1);
+	}
 }
