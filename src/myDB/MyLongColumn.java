@@ -31,7 +31,6 @@ public class MyLongColumn extends MyColumn {
 		this.data=data;
 		curSize=data.length;
 		statuses=new byte[curSize];
-		
 	}
 	
 	@Override
@@ -39,6 +38,13 @@ public class MyLongColumn extends MyColumn {
 		return data;
 	}
 
+	@Override
+	public void setData(Object data,int curSize){
+		this.data=(long[])data;
+		statuses=new byte[this.data.length];
+		this.curSize=curSize;
+	}
+	
 	@Override
 	public Long getElement(int rowID) throws NoSuchRowException {
 		try{
@@ -62,11 +68,18 @@ public class MyLongColumn extends MyColumn {
 			long[] data1=new long[Math.round(FACTOR*curSize)];
 			System.arraycopy(data, 0, data1, 0, curSize);
 			data=data1;
-			data=null; // try to force garbage collection
+			data1=null; // try to force garbage collection
+			
+			//the same for statuses
+			byte[] statuses1=new byte[Math.round(FACTOR*curSize)];
+			System.arraycopy(statuses, 0, statuses1, 0, curSize);
+			statuses=statuses1;
+			statuses1=null;
 		}
 		
 		//add the new value
-		data[curSize++]=((Long)newData).longValue();
+		data[curSize]=((Long)newData).longValue();
+		statuses[curSize++]=3;
 	}
 	
 	@Override
