@@ -23,10 +23,12 @@ public abstract class MyColumn implements Column {
 	
 	private Type type;
 	
+	//syncronize with Const !!!!!!!!!
 	protected final float FACTOR= 1.2f;
 	
 	protected final int defaulInitialCapacity=20;
-	//private List data;
+	
+	//private byte status;  /* 0-unchanged, 1-deleted, 2-updated, 3-newly added to schema*/
 	
 	public MyColumn(){
 	}
@@ -149,11 +151,16 @@ public abstract class MyColumn implements Column {
 	
 	public abstract Object getDataArrayAsObject();
 	
+	public abstract void  setData(Object o,int curSize);
 	
 	public abstract void add(Object o);
 	
 	public abstract void remove(int rowID);
 	
 	public abstract void update(int rowID,Object value);
+	
+	/*public boolean isDeleted(){
+		return (status==1);
+	}*/
 
 }
