@@ -157,6 +157,6 @@ public abstract class MyColumn implements Column {
 	
 	public abstract void update(int rowID,Object value);
 	
-	public abstract boolean isDeleted(int i);
+	//public abstract boolean isDeleted(int i);
 
 }
