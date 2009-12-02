@@ -40,11 +40,10 @@ public class MyStorageLayer implements StorageLayer {
 
 	@Override
 	public void deleteTable(String tableName) throws NoSuchTableException {
-		if(tables.containsKey(tableName)){
-			tables.remove(tableName);
-		}
-		throw new NoSuchTableException();
-			
+		Table t=tables.remove(tableName);
+		if(t==null){
+			throw new NoSuchTableException();
+		}	
 	}
 
 	@Override
@@ -57,6 +56,7 @@ public class MyStorageLayer implements StorageLayer {
 
 	@Override
 	public Operator<Table> getTables() {
+		// TODO Auto-generated method stub
 		return new MyOperator<Table>(tables.values());
 	}
 
