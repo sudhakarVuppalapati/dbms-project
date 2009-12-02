@@ -38,7 +38,8 @@ public class MyTable implements Table {
 
 	private String name;
 	private Map<String, Type> schema;
-	private List <Row> rows;
+	private List<Row> rows;
+	private List<Integer> rowsStats; 
 	private Map<String, Column> cols;
 	
 	
@@ -73,40 +74,44 @@ public class MyTable implements Table {
 		}
 	}
 	
-	public Map<String, Type> getTableSchema() {
+	public Map<String, Type> getTableSchema(){
 		return this.schema;
 	}
-
+	
+	
 	//to be re-written without all the stupid comparison  of type
 	@Override
 	public void addColumn(String columnName, Type columnType)
-	throws ColumnAlreadyExistsException {
-
+			throws ColumnAlreadyExistsException {
+		
+		Class c=columnType.getClass();
+		
 		schema.put(columnName, columnType);
-
+		
 		if (!cols.containsKey(columnName)) {
-
-			if(columnType == Types.getIntegerType()){
+			
+			if(c== Types.getIntegerType().getClass()){
 				cols.put(columnName,new MyIntColumn(columnName,columnType));
 				return;
 			}
-
-			if(columnType == Types.getLongType()){
+			
+			if(c== Types.getLongType().getClass()){
 				cols.put(columnName,new MyLongColumn(columnName,columnType));
 				return;
 			}
-
-			if(columnType == Types.getDoubleType()){
+			
+			if(c== Types.getDoubleType().getClass()){
 				cols.put(columnName,new MyDoubleColumn(columnName,columnType));
 				return;
-			}
-
-			if(columnType == Types.getFloatType()){
+		    }
+			
+			if(c== Types.getFloatType().getClass()){
 				cols.put(columnName,new MyFloatColumn(columnName,columnType));
 				return;
 			}
-
+			
 			cols.put(columnName,new MyObjectColumn(columnName,columnType));
+			
 		}
 		else 
 			throw new ColumnAlreadyExistsException();
@@ -254,8 +259,8 @@ public class MyTable implements Table {
 	 */
 	@Override
 	public void deleteRow(Row row) throws NoSuchRowException,
-	SchemaMismatchException {
-
+			SchemaMismatchException {
+		
 		String[] colNames=row.getColumnNames();
 		Object[] tmpRowValues=new Object[colNames.length];
 		
@@ -299,23 +304,26 @@ public class MyTable implements Table {
 		int i=0;
 		for(;i<rows.size();i++){
 			r=rows.get(i);
-			for(int j=0;j<colNames.length;j++){
-				try{
-					if(!r.getColumnValue(colNames[j]).equals(tmpRowValues[j])){
-						//throw new NoSuchRowException();
-						break;
+			if(r!=null){
+				for(int j=0;j<colNames.length;j++){
+					try{
+						if(!r.getColumnValue(colNames[j]).equals(row.getColumnValue(colNames[j]))){
+							//throw new NoSuchRowException();
+							break;
+						}
+						found=true;
 					}
-					found=true;
+					catch(NoSuchColumnException nsce){
+						throw new SchemaMismatchException();
+					}
 				}
-				catch(NoSuchColumnException nsce){
-					throw new SchemaMismatchException();
-				}
+				if(found) break;
 			}
-			if(found) break;
 		}
 		
 		if(found){
-			rows.remove(i); //think about this: if it makes sense to have this "rows" data structure;
+			//rows.remove(i); //think about this: if it makes sense to have this "rows" data structure;
+			rows.set(i, null); //we finally decided to do it this way but thik about it
 			Operator<Column> columns=getAllColumns();
 			columns.open();
 			Column curCol;
@@ -328,10 +336,10 @@ public class MyTable implements Table {
 
 	@Override
 	public void deleteRow(int tupleID) throws NoSuchRowException {
-
 		if(tupleID>=rows.size()){
 			throw new NoSuchRowException();
 		}
+		
 		Operator<Column> columns=getAllColumns();
 		columns.open();
 		Column curCol;
@@ -339,14 +347,16 @@ public class MyTable implements Table {
 			((MyColumn)curCol).remove(tupleID);
 		}
 		//rows.remove(tupleID); //think about this: if it makes sense to have this "rows" data structure;
+		rows.set(tupleID,null); // we finally decided to do it this way but think about it
 	}
 
 	@Override
 	public void dropColumnByName(String columnName)
-	throws NoSuchColumnException {
+			throws NoSuchColumnException {
 		if(! cols.containsKey(columnName)){
 			throw new NoSuchColumnException();
 		}
+		schema.remove(columnName);
 		cols.remove(columnName);
 	}
 
@@ -364,13 +374,13 @@ public class MyTable implements Table {
 	 */
 	@Override
 	public Column getColumnByName(String columnName)
-	throws NoSuchColumnException {
+			throws NoSuchColumnException {
 		Column col = cols.get(columnName);
 		if (col != null)
 			return col;
 		 
 		throw new NoSuchColumnException();
-
+		
 	}
 
 	/* (non-Javadoc)
@@ -393,7 +403,13 @@ public class MyTable implements Table {
 	 */
 	@Override
 	public Operator<Row> getRows() {
-		Operator<Row> opRow = new MyOperator<Row>(rows);
+		//filter out the null and than return the resulting operator
+		List<Row> filteredRows=new ArrayList();
+		for(Row r:rows){
+			if(r!=null)
+				filteredRows.add(r);
+		}
+		Operator<Row> opRow = new MyOperator<Row>(filteredRows);
 		return opRow;
 	}
 
@@ -402,7 +418,7 @@ public class MyTable implements Table {
 	 */
 	@Override
 	public Operator<Row> getRows(PredicateTreeNode predicate)
-	throws SchemaMismatchException {
+			throws SchemaMismatchException {
 		
 		Operator o;
 		
@@ -436,7 +452,7 @@ public class MyTable implements Table {
 	 */
 	@Override
 	public void renameColumn(String oldColumnName, String newColumnName)
-	throws ColumnAlreadyExistsException, NoSuchColumnException {
+			throws ColumnAlreadyExistsException, NoSuchColumnException {
 		
 		Column col=cols.remove(oldColumnName);
 		if(col!=null)
@@ -454,7 +470,7 @@ public class MyTable implements Table {
 	 */
 	@Override
 	public void updateRow(int tupleID, Row row)
-	throws SchemaMismatchException, NoSuchRowException {
+			throws SchemaMismatchException, NoSuchRowException {
 		
 		String[] colNames=row.getColumnNames();
 		Object[] tmpRowValues=new Object[colNames.length];
@@ -509,7 +525,7 @@ public class MyTable implements Table {
 	 */
 	@Override
 	public void updateRow(Row oldRow, Row newRow)
-	throws SchemaMismatchException, NoSuchRowException {
+			throws SchemaMismatchException, NoSuchRowException {
 		String[] colNames=newRow.getColumnNames();
 		Object[] tmpRowValues=new Object[colNames.length];
 		
@@ -559,20 +575,22 @@ public class MyTable implements Table {
 		int i=0;
 		for(;i<rows.size();i++){
 			r=rows.get(i);
-			for(int j=0;j<colNames.length;j++){
-				try{
-					//System.out.println("Comparing "+r.getColumnValue(colNames[j])+" and "+tmpRowValues[j]);
-					if(!r.getColumnValue(colNames[j]).equals(oldRow.getColumnValue(colNames[j]))){
-						//throw new NoSuchRowException();
-						break;
+			if(r!=null){
+				for(int j=0;j<colNames.length;j++){
+					try{
+						//System.out.println("Comparing "+r.getColumnValue(colNames[j])+" and "+tmpRowValues[j]);
+						if(!r.getColumnValue(colNames[j]).equals(oldRow.getColumnValue(colNames[j]))){
+							//throw new NoSuchRowException();
+							break;
+						}
+						found=true;
 					}
-					found=true;
+					catch(NoSuchColumnException nsce){
+						throw new SchemaMismatchException();
+					}
 				}
-				catch(NoSuchColumnException nsce){
-					throw new SchemaMismatchException();
-				}
+				if(found) break;
 			}
-			if(found) break;
 		}
 		
 		if(found){
@@ -589,13 +607,5 @@ public class MyTable implements Table {
 		}
 		else throw new NoSuchRowException();
 	}
-	
-	public int getSize() {
-		int i = 0, j = 0;
-		while () {
-			if 
-		}
-	}
 
-	
 }
