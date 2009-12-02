@@ -607,5 +607,12 @@ public class MyTable implements Table {
 		}
 		else throw new NoSuchRowException();
 	}
-
+	
+	public int getSize() {
+		int i = 0, j = 0;
+		while (j < rows.size()) {
+			if (rows.get(j++) == null) i++;
+		}
+		return i * cols.size();
+	}
 }
