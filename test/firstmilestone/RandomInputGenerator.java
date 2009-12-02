@@ -22,6 +22,8 @@ public class RandomInputGenerator {
 	 */
 	protected static Map<String, Type> generateRandSchema(Random rand) {
 
+		Types types = new Types();
+
 		Map<String, Type> schema = new HashMap<String, Type>();
 		int dimension = rand.nextInt(Consts.schemaMaxDim - Consts.schemaMinDim
 				+ 1)
@@ -102,6 +104,11 @@ public class RandomInputGenerator {
 
 	}
 
+	/**
+	 * @param rand
+	 * @param tableCardinatlity
+	 * @return
+	 */
 	public static ArrayList<Object> getRandDateList(Random rand,
 			int tableCardinatlity) {
 
@@ -115,6 +122,11 @@ public class RandomInputGenerator {
 		return randList;
 	}
 
+	/**
+	 * @param rand
+	 * @param tableCardinality
+	 * @return
+	 */
 	public static ArrayList<Object> getRandDoubleList(Random rand,
 			int tableCardinality) {
 
@@ -163,14 +175,27 @@ public class RandomInputGenerator {
 		return randList;
 	}
 
+	/**
+	 * @param rand
+	 * @param tableCardinality
+	 * @return
+	 */
 	public static ArrayList<Object> getRandLongList(Random rand,
 			int tableCardinality) {
+
+		// Random long covers Long.MIN_VALUE to Long.MAX_VALUE
+		// For nulls, must ensure that Long.MIN_VALUE does not get generated
+		
+		Long minLong = new Long(java.lang.Long.MIN_VALUE);
 
 		ArrayList<Object> randList = new ArrayList<Object>();
 
 		for (int i = 0; i < tableCardinality; i++) {
 
-			java.lang.Long L = new java.lang.Long(rand.nextLong());
+			java.lang.Long L;
+			while ((L = new java.lang.Long(rand.nextLong())).equals(minLong)) {
+				;
+			}
 			randList.add(L);
 			Helpers.print(L.toString(), Consts.printType.INFO);
 
@@ -179,6 +204,11 @@ public class RandomInputGenerator {
 		return randList;
 	}
 
+	/**
+	 * @param rand
+	 * @param tableCardinality
+	 * @return
+	 */
 	public static ArrayList<Object> getRandVarcharList(Random rand,
 			int tableCardinality) {
 
