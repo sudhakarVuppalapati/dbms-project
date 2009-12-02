@@ -26,13 +26,14 @@ public class MyRow implements Row {
 	 */
 	
 	private Map<String,Type> schema;
-	private Table table;
+	private MyTable table;
 	private int rowNo;
 	
-	//private byte status;
+	
+	private byte status; /* 0-unchanged, 1-deleted, 2-updated, 3-newly inserted*/
 	
 	public MyRow(Map<String,Type> tableSchema,Table table,int rowNumber){
-		schema=tableSchema;
+		schema=((MyTable)table).getTableSchema();
 		rowNo=rowNumber;
 	}
 	
@@ -72,6 +73,10 @@ public class MyRow implements Row {
 			throws NoSuchColumnException{
 		
 		Column c=table.getColumnByName(columnName);
+		if(c==null){
+			throw new NoSuchColumnException();
+		}
+		
 		Object data=c.getDataArrayAsObject();
 		Type t=c.getColumnType();
 		
@@ -96,5 +101,7 @@ public class MyRow implements Row {
 		return ((Object[])data)[rowNo];
 		//return ((Object[])(.getDataArrayAsObject()))[rowNo];
 	}
-
+	
+	
+	
 }
