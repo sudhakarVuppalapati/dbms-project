@@ -85,16 +85,15 @@ public class MyLongColumn extends MyColumn {
 	@Override
 	public void remove(int rowID) {
 		statuses[rowID]=1;
+		data[rowID]=Long.MAX_VALUE;
 	}
 	
 	@Override
 	public void update(int rowID, Object value) {
-		data[rowID]=((Long)value).longValue();
+		if(value==null)
+			data[rowID]=Long.MIN_VALUE;
+		else 
+			data[rowID]=((Long)value).longValue();
 		statuses[rowID]=2;
-	}
-	
-	@Override
-	public boolean isDeleted(int i) {
-		return (statuses[i] == 1);
 	}
 }
