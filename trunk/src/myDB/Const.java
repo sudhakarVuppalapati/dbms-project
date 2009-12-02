@@ -30,7 +30,10 @@ public class Const {
 
 	private static HashMap<Type, Integer> typeMapping = initMapping();
 
+
 	public static final String TABLE_NOT_EXIST_ERR = "The table is not in schemas !";
+
+	public static final int DEFAULT_TABLE_SIZE = 5000;
 
 	private static final HashMap<Type, Integer> initMapping() {
 		typeMapping = new HashMap<Type, Integer>();
