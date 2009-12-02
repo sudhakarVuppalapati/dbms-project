@@ -107,7 +107,6 @@ public class FirstPhaseTest {
 	 * 
 	 * @return true/false
 	 */
-	@SuppressWarnings("unchecked")
 	private static boolean checkTableContents() {
 
 		int i = 0;
@@ -199,7 +198,6 @@ public class FirstPhaseTest {
 		return true;
 	}
 
-	@SuppressWarnings("unchecked")
 	private static boolean checkTables() {
 		Operator<Table> tableOp = (Operator<Table>) myDatabase
 				.getStorageInterface().getTables();
@@ -237,7 +235,6 @@ public class FirstPhaseTest {
 
 	}
 
-	@SuppressWarnings("unchecked")
 	private static boolean checkTableSchemas() {
 
 		int i = 0;
@@ -322,6 +319,7 @@ public class FirstPhaseTest {
 
 			if (!mismatchFound) {
 				removeRowFromTable(tableNumber, i);
+				i--;
 			}
 		}
 	}
