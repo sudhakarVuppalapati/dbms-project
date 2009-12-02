@@ -589,11 +589,13 @@ public class MyTable implements Table {
 		}
 		else throw new NoSuchRowException();
 	}
-	/**
-	 * Need to be integrated with Razvan's code
-	 * @author tuanta
-	 */
+	
 	public int getSize() {
-		return cols.size() * rows.size();
+		int i = 0, j = 0;
+		while () {
+			if 
+		}
 	}
+
+	
 }
