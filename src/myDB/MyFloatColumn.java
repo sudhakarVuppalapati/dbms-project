@@ -85,16 +85,16 @@ public class MyFloatColumn extends MyColumn {
 	@Override
 	public void remove(int rowID) {
 		statuses[rowID]=1;
+		data[rowID]=Float.MAX_VALUE;
 	}
 	
 	@Override
 	public void update(int rowID, Object value) {
-		data[rowID]=((Float)value).floatValue();
+		if(value==null)
+			data[rowID]=Float.MIN_VALUE;
+		else 
+			data[rowID]=((Float)value).floatValue();
 		statuses[rowID]=2;
 	}
 
-	@Override
-	public boolean isDeleted(int i) {
-		return (statuses[i] == 1);
-	}
 }
