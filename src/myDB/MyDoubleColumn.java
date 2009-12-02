@@ -87,16 +87,16 @@ public class MyDoubleColumn extends MyColumn {
 	@Override
 	public void remove(int rowID) {
 		statuses[rowID]=1;
+		data[rowID]=Double.MAX_VALUE;
 	}
 
 	@Override
 	public void update(int rowID, Object value) {
-		data[rowID]=((Double)value).doubleValue();
+		if(value==null)
+			data[rowID]=Double.MIN_VALUE;
+		else 
+			data[rowID]=((Double)value).doubleValue();
 		statuses[rowID]=2;
 	}
 
-	@Override
-	public boolean isDeleted(int i) {
-		return (statuses[i] == 1);
-	}
 }
