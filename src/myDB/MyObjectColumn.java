@@ -78,6 +78,7 @@ public class MyObjectColumn extends MyColumn {
 	@Override
 	public void remove(int rowID) {
 		statuses[rowID]=1;
+		data.set(rowID, MyNull.NULLOBJ);
 	}
 	
 	@Override
@@ -85,9 +86,5 @@ public class MyObjectColumn extends MyColumn {
 		data.set(rowID,value);
 		statuses[rowID]=2;
 	}
-	
-	@Override
-	public boolean isDeleted(int i) {
-		return (statuses[i] == 1);
-	}
+
 }
