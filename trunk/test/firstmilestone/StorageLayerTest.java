@@ -48,7 +48,6 @@ public class StorageLayerTest extends TestCase {
 	 * 
 	 * @see junit.framework.TestCase#tearDown()
 	 */
-	@SuppressWarnings("unchecked")
 	protected void tearDown() throws Exception {
 
 		super.tearDown();
@@ -93,7 +92,6 @@ public class StorageLayerTest extends TestCase {
 	/**
      * 
      */
-	@SuppressWarnings("unchecked")
 	public void testPersistence() {
 
 		// get new database instance

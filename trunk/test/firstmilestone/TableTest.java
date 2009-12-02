@@ -49,7 +49,6 @@ public class TableTest extends TestCase {
 
 	}
 
-	@SuppressWarnings("unchecked")
 	@After
 	public void tearDown() throws Exception {
 
@@ -91,61 +90,10 @@ public class TableTest extends TestCase {
 		}
 	}
 
-	/**
-	 * Test for violating the maximum size of a CHAR
-	 */
-
-	public void testViolateCharSize() {
-
-		// get new database instance
-		Database myDatabase = Database.getInstance();
-
-		// initialize table schema (empty schema)
-		HashMap<String, Type> tableSchema = new HashMap<String, Type>();
-		tableSchema.put("attribute1", Types.getCharType(5));
-
-		// start DB (should be empty before this stage)
-		myDatabase.startSystem();
-
-		// create 1 new table
-		try {
-			myDatabase.getStorageInterface().createTable(tName, tableSchema);
-		} catch (TableAlreadyExistsException e) {
-			fail("unexpected");
-		}
-
-		// row
-
-		try {
-
-			Row row = null;
-			ColumnInfo ci = new ColumnInfo();
-			ci.setName("attribute1");
-			ci.setType(Types.getCharType(5));
-			List<ColumnInfo> schema = new ArrayList<ColumnInfo>();
-			schema.add(ci);
-			Object[] arr = new Object[1];
-			arr[0] = "123456";
-			row = new SampleRow(schema, arr);
-
-			try {
-				myDatabase.getStorageInterface().getTableByName(tName).addRow(
-						row);
-			} catch (NoSuchTableException e) {
-				fail("unexpected");
-			}
-
-			fail("Attempted to add a char of length 6 to a CHAR field with max capacity 5");
-		} catch (SchemaMismatchException ex) {
-
-			// OK
-		}
-	}
 
 	/**
 	 * test get all columns
 	 */
-	@SuppressWarnings("unchecked")
 	public void testGetAllColumns() {
 
 		// get new database instance
@@ -307,7 +255,6 @@ public class TableTest extends TestCase {
 	/**
 	 * 
 	 */
-	@SuppressWarnings("unchecked")
 	public void testGetRowsWithPredicate() {
 
 		// get new database instance
@@ -404,13 +351,17 @@ public class TableTest extends TestCase {
 			}
 
 		}
+		
+		if(i!=1){
+			
+			fail("empty result");
+		}
 
 	}
 
 	/**
 	 * Test parameters from methods for Column and Row
 	 */
-	@SuppressWarnings("unchecked")
 	public void testColumnRowParams() {
 
 		Database myDatabase = Database.getInstance();
@@ -541,7 +492,6 @@ public class TableTest extends TestCase {
 	/**
 	 * 
 	 */
-	@SuppressWarnings("unchecked")
 	public void testDeleteRow() {
 
 		Database myDatabase = Database.getInstance();
@@ -653,7 +603,6 @@ public class TableTest extends TestCase {
 	/**
 	 * 
 	 */
-	@SuppressWarnings("unchecked")
 	public void testUpdateRow() {
 
 		Database myDatabase = Database.getInstance();
