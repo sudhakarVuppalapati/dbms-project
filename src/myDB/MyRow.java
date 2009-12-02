@@ -77,25 +77,43 @@ public class MyRow implements Row {
 			throw new NoSuchColumnException();
 		}
 		
+		
+		//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! take this out from here!!!!!
 		Object data=c.getDataArrayAsObject();
 		Type t=c.getColumnType();
 		
 		if(t == Types.getIntegerType()){
 			//return new Integer(((int[])data)[rowNo]);
-			return ((int[])data)[rowNo];
+			int val=((int[])data)[rowNo];
+			if(val==Integer.MIN_VALUE)
+				return null;
+			
+			return val;
 		}
 		
 		if(t == Types.getDoubleType()){
 			//return new Double(((double[])data)[rowNo]);
-			return ((double[])data)[rowNo];
+			double val=((double[])data)[rowNo];
+			if(val==Double.MIN_VALUE)
+				return null;
+			
+			return val;
 		}
 		
 		if(t == Types.getFloatType()){
-			return ((float[])data)[rowNo];
+			float val=((float[])data)[rowNo];
+			if(val==Float.MIN_VALUE)
+				return null;
+			
+			return val;
 		}
 		
 		if(t == Types.getLongType()){
-			return ((long[])data)[rowNo];
+			long val=((long[])data)[rowNo];
+			if(val==Long.MIN_VALUE)
+				return null;
+			
+			return val;
 		}
 		
 		return ((Object[])data)[rowNo];
