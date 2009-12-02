@@ -32,8 +32,9 @@ public class MyRow implements Row {
 	
 	private byte status; /* 0-unchanged, 1-deleted, 2-updated, 3-newly inserted*/
 	
-	public MyRow(Map<String,Type> tableSchema,Table table,int rowNumber){
-		schema=((MyTable)table).getTableSchema();
+	public MyRow(Table table,int rowNumber){
+		this.table=(MyTable)table;
+		schema=(this.table).getTableSchema();
 		rowNo=rowNumber;
 	}
 	
@@ -51,7 +52,12 @@ public class MyRow implements Row {
 	@Override
 	public String[] getColumnNames() {
 		// TODO Auto-generated method stub
-		return (String[])schema.keySet().toArray();
+		String[] colNames=new String[schema.size()];
+		int i=0;
+		for(String colName: schema.keySet()){
+			colNames[i++]=colName;
+		}
+		return colNames;
 	}
 
 	/* (non-Javadoc)
