@@ -301,8 +301,6 @@ public class MyTable implements Table {
 		for(;i<rows.size();i++){
 			r=rows.get(i);
 			if(r!=null){
-				//System.out.print("Checking.....:");
-				//MyHelper.printRow(r);
 				for(int j=0;j<colNames.length;j++){
 					try{
 						if(!r.getColumnValue(colNames[j]).equals(row.getColumnValue(colNames[j]))){
