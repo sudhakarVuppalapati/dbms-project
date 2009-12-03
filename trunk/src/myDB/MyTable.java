@@ -294,7 +294,7 @@ public class MyTable implements Table {
 
 		//search the table for the row that is identical to the row to be deleted
 		Row r=null;
-		boolean found=true;
+		boolean found=false;
 		Object rowCell=null,oldRowCell=null;
 		int i=0;
 		for(;i<rows.size() ;i++){
@@ -336,9 +336,9 @@ public class MyTable implements Table {
 			
 		}
 		else {
-			System.out.println("I cannot find this row when trying to delete:");
-			MyHelper.printRow(row);
-			MyHelper.printTable(this);
+			//System.out.println("I cannot find this row when trying to delete:");
+			//MyHelper.printRow(row);
+			//MyHelper.printTable(this);
 			throw new NoSuchRowException();
 		}
 	}
@@ -356,6 +356,8 @@ public class MyTable implements Table {
 			((MyColumn)curCol).remove(tupleID);
 		}
 		//rows.remove(tupleID); //think about this: if it makes sense to have this "rows" data structure;
+		System.out.println("Deleted by id: ");
+		MyHelper.printRow(rows.get(tupleID));
 		rows.set(tupleID,null); // we finally decided to do it this way but think about it
 		
 	}
@@ -363,11 +365,19 @@ public class MyTable implements Table {
 	@Override
 	public void dropColumnByName(String columnName)
 	throws NoSuchColumnException {
-		if(! cols.containsKey(columnName)){
+		Type t=schema.remove(columnName);
+		if(t!=null){
+			cols.remove(columnName);
+			return;
+		}
+		
+		throw new NoSuchColumnException();
+		
+		/*if(!cols.containsKey(columnName)){
 			throw new NoSuchColumnException();
 		}
 		schema.remove(columnName);
-		cols.remove(columnName);
+		cols.remove(columnName);*/
 	}
 
 	/* (non-Javadoc)
@@ -530,6 +540,12 @@ public class MyTable implements Table {
 			col=cols.get(colNames[i]);
 			((MyColumn)col).update(tupleID,tmpRowValues[i]);
 		}
+		System.out.println("Updated by id: ");
+		MyHelper.printRow(rows.get(tupleID));
+		System.out.println("to ");
+		MyRow newMyRow=new MyRow(this,tupleID);
+		rows.set(tupleID, newMyRow);
+		MyHelper.printRow(rows.get(tupleID));
 	}
 
 	/* (non-Javadoc)
@@ -540,13 +556,7 @@ public class MyTable implements Table {
 	throws SchemaMismatchException, NoSuchRowException {
 		String[] colNames=newRow.getColumnNames();
 		Object[] tmpRowValues=new Object[colNames.length];
-
-		//MyHelper.printTable(this);
-
-		//MyHelper.printRow(oldRow);
-		//System.out.println("-----");
-		//MyHelper.printRow(newRow);
-
+		
 		//check size of the new rowSchema
 		if(colNames.length!=schema.size()){
 			throw new SchemaMismatchException();
@@ -580,20 +590,17 @@ public class MyTable implements Table {
 			}
 		}
 
-		//search the table for the row that is identical to the row to be deleted
+		//search the table for the row that is identical to the row to be updated
 		Row r=null;
-		boolean found=true;
+		boolean found=false;
 		Object rowCell=null,oldRowCell=null;
 		int i=0;
 		for(;i<rows.size();i++){
 			r=rows.get(i);
-			found=true;
 			if(r!=null){
-				//System.out.print("Checking.....:");
-				//MyHelper.printRow(r);
+				found=true;
 				for(int j=0;j<colNames.length;j++){
 					try{
-						//System.out.println("Comparing "+r.getColumnValue(colNames[j])+" and "+tmpRowValues[j]);
 						rowCell=r.getColumnValue(colNames[j]);
 						oldRowCell=oldRow.getColumnValue(colNames[j]);
 						if(rowCell==null && oldRowCell!=null){
@@ -606,7 +613,7 @@ public class MyTable implements Table {
 						}
 					}
 					catch(NoSuchColumnException nsce){
-						found=false;
+						//found=false;
 						throw new SchemaMismatchException();
 					}
 				}
@@ -628,15 +635,16 @@ public class MyTable implements Table {
 			
 			int j=0;//cur col in the row to which the current row should be modified
 			while((curCol=columns.next())!=null){
-				System.out.println("Modifying to value : "+tmpRowValues[j]);
+				//System.out.println("Modifying to value : "+tmpRowValues[j]);
 				((MyColumn)curCol).update(i,tmpRowValues[j]);
-				System.out.println("So now I have: ");
-				MyHelper.printRow(rows.get(i));
-				System.out.println("My table now is : ----------");
-				MyHelper.printTable(this);
+				//System.out.println("So now I have: ");
+				//MyHelper.printRow(rows.get(i));
+				//System.out.println("My table now is : ----------");
+				//MyHelper.printTable(this);
 				j++;
 			}
-			rows.set(i, newRow);
+			MyRow newMyRow=new MyRow(this,i);
+			rows.set(i, newMyRow);
 		}
 		else 
 		{
