@@ -30,7 +30,7 @@ public class MyHelper {
 		try{
 		System.out.println(t.getTableName());
 		
-		Operator<Row> op=(Operator<Row>) t.getRows();
+		Operator<Row> op=(Operator<Row>)t.getRows();
 		op.open();
 		Row first=op.next();
 		StringBuffer sb=new StringBuffer();
@@ -47,12 +47,16 @@ public class MyHelper {
 		System.out.println(sb.toString());
 		
 		Row r;
+		int noRows=0;
 		while((r=op.next())!=null){
 			sb=new StringBuffer();
 			for(String colName:r.getColumnNames())
 				sb.append(r.getColumnValue(colName)+"\t");
 			System.out.println(sb.toString());
+			noRows++;
 		}
+		System.out.println("No of rows: "+(noRows+1));
+		
 		}
 		catch(NoSuchColumnException nsce){
 			System.out.println("No such Column in print table");
