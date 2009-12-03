@@ -15,7 +15,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +30,7 @@ import exceptions.NoSuchTableException;
 import exceptions.SchemaMismatchException;
 import exceptions.TableAlreadyExistsException;
 import systeminterface.Column;
+import systeminterface.Row;
 import systeminterface.StorageLayer;
 import systeminterface.Table;
 
@@ -40,7 +43,7 @@ public class MyOwnStorageLayer implements StorageLayer, Serializable {
 
 	private static final String DELIM = "/";
 
-	private transient final HashMap<String, Table> tables;
+	private transient HashMap<String, Table> tables;
 
 	public MyOwnStorageLayer() {
 		tables = new HashMap<String, Table>();
@@ -50,25 +53,35 @@ public class MyOwnStorageLayer implements StorageLayer, Serializable {
 	@Override
 	public Table createTable(String tableName, Map<String, Type> schema)
 	throws TableAlreadyExistsException {
-		return null;
+		if(tables.containsKey(tableName))
+			throw new TableAlreadyExistsException();
+
+		Table tab=new MyTable(tableName,schema);
+		tables.put(tableName,tab);
+
+		return tab;
 	}
 
 	@Override
 	public void deleteTable(String tableName) throws NoSuchTableException {
-		// TODO Auto-generated method stub
-
+		Table t=tables.remove(tableName);
+		if(t==null){
+			throw new NoSuchTableException();
+		}	
 	}
 
 	@Override
 	public Table getTableByName(String tableName) throws NoSuchTableException {
-		// TODO Auto-generated method stub
-		return null;
+		Table t=tables.get(tableName);
+		if(t!=null)
+			return t;
+		throw new NoSuchTableException();
 	}
 
 	@Override
-	public Operator<? extends Table> getTables() {
+	public Operator<Table> getTables() {
 		// TODO Auto-generated method stub
-		return null;
+		return new MyOperator<Table>(tables.values());
 	}
 
 	/**
@@ -141,7 +154,7 @@ public class MyOwnStorageLayer implements StorageLayer, Serializable {
 						continue;
 					}			
 					tmpType = Const.getType(tmpTyp);
-					tmpSchema.put(tmpTblName, tmpType);
+					tmpSchema.put(tmpStr, tmpType);
 					tmpColList.add(tmpStr);
 				}
 			}
@@ -182,58 +195,10 @@ public class MyOwnStorageLayer implements StorageLayer, Serializable {
 					ois = new ObjectInputStream(bis);	
 					tc = (TableContent) ois.readObject();
 
-					/** Read the first line, which contains info about the
-					 * first column. Construct the column together with rows  */
-					if (tc.colNum > 0) {						
-						tmpStr = tableColInfo.get(tblItem).get(0); 
-						mc = (MyColumn) tmpTbl.getColumnByName(tmpStr);
-						tmpType = mc.getColumnType();
-
-						if(tmpType == Types.getIntegerType()) {
-							ints = new int[Math.round(tc.rowNum * Const.FACTOR)];
-							for (i = 0; i < tc.rowNum; i++) {
-								ints[i] = (Integer) tc.data[i];
-								tmpTbl.addRow(new MyRow(tmpSchema, tmpTbl, i));
-							}								
-							mc.setData(ints, tc.rowNum);
-						}
-
-						if(tmpType == Types.getLongType()){
-							longs = new long[Math.round(tc.rowNum * Const.FACTOR)];
-							for (i = 0; i < tc.rowNum; i++) {
-								longs[i] = (Long) tc.data[i];
-								tmpTbl.addRow(new MyRow(tmpSchema, tmpTbl, i));
-							}
-							mc.setData(longs, tc.rowNum);
-						}
-
-						if(tmpType == Types.getDoubleType()){
-							doubles = new double[Math.round(tc.rowNum * Const.FACTOR)];
-							for (i = 0; i < tc.rowNum; i++) {
-								doubles[i] = (Double) tc.data[i];
-								tmpTbl.addRow(new MyRow(tmpSchema, tmpTbl, i));
-							}
-							mc.setData(doubles, tc.rowNum);
-						}
-
-						if(tmpType == Types.getFloatType()){
-							floats = new float[Math.round(tc.rowNum * Const.FACTOR)];
-							for (i = 0; i < tc.rowNum; i++) {
-								floats[i] = (Float) tc.data[i];
-								tmpTbl.addRow(new MyRow(tmpSchema, tmpTbl, i));
-							}
-							mc.setData(floats, tc.rowNum);
-						}
-
-						tmpColList = new ArrayList(Math.round(tc.rowNum * Const.FACTOR));
-						for (i = 0; i < tc.rowNum; i++) {
-							tmpColList.add(tc.data[i]);
-							tmpTbl.addRow(new MyRow(tmpSchema, tmpTbl, i));
-						}
-						mc.setData(tmpColList, tc.rowNum);
-
-						/** Read the other columns */
-						for (tmp = 1; tmp < tc.colNum; i++) {
+					if (tc.colNum > 0) {				
+						/** Iterate over the columns / lines, construct the corresponding
+						 * columns. */
+						for (tmp = 0; tmp < tc.colNum; tmp++) {
 							tmpStr = tableColInfo.get(tblItem).get(tmp); 
 							mc = (MyColumn) tmpTbl.getColumnByName(tmpStr);
 							tmpType = mc.getColumnType();
@@ -275,6 +240,11 @@ public class MyOwnStorageLayer implements StorageLayer, Serializable {
 								tmpColList.add(tc.data[i + tc.rowNum * tmp]);
 							mc.setData(tmpColList, tc.rowNum);	
 						}
+
+						/** Construct the rows */
+						for (i = 0; i < tc.rowNum; i++) {
+							tmpTbl.addRow(new MyRow(tmpTbl, i));
+						}	
 					}					
 				}
 				/** Using DataInputStream. Keep in mind that we store data elements
@@ -284,68 +254,12 @@ public class MyOwnStorageLayer implements StorageLayer, Serializable {
 					colNo = dis.readInt();
 					rowNo = dis.readInt();
 
-					/** Read the first line, which contains info about the
-					 * first column. Construct the column together with rows  */
 					if (colNo > 0) {
-						tmpStr = tableColInfo.get(tblItem).get(0); 
-						mc = (MyColumn) tmpTbl.getColumnByName(tmpStr);
-						tmpType = mc.getColumnType();
 
-						if(tmpType == Types.getIntegerType()) {
-							ints = new int[Math.round(rowNo * Const.FACTOR)];
-							for (i = 0; i < rowNo; i++) {
-								ints[i] = dis.readInt();
-								tmpTbl.addRow(new MyRow(tmpSchema, tmpTbl, i));
-							}								
-							mc.setData(ints, rowNo);
-						}
-
-						if(tmpType == Types.getLongType()){
-							longs = new long[Math.round(rowNo * Const.FACTOR)];
-							for (i = 0; i < tc.rowNum; i++) {
-								longs[i] = dis.readLong();
-								tmpTbl.addRow(new MyRow(tmpSchema, tmpTbl, i));
-							}
-							mc.setData(longs, rowNo);
-						}
-
-						if(tmpType == Types.getDoubleType()){
-							doubles = new double[Math.round(rowNo * Const.FACTOR)];
-							for (i = 0; i < tc.rowNum; i++) {
-								doubles[i] = dis.readDouble();
-								tmpTbl.addRow(new MyRow(tmpSchema, tmpTbl, i));
-							}
-							mc.setData(doubles, rowNo);
-						}
-
-						if(tmpType == Types.getFloatType()){
-							floats = new float[Math.round(rowNo * Const.FACTOR)];
-							for (i = 0; i < tc.rowNum; i++) {
-								floats[i] = dis.readFloat();
-								tmpTbl.addRow(new MyRow(tmpSchema, tmpTbl, i));
-							}
-							mc.setData(floats, rowNo);
-						}
-
-						if(tmpType == Types.getDateType()){
-							tmpColList = new ArrayList(Math.round(rowNo * Const.FACTOR));
-							for (i = 0; i < tc.rowNum; i++) {
-								tmpColList.add(Date.parse(dis.readUTF()));
-								tmpTbl.addRow(new MyRow(tmpSchema, tmpTbl, i));
-							}
-							mc.setData(tmpColList, rowNo);
-						}
-
-						tmpColList = new ArrayList(Math.round(rowNo * Const.FACTOR));
-						for (i = 0; i < tc.rowNum; i++) {
-							tmpColList.add(dis.readUTF());
-							tmpTbl.addRow(new MyRow(tmpSchema, tmpTbl, i));
-						}
-						mc.setData(tmpColList, rowNo);
-
-						/** Read the other columns */
-						for (tmp = 1; tmp < tc.colNum; i++) {
-							tmpStr = tableColInfo.get(tblItem).get(0); 
+						/** Iterate over the columns / lines, construct the corresponding
+						 * columns. */
+						for (tmp = 0; tmp < colNo; tmp++) {
+							tmpStr = tableColInfo.get(tblItem).get(tmp); 
 							mc = (MyColumn) tmpTbl.getColumnByName(tmpStr);
 							tmpType = mc.getColumnType();
 
@@ -359,7 +273,7 @@ public class MyOwnStorageLayer implements StorageLayer, Serializable {
 
 							if(tmpType == Types.getLongType()){
 								longs = new long[Math.round(rowNo * Const.FACTOR)];
-								for (i = 0; i < tc.rowNum; i++)
+								for (i = 0; i < rowNo; i++)
 									longs[i] = dis.readLong();
 								mc.setData(longs, rowNo);
 								continue;
@@ -367,7 +281,7 @@ public class MyOwnStorageLayer implements StorageLayer, Serializable {
 
 							if(tmpType == Types.getDoubleType()){
 								doubles = new double[Math.round(rowNo * Const.FACTOR)];
-								for (i = 0; i < tc.rowNum; i++)
+								for (i = 0; i < rowNo; i++)
 									doubles[i] = dis.readDouble();
 								mc.setData(doubles, rowNo);
 								continue;
@@ -375,7 +289,7 @@ public class MyOwnStorageLayer implements StorageLayer, Serializable {
 
 							if(tmpType == Types.getFloatType()){
 								floats = new float[Math.round(rowNo * Const.FACTOR)];
-								for (i = 0; i < tc.rowNum; i++)
+								for (i = 0; i < rowNo; i++)
 									floats[i] = dis.readFloat();
 								mc.setData(floats, rowNo);
 								continue;
@@ -383,23 +297,30 @@ public class MyOwnStorageLayer implements StorageLayer, Serializable {
 
 							if(tmpType == Types.getDateType()){
 								tmpColList = new ArrayList(Math.round(rowNo * Const.FACTOR));
-								for (i = 0; i < tc.rowNum; i++) 
-									tmpColList.add(Date.parse(dis.readUTF()));
+								for (i = 0; i < rowNo; i++) {
+									tmpColList.add(new Date(dis.readLong()));	
+								}
+								
 								mc.setData(tmpColList, rowNo);
 								continue;
 							}
 
 							tmpColList = new ArrayList(Math.round(rowNo * Const.FACTOR));
-							for (i = 0; i < tc.rowNum; i++)
+							for (i = 0; i < rowNo; i++)
 								tmpColList.add(dis.readUTF());
 							mc.setData(tmpColList, rowNo);			
 						}
+
+						/** Construct the rows */
+						for (i = 0; i < rowNo; i++) {
+							tmpTbl.addRow(new MyRow(tmpTbl, i));
+						}					
 					}				
 				}
 			}
 		}
 		catch (NoSuchColumnException nsce) {
-			throw new IOException();
+			nsce.printStackTrace();
 		}
 		catch (SchemaMismatchException sme) {
 			throw new IOException();
@@ -416,6 +337,14 @@ public class MyOwnStorageLayer implements StorageLayer, Serializable {
 	@Override
 	public void renameTable(String oldName, String newName)
 	throws TableAlreadyExistsException, NoSuchTableException {
+		Table t=tables.remove(oldName);
+		if(t==null)
+			throw new NoSuchTableException();
+
+		if(tables.containsKey(newName))
+			throw new TableAlreadyExistsException();
+
+		tables.put(newName,t);
 	}
 
 	@Override
@@ -423,11 +352,12 @@ public class MyOwnStorageLayer implements StorageLayer, Serializable {
 			Operator<? extends Table> table) throws IOException {
 
 		boolean empty = true;
-		int i = 0, size = 0;
+		int i = 0, size = 0, tmpCol = 0, tmpRow = 0;
 		String tmpName = null;
 
 		List<Object> data = null;
 		Operator<Column> columns = null;
+		Operator<Row> rows = null;
 		Column mc = null;
 		Type tmpType = null;
 		Table t = null;
@@ -445,13 +375,15 @@ public class MyOwnStorageLayer implements StorageLayer, Serializable {
 		ObjectOutputStream oos = null; 
 		DataOutputStream dos = null;
 
-		DataOutputStream metaOutput = new DataOutputStream(new BufferedOutputStream(
-				new FileOutputStream(MyPersistentExtent.TABLES_METADATA_FILE)));
+		DataOutputStream metaOutput = new DataOutputStream (
+				new BufferedOutputStream (new FileOutputStream (
+						MyPersistentExtent.TABLES_METADATA_FILE)));
 
 		table.open();
 
 		try {
 			while ((t = table.next()) != null) {
+				tmpCol = tmpRow = 0;
 				empty = false;
 				tmpName = t.getTableName();
 
@@ -469,15 +401,28 @@ public class MyOwnStorageLayer implements StorageLayer, Serializable {
 				metaOutput.writeInt(size);
 
 				/** Determine which IO mechanism to use, ObjectInputStream
-				 * or DataInputStream. As an experiment, DataInputStream is
-				 * better for small set of data, while ObjectInputStream pays
-				 * off for large set. */						
+				 * or DataInputStream. As shown in our experiment, 
+				 * DataInputStream is better for small set of data, 
+				 * while ObjectInputStream pays off for the large sets. */						
 				if (size > TableContent.THRESHOLD) {
 					oos = new ObjectOutputStream(bos);
 					data = new ArrayList();
 
 					columns = (Operator<Column>) t.getAllColumns();
+
 					columns.open();
+					while (columns.next() != null)
+						tmpCol++;
+					columns.close();
+
+					rows = (Operator<Row>) t.getRows();
+					rows.open();
+					while (rows.next() != null)
+						tmpRow++;
+					rows.close();
+
+					columns.open();
+
 					while ((mc = columns.next()) != null) {
 						tmpType = mc.getColumnType();
 						/** Write to the meta-data the info of current column */
@@ -522,8 +467,9 @@ public class MyOwnStorageLayer implements StorageLayer, Serializable {
 							}
 							continue;
 						}
+						
 						/** If the column is of object type, iterate over rows
-						 * and write elements which have MyNull value */
+						 * and write elements which don't have MyNull value */
 						for (i = 0; i < mc.getRowCount(); i++) {
 							obj = mc.getElement(i);
 							if (obj != MyNull.NULLOBJ) {
@@ -532,12 +478,27 @@ public class MyOwnStorageLayer implements StorageLayer, Serializable {
 						}
 					}
 					columns.close();
-					oos.writeObject(new TableContent(data.toArray()));
+					oos.writeObject(new TableContent(tmpCol, tmpRow, data.toArray()));
 					oos.close();
 				}
 				else {
 					dos = new DataOutputStream(bos);
+
 					columns = (Operator<Column>) t.getAllColumns();
+
+					columns.open();
+					while (columns.next() != null)
+						tmpCol++;
+					columns.close();
+					dos.writeInt(tmpCol);
+
+					rows = (Operator<Row>) t.getRows();
+					rows.open();
+					while (rows.next() != null)
+						tmpRow++;
+					rows.close();
+					dos.writeInt(tmpRow);
+
 					columns.open();
 					while ((mc = (MyColumn)columns.next()) != null) {						
 						tmpType = mc.getColumnType();
@@ -592,7 +553,7 @@ public class MyOwnStorageLayer implements StorageLayer, Serializable {
 							for (i = 0; i < mc.getRowCount(); i++) {
 								obj = mc.getElement(i);
 								if (obj != MyNull.NULLOBJ) {
-									dos.writeUTF(((Date)obj).toString());
+									dos.writeLong(((Date)obj).getTime());
 								}
 							}
 							continue;
@@ -607,8 +568,10 @@ public class MyOwnStorageLayer implements StorageLayer, Serializable {
 					}
 					columns.close();
 					dos.close();
-					metaOutput.close();
+
 				}
+				metaOutput.writeUTF(DELIM);
+				metaOutput.close();
 			}
 		}
 		catch (SchemaMismatchException sme) {
@@ -631,7 +594,6 @@ public class MyOwnStorageLayer implements StorageLayer, Serializable {
 			for (File fileItem : file)
 				fileItem.delete();
 		}
-
 	}
 
 	private final String buildFileName(String input) {
@@ -654,7 +616,9 @@ public class MyOwnStorageLayer implements StorageLayer, Serializable {
 
 		Object[] data;
 
-		TableContent(Object[] data2) {
+		TableContent(int col, int row, Object[] data2) {
+			colNum = col;
+			rowNum = row;
 			data = data2;
 		}
 	}
@@ -674,12 +638,93 @@ public class MyOwnStorageLayer implements StorageLayer, Serializable {
 
 	public static void main(String[] args) {
 		StorageLayer storageLayer = new MyOwnStorageLayer();
+
+		HashMap<String, MyTable> tableLst = new HashMap<String, MyTable>();
+		MyTable myTable;		
+		HashMap<String, Type> tableSchema;
+		Column column;
+		List data = null;
+		MyRow row = null;
+
+		tableSchema = new HashMap<String, Type>();
+
+		tableSchema.put("Name", Types.getCharType(5));
+		tableSchema.put("DateOfBirth", Types.getDateType());
+		tableSchema.put("Grade", Types.getIntegerType());
+
+		myTable = new MyTable("Student", tableSchema);
+		tableLst.put("Student", myTable);
+		Operator<Column> col = myTable.getAllColumns();
+
+		col.open();
+
+		while ((column = col.next()) != null) {
+			if (column.getColumnName().equals("Name")) {
+				data = new ArrayList<String>(7);
+				data.add("Razvan");
+				data.add("Tuan");
+				data.add("Hanna");
+				((MyObjectColumn)column).setData(data, 3);
+			}
+			else if (column.getColumnName().equals("DateOfBirth")) {
+				data = new ArrayList<Date>(7);
+				Calendar cl1, cl2, cl3;
+				cl1 = new GregorianCalendar();
+				cl2 = new GregorianCalendar();
+				cl3 = new GregorianCalendar();
+				cl1.set(83, 12, 23);
+				cl2.set(85, 1, 2);
+				cl3.set(81, 3, 28);
+				data.add(cl1.getTime());
+				data.add(cl2.getTime());
+				data.add(cl3.getTime());
+				((MyObjectColumn)column).setData(data, 3);
+			}
+			else if (column.getColumnName().equals("Grade")) {
+				int[] ints = new int[7];
+				ints[0] = 1; ints[1] = 2; ints[2] = 3;
+				((MyIntColumn)column).setData(ints, 3);
+			}
+		}
+		col.close();
+
 		try {
-			storageLayer.writeTablesFromMainMemoryBackToExtent(new MyOperator<Table>());
-		} catch (IOException e) {
+			for (int i = 0; i < 3; i++) {
+				row = new MyRow(myTable, i);
+				myTable.addRow(row);
+			}
+		} catch (SchemaMismatchException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+
 		}
-		System.out.println("Done.");
+
+		MyOperator<MyTable> tableOp = new MyOperator<MyTable>(tableLst.values());
+
+		try {
+			storageLayer.writeTablesFromMainMemoryBackToExtent(tableOp);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		System.out.println("Writing done.");
+
+		try {
+			storageLayer.loadTablesFromExtentIntoMainMemory();
+			Operator<Table> tables = (Operator<Table>) storageLayer.getTables();
+			tables.open();
+			Table t;
+			while ((t = tables.next()) != null ) {
+				try {
+					System.out.println(t.getColumnByName("Name").getRowCount());
+				} catch (NoSuchColumnException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		System.out.println("Reading done.");
 	}
 }
