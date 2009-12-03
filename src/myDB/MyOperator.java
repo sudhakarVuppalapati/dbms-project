@@ -3,6 +3,8 @@ package myDB;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+
 import operator.Operator;
 
 public class MyOperator<OUTPUT> implements Operator<OUTPUT> {
@@ -10,6 +12,8 @@ public class MyOperator<OUTPUT> implements Operator<OUTPUT> {
 	private Collection<OUTPUT> data;
 	
 	private Iterator<OUTPUT> it;
+	
+	private int curPos;
 	
 	public MyOperator() {
 		data = new ArrayList<OUTPUT>();
@@ -26,16 +30,24 @@ public class MyOperator<OUTPUT> implements Operator<OUTPUT> {
 
 	@Override
 	public OUTPUT next() {
-		if(it.hasNext()) {
+		//return it.next();
+		if(curPos<data.size()){
+			curPos++;
+			return it.next();
+		}
+			
+		return null;
+		/*if(it.hasNext()) {
 			return it.next();
 		}
 		else 
-			return null;
+			return null;*/
 	}
 
 	@Override
 	public void open() {
 		it= data.iterator();
+		curPos=0;
 	}
 
 }
