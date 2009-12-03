@@ -39,7 +39,6 @@ public class MyTable implements Table {
 	private String name;
 	private Map<String, Type> schema;
 	private List<Row> rows;
-	//private List<Integer> rowsStats; 
 	private Map<String, Column> cols;
 
 
@@ -218,10 +217,10 @@ public class MyTable implements Table {
 		//check the actual types
 		for(int j=0;j<colNames.length;j++){
 			try{
-				if(! row.getColumnType(colNames[j]).equals(schema.get(colNames[j]))){
+				if(!row.getColumnType(colNames[j]).equals(schema.get(colNames[j]))){
 					throw new SchemaMismatchException();
 				}
-
+				//System.out.println("I compared type: "+row.getColumnType(colNames[j])+" "+schema.get(colNames[j]));
 				tmpRowValues[j]=row.getColumnValue(colNames[j]);
 			}
 			catch(NoSuchColumnException nsce){
@@ -231,7 +230,7 @@ public class MyTable implements Table {
 
 		Row newRow=new MyRow(this,rows.size());
 
-		//add the row to the rows and the add to each column its correspondent values
+		//add the row to the rows and then add to each column its correspondent value
 		rows.add(newRow);
 		MyColumn curCol;
 		for(int i=0;i<colNames.length;i++){
@@ -295,21 +294,28 @@ public class MyTable implements Table {
 
 		//search the table for the row that is identical to the row to be deleted
 		Row r=null;
-		boolean found=false;
-		Object rowCell=null;
+		boolean found=true;
+		Object rowCell=null,oldRowCell=null;
 		int i=0;
-		for(;i<rows.size();i++){
+		for(;i<rows.size() ;i++){
 			r=rows.get(i);
 			if(r!=null){
+				found=true;
 				for(int j=0;j<colNames.length;j++){
 					try{
-						if(!r.getColumnValue(colNames[j]).equals(row.getColumnValue(colNames[j]))){
-							//throw new NoSuchRowException();
+						rowCell=r.getColumnValue(colNames[j]);
+						oldRowCell=row.getColumnValue(colNames[j]);
+						if(rowCell==null && oldRowCell!=null){
+							found=false;
 							break;
 						}
-						found=true;
+						if(!rowCell.equals(oldRowCell)){
+							found=false;
+							break;
+						}
 					}
 					catch(NoSuchColumnException nsce){
+						found=false;
 						throw new SchemaMismatchException();
 					}
 				}
@@ -318,7 +324,8 @@ public class MyTable implements Table {
 		}
 
 		if(found){
-			//rows.remove(i); //think about this: if it makes sense to have this "rows" data structure;
+			System.out.println("Deleted: ");
+			MyHelper.printRow(rows.get(i));
 			rows.set(i, null); //we finally decided to do it this way but thik about it
 			Operator<Column> columns=getAllColumns();
 			columns.open();
@@ -326,6 +333,7 @@ public class MyTable implements Table {
 			while((curCol=columns.next())!=null){
 				((MyColumn)curCol).remove(i);
 			}
+			
 		}
 		else {
 			System.out.println("I cannot find this row when trying to delete:");
@@ -349,6 +357,7 @@ public class MyTable implements Table {
 		}
 		//rows.remove(tupleID); //think about this: if it makes sense to have this "rows" data structure;
 		rows.set(tupleID,null); // we finally decided to do it this way but think about it
+		
 	}
 
 	@Override
@@ -399,6 +408,7 @@ public class MyTable implements Table {
 		return new MyOperator<Column>(colList);
 	}
 
+	
 	/* (non-Javadoc)
 	 * @see systeminterface.Table#getRows()
 	 */
@@ -406,10 +416,11 @@ public class MyTable implements Table {
 	public Operator<Row> getRows() {
 		//filter out the null and than return the resulting operator
 		List<Row> filteredRows=new ArrayList();
-		for(Row r:rows){
-			if(r!=null)
+		Row r=null;
+		for(int i=0;i<rows.size();i++)
+			if((r=rows.get(i))!=null)
 				filteredRows.add(r);
-		}
+		
 		Operator<Row> opRow = new MyOperator<Row>(filteredRows);
 		return opRow;
 	}
@@ -571,11 +582,12 @@ public class MyTable implements Table {
 
 		//search the table for the row that is identical to the row to be deleted
 		Row r=null;
-		boolean found=false;
+		boolean found=true;
 		Object rowCell=null,oldRowCell=null;
 		int i=0;
 		for(;i<rows.size();i++){
 			r=rows.get(i);
+			found=true;
 			if(r!=null){
 				//System.out.print("Checking.....:");
 				//MyHelper.printRow(r);
@@ -584,33 +596,47 @@ public class MyTable implements Table {
 						//System.out.println("Comparing "+r.getColumnValue(colNames[j])+" and "+tmpRowValues[j]);
 						rowCell=r.getColumnValue(colNames[j]);
 						oldRowCell=oldRow.getColumnValue(colNames[j]);
-						if((rowCell==null && oldRowCell!=null) || (rowCell!=null && oldRowCell==null))
-							break;
-						if(!rowCell.equals(oldRowCell)){
-							//throw new NoSuchRowException();
+						if(rowCell==null && oldRowCell!=null){
+							found=false;
 							break;
 						}
-						found=true;
+						if(!rowCell.equals(oldRowCell)){
+							found=false;
+							break;
+						}
 					}
 					catch(NoSuchColumnException nsce){
+						found=false;
 						throw new SchemaMismatchException();
 					}
 				}
 				if(found) break;
 			}
+			
 		}
 
 		if(found){
 			//rows.remove(i); //think about this: if it makes sense to have this "rows" data structure;
-			//System.out.println("updating ----->>>>>>>> updating");
+			System.out.println("Updated: ");
+			MyHelper.printRow(oldRow);
+			System.out.println("to");
+			MyHelper.printRow(newRow);
+			
 			Operator<Column> columns=getAllColumns();
 			Column curCol;
 			columns.open();
-			int j=0;//cur col in the row
+			
+			int j=0;//cur col in the row to which the current row should be modified
 			while((curCol=columns.next())!=null){
+				System.out.println("Modifying to value : "+tmpRowValues[j]);
 				((MyColumn)curCol).update(i,tmpRowValues[j]);
+				System.out.println("So now I have: ");
+				MyHelper.printRow(rows.get(i));
+				System.out.println("My table now is : ----------");
+				MyHelper.printTable(this);
 				j++;
 			}
+			rows.set(i, newRow);
 		}
 		else 
 		{
@@ -627,5 +653,9 @@ public class MyTable implements Table {
 			if (rows.get(j++) == null) i++;
 		}
 		return i * cols.size();
+	}
+	
+	public Row getRow(int i){
+		return rows.get(i);
 	}
 }
