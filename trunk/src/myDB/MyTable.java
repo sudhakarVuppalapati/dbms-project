@@ -5,6 +5,7 @@ package myDB;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -15,6 +16,7 @@ import metadata.Type;
 import metadata.Types;
 import operator.Operator;
 import exceptions.ColumnAlreadyExistsException;
+import exceptions.IsLeafException;
 import exceptions.NoSuchColumnException;
 import exceptions.NoSuchRowException;
 import exceptions.NotLeafNodeException;
@@ -25,6 +27,8 @@ import systeminterface.PersistentExtent;
 import systeminterface.PredicateTreeNode;
 import systeminterface.Row;
 import systeminterface.Table;
+import util.ComparisonOperator;
+import util.LogicalOperator;
 
 /**
  * @author razvan
@@ -195,13 +199,13 @@ public class MyTable implements Table {
 		String[] colNames=row.getColumnNames();
 		Object[] tmpRowValues=new Object[colNames.length];
 
-		//check size of the new rowSchema
+		/*//check size of the new rowSchema
 		if(colNames.length!=schema.size()){
 			throw new SchemaMismatchException();
 		}
 
 		//check if the name of the columns are the same
-		String[] schemaColNames=(String[])schema.keySet().toArray(new String[0]);
+		//String[] schemaColNames=(String[])schema.keySet().toArray(new String[0]);
 		boolean found=false;
 		for(int i=0;i<schemaColNames.length;i++){
 			for(int j=0;j<colNames.length;j++)
@@ -213,30 +217,44 @@ public class MyTable implements Table {
 				throw new SchemaMismatchException(); //the schema lacks at least one column name
 			}
 		}
-
+		
+		for(int i=0; i< colNames.length;i++)
+			if(!schema.containsKey(colNames[i])) throw new SchemaMismatchException();
+		
+		
 		//check the actual types
 		for(int j=0;j<colNames.length;j++){
 			try{
 				if(!row.getColumnType(colNames[j]).equals(schema.get(colNames[j]))){
 					throw new SchemaMismatchException();
 				}
-				//System.out.println("I compared type: "+row.getColumnType(colNames[j])+" "+schema.get(colNames[j]));
 				tmpRowValues[j]=row.getColumnValue(colNames[j]);
 			}
 			catch(NoSuchColumnException nsce){
 				throw new SchemaMismatchException();
 			}
+		}*/
+		
+		try{
+			for(int j=0;j<colNames.length;j++)
+				tmpRowValues[j]=row.getColumnValue(colNames[j]);
+		
+			
+			Row newRow=new MyRow(this,rows.size());
+	
+			//add the row to the rows and then add to each column its correspondent value
+			rows.add(newRow);
+			
+			MyColumn curCol;
+			for(int i=0;i<colNames.length;i++){
+				curCol=((MyColumn)cols.get(colNames[i]));
+				if(curCol!=null) curCol.add(tmpRowValues[i]);
+			}
 		}
-
-		Row newRow=new MyRow(this,rows.size());
-
-		//add the row to the rows and then add to each column its correspondent value
-		rows.add(newRow);
-		MyColumn curCol;
-		for(int i=0;i<colNames.length;i++){
-			curCol=((MyColumn)cols.get(colNames[i]));
-			if(curCol!=null) curCol.add(tmpRowValues[i]);
+		catch(Exception nsce){
+			throw new SchemaMismatchException();
 		}
+		
 		return rows.size()-1;
 	}
 
@@ -294,7 +312,8 @@ public class MyTable implements Table {
 
 		//search the table for the row that is identical to the row to be deleted
 		Row r=null;
-		boolean found=false;
+		
+		boolean found=false,deleted=false;
 		Object rowCell=null,oldRowCell=null;
 		int i=0;
 		for(;i<rows.size() ;i++){
@@ -315,49 +334,49 @@ public class MyTable implements Table {
 						}
 					}
 					catch(NoSuchColumnException nsce){
-						found=false;
+						//found=false;
 						throw new SchemaMismatchException();
 					}
 				}
-				if(found) break;
+				if(found) {
+					deleted=true;
+					//deleteIds.add(new Integer(i));
+					//System.out.println("Deleted: ");
+					//MyHelper.printRow(rows.get(i));
+					rows.set(i, null); //we finally decided to do it this way but thik about it
+					
+					/*Operator<Column> columns=getAllColumns();
+					columns.open();
+					Column curCol;
+					while((curCol=columns.next())!=null){
+						((MyColumn)curCol).remove(i);
+					}*/
+					Column col;
+					for(int k=0;k<colNames.length;k++){
+						col=cols.get(colNames[k]);
+						((MyColumn)col).remove(i);
+					}
+				}
 			}
 		}
-
-		if(found){
-			System.out.println("Deleted: ");
-			MyHelper.printRow(rows.get(i));
-			rows.set(i, null); //we finally decided to do it this way but thik about it
-			Operator<Column> columns=getAllColumns();
-			columns.open();
-			Column curCol;
-			while((curCol=columns.next())!=null){
-				((MyColumn)curCol).remove(i);
-			}
-			
-		}
-		else {
-			//System.out.println("I cannot find this row when trying to delete:");
-			//MyHelper.printRow(row);
-			//MyHelper.printTable(this);
+		
+		if(!deleted)
 			throw new NoSuchRowException();
-		}
 	}
 
 	@Override
 	public void deleteRow(int tupleID) throws NoSuchRowException {
-		if(tupleID>=rows.size()){
+		if(tupleID>=rows.size())
 			throw new NoSuchRowException();
-		}
-
-		Operator<Column> columns=getAllColumns();
-		columns.open();
-		Column curCol;
-		while((curCol=columns.next())!=null){
-			((MyColumn)curCol).remove(tupleID);
-		}
-		//rows.remove(tupleID); //think about this: if it makes sense to have this "rows" data structure;
-		System.out.println("Deleted by id: ");
-		MyHelper.printRow(rows.get(tupleID));
+		
+		if(rows.get(tupleID)==null)
+			throw new NoSuchRowException();
+		
+		
+		String[] cNames=(String[])cols.keySet().toArray(new String[0]);
+		for(int p=0;p<cNames.length;p++)
+			((MyColumn)cols.get(cNames[p])).remove(tupleID);
+		
 		rows.set(tupleID,null); // we finally decided to do it this way but think about it
 		
 	}
@@ -441,24 +460,276 @@ public class MyTable implements Table {
 	@Override
 	public Operator<Row> getRows(PredicateTreeNode predicate)
 	throws SchemaMismatchException {
-
-		Operator o;
-
-		if(predicate==null)
-			return new MyOperator(rows);
-
-		if(predicate.isLeaf()){
-			try{
-				Column c=getColumnByName(predicate.getColumnName());
+		
+		Operator<Row> op1=null,op2=null;
+		
+		
+		LogicalOperator lp=null;
+		ComparisonOperator co;
+		Row r,r1;
+		try{
+		if(!predicate.isLeaf()){
+			
+			PredicateTreeNode leftChild=predicate.getLeftChild();
+			PredicateTreeNode rightChild=predicate.getRightChild();
+			
+			if(leftChild!=null)
+				op1=getRows(leftChild);
+			if(rightChild!=null)
+				op2=getRows(rightChild);
+			
+			lp=predicate.getLogicalOperator();
+			
+			if(lp==LogicalOperator.OR){
+				
+				Map result=new HashMap();
+				
+				op1.open();
+				op2.open();
+				
+				while((r=op1.next())!=null){
+					result.put(r,null);
+				}
+				
+				while((r=op2.next())!=null){
+					result.put(r,null);
+				}
+				
+				op1.close();
+				op2.close();
+				
+				return new MyOperator<Row>(result.keySet());
 			}
-			catch(NoSuchColumnException nsce){
-				throw new SchemaMismatchException();
-			} catch (NotLeafNodeException e) {
-				e.printStackTrace();
+			else{
+				List resultList=new ArrayList();
+				while((r=op1.next())!=null)
+					while((r1=op2.next())!=null)
+						if(r==r1) resultList.add(r1);
+				return new MyOperator<Row>(resultList);	
 			}
-
 		}
-		return null;
+		else {
+			
+			Object colValue=null;
+			Type columnType=null;
+			List<Row> filteredRows=new ArrayList<Row>();
+			for(int i=0;i<rows.size();i++){
+				co=predicate.getComparisonOperator();
+				r=rows.get(i);
+				Object value=predicate.getValue();
+				String attr=predicate.getColumnName();
+				if(r!=null){
+					colValue=r.getColumnValue(attr);
+					
+					if(co==ComparisonOperator.EQ){
+						if(colValue==null && value==null) filteredRows.add(r);
+						else if(colValue.equals(value)) filteredRows.add(r);
+					}
+					if(co==ComparisonOperator.GEQ){
+						if(colValue!=null && value!=null){
+							if(columnType == Types.getIntegerType()){
+								if(((Integer)colValue)>=((Integer)value)){
+									filteredRows.add(r);
+								}
+							}
+
+							else if(columnType == Types.getLongType()){
+								if(((Long)colValue)>=((Long)value)){
+									filteredRows.add(r);
+								}
+							}
+
+							else if(columnType == Types.getDoubleType()){
+								if(((Double)colValue)>=((Double)value)){
+									filteredRows.add(r);
+								}
+							}
+
+							else if(columnType== Types.getFloatType()){
+								if(((Float)colValue)>=((Float)value)){
+									filteredRows.add(r);
+								}
+							}
+							
+							else if (columnType== Types.getDateType()){
+								if(((Date)colValue).compareTo((Date)value)>=0){
+									filteredRows.add(r);
+								}
+							}
+							else{
+								if(((String)colValue).compareTo((String)value)>=0)
+									filteredRows.add(r);
+							}
+							
+						}
+					}
+					
+					if(co==ComparisonOperator.LEQ){
+						if(colValue!=null && value!=null){
+							if(columnType == Types.getIntegerType()){
+								if(((Integer)colValue)<=((Integer)value)){
+									filteredRows.add(r);
+								}
+							}
+
+							else if(columnType == Types.getLongType()){
+								if(((Long)colValue)<=((Long)value)){
+									filteredRows.add(r);
+								}
+							}
+
+							else if(columnType == Types.getDoubleType()){
+								if(((Double)colValue)<=((Double)value)){
+									filteredRows.add(r);
+								}
+							}
+
+							else if(columnType== Types.getFloatType()){
+								if(((Float)colValue)<=((Float)value)){
+									filteredRows.add(r);
+								}
+							}
+							
+							else if (columnType== Types.getDateType()){
+								if(((Date)colValue).compareTo((Date)value)<=0){
+									filteredRows.add(r);
+								}
+							}
+							else{
+								if(((String)colValue).compareTo((String)value)<=0)
+									filteredRows.add(r);
+							}
+							
+						}
+					}
+					
+					
+					if(co==ComparisonOperator.GT){
+						if(colValue!=null && value!=null){
+							if(columnType == Types.getIntegerType()){
+								if(((Integer)colValue)>((Integer)value)){
+									filteredRows.add(r);
+								}
+							}
+
+							else if(columnType == Types.getLongType()){
+								if(((Long)colValue)>((Long)value)){
+									filteredRows.add(r);
+								}
+							}
+
+							else if(columnType == Types.getDoubleType()){
+								if(((Double)colValue)>((Double)value)){
+									filteredRows.add(r);
+								}
+							}
+
+							else if(columnType== Types.getFloatType()){
+								if(((Float)colValue)>((Float)value)){
+									filteredRows.add(r);
+								}
+							}
+							
+							else if (columnType== Types.getDateType()){
+								if(((Date)colValue).compareTo((Date)value)>0){
+									filteredRows.add(r);
+								}
+							}
+							else{
+								if(((String)colValue).compareTo((String)value)>0)
+									filteredRows.add(r);
+							}
+							
+						}
+					}
+					
+					if(co==ComparisonOperator.LT){
+						if(colValue!=null && value!=null){
+							if(columnType == Types.getIntegerType()){
+								if(((Integer)colValue)<((Integer)value)){
+									filteredRows.add(r);
+								}
+							}
+
+							else if(columnType == Types.getLongType()){
+								if(((Long)colValue)<((Long)value)){
+									filteredRows.add(r);
+								}
+							}
+
+							else if(columnType == Types.getDoubleType()){
+								if(((Double)colValue)<((Double)value)){
+									filteredRows.add(r);
+								}
+							}
+
+							else if(columnType== Types.getFloatType()){
+								if(((Float)colValue)<((Float)value)){
+									filteredRows.add(r);
+								}
+							}
+							
+							else if (columnType== Types.getDateType()){
+								if(((Date)colValue).compareTo((Date)value)<0){
+									filteredRows.add(r);
+								}
+							}
+							else{
+								if(((String)colValue).compareTo((String)value)<0)
+									filteredRows.add(r);
+							}
+							
+						}
+					}
+					
+					if(co==ComparisonOperator.NEQ){
+						if(colValue!=null && value!=null){
+							if(columnType == Types.getIntegerType()){
+								if(((Integer)colValue)!=((Integer)value)){
+									filteredRows.add(r);
+								}
+							}
+
+							else if(columnType == Types.getLongType()){
+								if(((Long)colValue)!=((Long)value)){
+									filteredRows.add(r);
+								}
+							}
+
+							else if(columnType == Types.getDoubleType()){
+								if(((Double)colValue)!=((Double)value)){
+									filteredRows.add(r);
+								}
+							}
+
+							else if(columnType== Types.getFloatType()){
+								if(((Float)colValue)!=((Float)value)){
+									filteredRows.add(r);
+								}
+							}
+							
+							else if (columnType== Types.getDateType()){
+								if(((Date)colValue).compareTo((Date)value)!=0){
+									filteredRows.add(r);
+								}
+							}
+							else{
+								if(((String)colValue).compareTo((String)value)!=0)
+									filteredRows.add(r);
+							}
+							
+						}
+					}
+					
+				}
+			}
+			return new MyOperator(filteredRows);
+		}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			return new MyOperator();
+		}
 	}
 
 	/* (non-Javadoc)
@@ -496,7 +767,12 @@ public class MyTable implements Table {
 
 		String[] colNames=row.getColumnNames();
 		Object[] tmpRowValues=new Object[colNames.length];
-
+		
+		
+		if(tupleID >= rows.size()) throw new NoSuchRowException();
+		
+		if(rows.get(tupleID)==null) throw new NoSuchRowException();
+		
 		//check size of the new rowSchema
 		if(colNames.length!=schema.size()){
 			throw new SchemaMismatchException();
@@ -529,23 +805,15 @@ public class MyTable implements Table {
 				throw new SchemaMismatchException();
 			}
 		}
-
-		//Operator<Column> columns=getAllColumns();
-
-		if(tupleID >= rows.size()) throw new NoSuchRowException();
-		/* rows.get(tupleID)!=null */
+		
+		
+		
 
 		Column col;
 		for(int i=0;i<colNames.length;i++){
 			col=cols.get(colNames[i]);
 			((MyColumn)col).update(tupleID,tmpRowValues[i]);
 		}
-		System.out.println("Updated by id: ");
-		MyHelper.printRow(rows.get(tupleID));
-		System.out.println("to ");
-		MyRow newMyRow=new MyRow(this,tupleID);
-		rows.set(tupleID, newMyRow);
-		MyHelper.printRow(rows.get(tupleID));
 	}
 
 	/* (non-Javadoc)
@@ -592,7 +860,7 @@ public class MyTable implements Table {
 
 		//search the table for the row that is identical to the row to be updated
 		Row r=null;
-		boolean found=false;
+		boolean found=false,updated=false;
 		Object rowCell=null,oldRowCell=null;
 		int i=0;
 		for(;i<rows.size();i++){
@@ -613,46 +881,24 @@ public class MyTable implements Table {
 						}
 					}
 					catch(NoSuchColumnException nsce){
-						//found=false;
 						throw new SchemaMismatchException();
 					}
 				}
-				if(found) break;
+				if(found) {
+					updated=true;
+					
+					Column col;
+					for(int k=0;k<colNames.length;k++){
+						col=cols.get(colNames[k]);
+						((MyColumn)col).update(i,tmpRowValues[k]);
+					}
+				}
 			}
 			
 		}
-
-		if(found){
-			//rows.remove(i); //think about this: if it makes sense to have this "rows" data structure;
-			System.out.println("Updated: ");
-			MyHelper.printRow(oldRow);
-			System.out.println("to");
-			MyHelper.printRow(newRow);
-			
-			Operator<Column> columns=getAllColumns();
-			Column curCol;
-			columns.open();
-			
-			int j=0;//cur col in the row to which the current row should be modified
-			while((curCol=columns.next())!=null){
-				//System.out.println("Modifying to value : "+tmpRowValues[j]);
-				((MyColumn)curCol).update(i,tmpRowValues[j]);
-				//System.out.println("So now I have: ");
-				//MyHelper.printRow(rows.get(i));
-				//System.out.println("My table now is : ----------");
-				//MyHelper.printTable(this);
-				j++;
-			}
-			MyRow newMyRow=new MyRow(this,i);
-			rows.set(i, newMyRow);
-		}
-		else 
-		{
-			System.out.println("I cannot find this row when trying to update:");
-			MyHelper.printRow(oldRow);
-			MyHelper.printTable(this);
+		
+		if(!updated)
 			throw new NoSuchRowException();
-		}
 	}
 
 	public int getSize() {
