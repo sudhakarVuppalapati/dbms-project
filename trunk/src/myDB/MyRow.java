@@ -68,6 +68,7 @@ public class MyRow implements Row {
 		Type t=schema.get(columnName);
 		if(t!=null)
 			return t;
+		
 		throw new NoSuchColumnException();
 	}
 
@@ -89,7 +90,6 @@ public class MyRow implements Row {
 		Type t=c.getColumnType();
 		
 		if(t == Types.getIntegerType()){
-			//return new Integer(((int[])data)[rowNo]);
 			int val=((int[])data)[rowNo];
 			if(val==Integer.MIN_VALUE)
 				return null;
@@ -123,9 +123,5 @@ public class MyRow implements Row {
 		}
 		
 		return ((Object[])data)[rowNo];
-		//return ((Object[])(.getDataArrayAsObject()))[rowNo];
 	}
-	
-	
-	
 }

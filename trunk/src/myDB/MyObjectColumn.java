@@ -48,12 +48,10 @@ public class MyObjectColumn extends MyColumn {
 	
 	@Override
 	public Object getElement(int rowID) throws NoSuchRowException {
-		try{
-			return data.get(rowID);
-		}
-		catch(NullPointerException npe){
+		if(rowID>=curSize || statuses[rowID]==1)
 			throw new NoSuchRowException();
-		}
+		
+		return data.get(rowID);
 	}
 
 	@Override
@@ -83,7 +81,9 @@ public class MyObjectColumn extends MyColumn {
 	
 	@Override
 	public void update(int rowID, Object value) {
+		//System.out.println("Setting the current value "+data.get(rowID)+ " to "+value);
 		data.set(rowID,value);
+		//System.out.println("The new value: "+data.get(rowID));
 		statuses[rowID]=2;
 	}
 
