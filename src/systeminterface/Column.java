@@ -43,6 +43,12 @@ public interface Column {
 	 * (such as Column.getElement or Row.getColumnValue still have to return
 	 * Java nulls)
 	 * 
+	 * MAX_VALUE of each type will be designated to represent a deleted entry,
+	 * so any returned value that is equal to MAX_VALUE of the corresponding
+	 * type will be discarded. The purpose is this is that you will not need to
+	 * go through the process of creating a new array every time a column entry
+	 * is deleted.
+	 * 
 	 * 
 	 * @return Data array of column tuples
 	 */
@@ -52,7 +58,7 @@ public interface Column {
 	 * Used to retrieve a specific element in the column
 	 * 
 	 * @param rowID
-	 *            Row number of element to return (see Table.addRow)
+	 *            Row ID of element to return (see Table.addRow)
 	 * @return String Name
 	 * @throws NoSuchRowException
 	 *             The supplied Row ID does not match a row in the table
