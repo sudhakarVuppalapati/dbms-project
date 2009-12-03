@@ -47,12 +47,13 @@ public class MyFloatColumn extends MyColumn {
 	
 	@Override
 	public Float getElement(int rowID) throws NoSuchRowException {
-		try{
-			return new Float(data[rowID]);
-		}
-		catch(NullPointerException npe){
+		if(rowID>=curSize || statuses[rowID]==1)
 			throw new NoSuchRowException();
-		}
+		
+		if(data[rowID] == Float.MIN_VALUE) 
+			return null;
+		
+		return new Float(data[rowID]);
 	}
 
 	@Override
