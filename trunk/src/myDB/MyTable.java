@@ -460,7 +460,7 @@ public class MyTable implements Table {
 	@Override
 	public Operator<Row> getRows(PredicateTreeNode predicate)
 	throws SchemaMismatchException {
-		
+		/*
 		Operator<Row> op1=null,op2=null;
 		
 		
@@ -729,7 +729,7 @@ public class MyTable implements Table {
 		catch (Exception e) {
 			e.printStackTrace();
 			return new MyOperator();
-		}
+		}*/return null;
 	}
 
 	/* (non-Javadoc)
@@ -806,9 +806,6 @@ public class MyTable implements Table {
 			}
 		}
 		
-		
-		
-
 		Column col;
 		for(int i=0;i<colNames.length;i++){
 			col=cols.get(colNames[i]);
