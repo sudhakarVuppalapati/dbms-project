@@ -134,9 +134,9 @@ public class FirstPhaseTest {
 				// schema
 				ArrayList<Object> inputRowAsList = new ArrayList<Object>(
 						tableList.get(i).schema.size());
-
+				int ml=0;
 				for (int k = 0; k < tableList.get(i).schema.size(); k++) {
-
+					ml=k;
 					try {
 
 						inputRowAsList.add(k, r
@@ -178,6 +178,20 @@ public class FirstPhaseTest {
 				if (!rowMatched) {
 					Helpers.print("Row from table could not be matched",
 							Consts.printType.ERROR);
+					System.out.print("Unable to find row: ");
+					MyHelper.printRow(r);
+					System.out.println("Am incercat sa il caut pana la row: "+ml);
+					try {
+						MyHelper.printTable(myDatabase.getStorageInterface()
+							.getTableByName(tableList.get(i).tableName));
+						for(int rp=0;rp<tableList.get(i).cardinality;rp++)
+							for(int rj=0;rj<tableList.get(i).schema.size();rj++)
+								System.out.println(tableList.get(i).tableContents.get(rj).get(rp)+"\t");
+						
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					return false;
 
 				}
