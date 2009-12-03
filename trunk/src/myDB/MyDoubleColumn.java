@@ -48,12 +48,13 @@ public class MyDoubleColumn extends MyColumn {
 	
 	@Override
 	public Double getElement(int rowID) throws NoSuchRowException {
-		try{
-			return new Double(data[rowID]);
-		}
-		catch(NullPointerException npe){
+		if(rowID>=curSize || statuses[rowID]==1)
 			throw new NoSuchRowException();
-		}
+		
+		if(data[rowID] == Double.MIN_VALUE) 
+			return null;
+		
+		return new Double(data[rowID]);
 	}
 
 	@Override

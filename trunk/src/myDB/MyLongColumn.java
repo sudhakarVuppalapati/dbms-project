@@ -47,12 +47,13 @@ public class MyLongColumn extends MyColumn {
 	
 	@Override
 	public Long getElement(int rowID) throws NoSuchRowException {
-		try{
-			return new Long(data[rowID]);
-		}
-		catch(NullPointerException npe){
+		if(rowID>=curSize || statuses[rowID]==1)
 			throw new NoSuchRowException();
-		}
+		
+		if(data[rowID] == Double.MIN_VALUE) 
+			return null;
+		
+		return new Long(data[rowID]);
 	}
 
 	@Override

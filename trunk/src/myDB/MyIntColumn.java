@@ -47,12 +47,13 @@ public class MyIntColumn extends MyColumn {
 	
 	@Override
 	public Integer getElement(int rowID) throws NoSuchRowException {
-		try{
-			return new Integer(data[rowID]);
-		}
-		catch(NullPointerException npe){
+		if(rowID>=curSize || statuses[rowID]==1)
 			throw new NoSuchRowException();
-		}
+		
+		if(data[rowID] == Integer.MIN_VALUE) 
+			return null;
+		
+		return new Integer(data[rowID]);
 	}
 
 	@Override
