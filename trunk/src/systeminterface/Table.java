@@ -45,7 +45,7 @@ public interface Table {
 	 * 
 	 * @param row
 	 *            New row
-	 * @return int unique tupleID (can be useful for indexing later on)
+	 * @return int A row ID that is unique in for this table (can be useful for indexing later on)
 	 * @throws SchemaMismatchException
 	 *             Schema of supplied row does not match that of table
 	 */
@@ -75,13 +75,13 @@ public interface Table {
 	/**
 	 * Delete matching rows
 	 * 
-	 * @param tupleID
-	 *            Tuple id of row to be deleted
+	 * @param rowID
+	 *            Row ID of row to be deleted
 	 * 
 	 * @throws NoSuchRowException
 	 *             Row does not exist
 	 */
-	public void deleteRow(int tupleID) throws NoSuchRowException;
+	public void deleteRow(int rowID) throws NoSuchRowException;
 
 	/**
 	 * 
@@ -146,10 +146,10 @@ public interface Table {
 
 	/**
 	 * 
-	 * Update a row matching with matching tuple ID using supplied values
+	 * Update a row matching with matching Row ID using supplied values
 	 * 
-	 * @param tupleID
-	 *            ID of tuple to be updated
+	 * @param rowID
+	 *            ID of row to be updated
 	 * @param newRow
 	 *            New row
 	 * @throws SchemaMismatchException
@@ -157,7 +157,7 @@ public interface Table {
 	 * @throws NoSuchRowException
 	 *             Referenced row does not exist
 	 */
-	public void updateRow(int tupleID, Row newRow)
+	public void updateRow(int rowID, Row newRow)
 			throws SchemaMismatchException, NoSuchRowException;
 
 	/**
