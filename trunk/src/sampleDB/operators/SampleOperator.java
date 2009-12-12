@@ -14,7 +14,7 @@ import operator.Operator;
  */
 public class SampleOperator<OUTPUT> implements Operator<OUTPUT> {
 
-	Vector<OUTPUT> operatorContents = new Vector<OUTPUT>();
+	Vector<OUTPUT> operatorContetnts = new Vector<OUTPUT>();
 	Iterator<OUTPUT> it;
 
 	/**
@@ -23,7 +23,7 @@ public class SampleOperator<OUTPUT> implements Operator<OUTPUT> {
 	 */
 	public void add(OUTPUT element) {
 
-		operatorContents.add(element);
+		operatorContetnts.add(element);
 
 	}
 
@@ -47,7 +47,7 @@ public class SampleOperator<OUTPUT> implements Operator<OUTPUT> {
 
 	@Override
 	public void open() {
-		this.it = operatorContents.iterator();
+		this.it = operatorContetnts.iterator();
 
 	}
 

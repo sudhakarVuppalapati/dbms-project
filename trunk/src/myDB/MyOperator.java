@@ -3,8 +3,6 @@ package myDB;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
-
 import operator.Operator;
 
 public class MyOperator<OUTPUT> implements Operator<OUTPUT> {

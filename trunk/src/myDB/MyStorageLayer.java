@@ -19,17 +19,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import metadata.Type;
 import metadata.Types;
-import myDB.MyOwnStorageLayer.TableContent;
 import operator.Operator;
 import systeminterface.Column;
 import systeminterface.Row;
 import systeminterface.StorageLayer;
 import systeminterface.Table;
 import exceptions.NoSuchColumnException;
-import exceptions.NoSuchRowException;
 import exceptions.NoSuchTableException;
 import exceptions.SchemaMismatchException;
 import exceptions.TableAlreadyExistsException;
@@ -42,9 +39,9 @@ import exceptions.TableAlreadyExistsException;
 public class MyStorageLayer implements StorageLayer,Serializable {
 
 	private HashMap<String,Table> tables;
-	
+
 	private static final String DELIM = "/";
-	
+
 	private static final long serialVersionUID = -9021652804266678342L;
 	/**
 	 * Constructor,
@@ -55,13 +52,16 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 
 	@Override
 	public Table createTable(String tableName, Map<String, Type> schema)
-			throws TableAlreadyExistsException {
+	throws TableAlreadyExistsException {
 		if(tables.containsKey(tableName))
 			throw new TableAlreadyExistsException();
-		
+
 		Table tab=new MyTable(tableName,schema);
+
+
+
 		tables.put(tableName,tab);
-		
+
 		return tab;
 	}
 
@@ -89,7 +89,7 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 
 	@Override
 	public Operator<Table> loadTablesFromExtentIntoMainMemory()
-			throws IOException {
+	throws IOException {
 		int i = 0, tmp = 0, tmpTyp = 0, tblSize = 0, colNo = 0, rowNo = 0;
 		String tmpStr = null, tmpTblName = null;
 
@@ -300,7 +300,7 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 								for (i = 0; i < rowNo; i++) {
 									tmpColList.add(new Date(dis.readLong()));	
 								}
-								
+
 								mc.setData(tmpColList, rowNo);
 								continue;
 							}
@@ -336,16 +336,18 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 
 	@Override
 	public void renameTable(String oldName, String newName)
-			throws TableAlreadyExistsException, NoSuchTableException {
-		
+	throws TableAlreadyExistsException, NoSuchTableException {
+
 		Table t=tables.remove(oldName);
-		
+
 		if(t==null)
 			throw new NoSuchTableException();
-		
+
 		if(tables.containsKey(newName))
 			throw new TableAlreadyExistsException();
-		
+
+		((MyTable)t).setTableName(newName);
+
 		tables.put(newName,t);
 	}
 
@@ -369,6 +371,7 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 		int[] ints = null;
 		float[] floats = null;
 		long[] longs = null;
+		Object[] objects = null;
 
 		File[] file = null;
 		FileOutputStream fos = null; 
@@ -432,51 +435,65 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 
 						/** Iterate over the rows, write back to storage
 						 * device if the data cell is not marked as deleted */
-						if(tmpType == Types.getLongType()) {
-							for (i = 0; i < mc.getRowCount(); i++) {
-								obj = mc.getElement(i);
-								if ((Long)obj != Long.MAX_VALUE) {
-									data.add(obj);
-								}	
-							}
-							continue;
-						}
-						if(tmpType == Types.getDoubleType()) {
-							for (i = 0; i < mc.getRowCount(); i++) {
-								obj = mc.getElement(i);
-								if ((Double)obj != Double.MAX_VALUE) {
-									data.add(obj);
-								}	
-							}
-							continue;
-						}
 						if(tmpType == Types.getIntegerType()) {
+							ints = (int[])mc.getDataArrayAsObject();
+							/** Iterate over the rows, write back to storage
+							 * device if the data cell is not marked as deleted */									
 							for (i = 0; i < mc.getRowCount(); i++) {
-								obj = mc.getElement(i);
-								if ((Integer)obj != Integer.MAX_VALUE) {
-									data.add(obj);
+								if (ints[i] != Integer.MAX_VALUE) {
+									data.add(ints[i]);
 								}	
-							}
-							continue;
-						}
-						if(tmpType == Types.getFloatType()) {
-							for (i = 0; i < mc.getRowCount(); i++) {
-								obj = mc.getElement(i);
-								if ((Float)obj != Float.MAX_VALUE) {
-									data.add(obj);
-								}	
-							}
-							continue;
-						}
-						
-						/** If the column is of object type, iterate over rows
-						 * and write elements which don't have MyNull value */
-						for (i = 0; i < mc.getRowCount(); i++) {
-							obj = mc.getElement(i);
-							if (obj != MyNull.NULLOBJ) {
-								data.add(obj);
 							}	
+							continue;
 						}
+
+						if(tmpType == Types.getLongType()){
+							longs = (long[])mc.getDataArrayAsObject();
+							for (i = 0; i < mc.getRowCount(); i++) {
+								if (longs[i] != Long.MAX_VALUE) {
+									data.add(longs[i]);
+								}	
+							}	
+							continue;
+						}
+
+						if(tmpType == Types.getDoubleType()){
+							doubles = (double[])mc.getDataArrayAsObject();
+							for (i = 0; i < mc.getRowCount(); i++) {
+								if (doubles[i] != Double.MAX_VALUE) {
+									data.add(doubles[i]);
+								}	
+							}	
+							continue;
+						}
+
+						if(tmpType == Types.getFloatType()){
+							floats = (float[])mc.getDataArrayAsObject();
+							for (i = 0; i < mc.getRowCount(); i++) {
+								if (floats[i] != Float.MAX_VALUE) {
+									data.add(floats[i]);
+								}	
+							}									
+							continue;
+						}
+
+						if(tmpType == Types.getDateType()) {							
+							objects = (Object[])mc.getDataArrayAsObject();
+							for (i = 0; i < mc.getRowCount(); i++) {
+								if (objects[i] != MyNull.NULLOBJ) {
+									data.add(((Date)objects[i]).getTime());
+								}	
+							}	
+							continue;
+						}
+
+						objects = (Object[])mc.getDataArrayAsObject();
+						for (i = 0; i < mc.getRowCount(); i++) {
+							if (objects[i] != MyNull.NULLOBJ) {
+								data.add(objects[i].toString());
+							}	
+						}	
+
 					}
 					columns.close();
 					oos.writeObject(new TableContent(tmpCol, tmpRow, data.toArray()));
@@ -550,20 +567,20 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 							continue;
 						}
 
-						if(tmpType == Types.getDateType()){
+						if(tmpType == Types.getDateType()) {							
+							objects = (Object[])mc.getDataArrayAsObject();
 							for (i = 0; i < mc.getRowCount(); i++) {
-								obj = mc.getElement(i);
-								if (obj != MyNull.NULLOBJ) {
-									dos.writeLong(((Date)obj).getTime());
-								}
-							}
+								if (objects[i] != MyNull.NULLOBJ) {
+									dos.writeLong(((Date)objects[i]).getTime());
+								}	
+							}	
 							continue;
 						}
 
+						objects = (Object[])mc.getDataArrayAsObject();
 						for (i = 0; i < mc.getRowCount(); i++) {
-							obj = mc.getElement(i);
-							if (obj != MyNull.NULLOBJ) {
-								dos.writeUTF(obj.toString());
+							if (objects[i] != MyNull.NULLOBJ) {
+								dos.writeUTF(objects[i].toString());
 							}	
 						}	
 					}
@@ -576,9 +593,6 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 			}
 		}
 		catch (SchemaMismatchException sme) {
-			throw new IOException();
-		}
-		catch (NoSuchRowException nsre) {
 			throw new IOException();
 		}
 		table.close();

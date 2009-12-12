@@ -4,10 +4,8 @@
 package myDB;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,12 +14,11 @@ import metadata.Type;
 import metadata.Types;
 import operator.Operator;
 import exceptions.ColumnAlreadyExistsException;
-import exceptions.IsLeafException;
+
 import exceptions.NoSuchColumnException;
 import exceptions.NoSuchRowException;
-import exceptions.NotLeafNodeException;
+
 import exceptions.SchemaMismatchException;
-import firstmilestone.MyHelper;
 import systeminterface.Column;
 import systeminterface.PersistentExtent;
 import systeminterface.PredicateTreeNode;
@@ -58,7 +55,6 @@ public class MyTable implements Table {
 		Column col;
 		for(String colName:colNames){
 			colType=schema.get(colName);
-
 			if(colType == Types.getIntegerType()){
 				col=new MyIntColumn(colName,colType);
 			}
@@ -340,9 +336,6 @@ public class MyTable implements Table {
 				}
 				if(found) {
 					deleted=true;
-					//deleteIds.add(new Integer(i));
-					//System.out.println("Deleted: ");
-					//MyHelper.printRow(rows.get(i));
 					rows.set(i, null); //we finally decided to do it this way but thik about it
 					
 					/*Operator<Column> columns=getAllColumns();
@@ -460,7 +453,6 @@ public class MyTable implements Table {
 	@Override
 	public Operator<Row> getRows(PredicateTreeNode predicate)
 	throws SchemaMismatchException {
-		/*
 		Operator<Row> op1=null,op2=null;
 		
 		
@@ -502,6 +494,8 @@ public class MyTable implements Table {
 			}
 			else{
 				List resultList=new ArrayList();
+				op1.open();
+				op2.open();
 				while((r=op1.next())!=null)
 					while((r1=op2.next())!=null)
 						if(r==r1) resultList.add(r1);
@@ -520,6 +514,7 @@ public class MyTable implements Table {
 				String attr=predicate.getColumnName();
 				if(r!=null){
 					colValue=r.getColumnValue(attr);
+					columnType=r.getColumnType(attr);
 					
 					if(co==ComparisonOperator.EQ){
 						if(colValue==null && value==null) filteredRows.add(r);
@@ -556,10 +551,9 @@ public class MyTable implements Table {
 									filteredRows.add(r);
 								}
 							}
-							else{
-								if(((String)colValue).compareTo((String)value)>=0)
+							else if(((String)colValue).compareTo((String)value)>=0)
 									filteredRows.add(r);
-							}
+							
 							
 						}
 					}
@@ -729,7 +723,7 @@ public class MyTable implements Table {
 		catch (Exception e) {
 			e.printStackTrace();
 			return new MyOperator();
-		}*/return null;
+		}
 	}
 
 	/* (non-Javadoc)
@@ -739,6 +733,10 @@ public class MyTable implements Table {
 	public String getTableName() {
 		return name;
 	}
+	
+	public void setTableName(String newName){
+		name=newName;
+	}
 
 	/* (non-Javadoc)
 	 * @see systeminterface.Table#renameColumn(java.lang.String, java.lang.String)
@@ -746,11 +744,13 @@ public class MyTable implements Table {
 	@Override
 	public void renameColumn(String oldColumnName, String newColumnName)
 	throws ColumnAlreadyExistsException, NoSuchColumnException {
-
 		Column col=cols.remove(oldColumnName);
+		
 		if(col!=null)
 			if(!cols.containsKey(newColumnName)){
+				col.setColumnName(newColumnName);
 				cols.put(newColumnName, col);
+				return;
 			}
 			else throw new ColumnAlreadyExistsException();
 

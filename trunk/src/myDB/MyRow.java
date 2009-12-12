@@ -3,8 +3,6 @@
  */
 package myDB;
 
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 import metadata.Type;
@@ -13,7 +11,6 @@ import exceptions.NoSuchColumnException;
 import systeminterface.Column;
 import systeminterface.Row;
 import systeminterface.Table;
-import util.Pair;
 
 /**
  * @author razvan
@@ -30,7 +27,7 @@ public class MyRow implements Row {
 	private int rowNo;
 	
 	
-	private byte status; /* 0-unchanged, 1-deleted, 2-updated, 3-newly inserted*/
+	//private byte status; /* 0-unchanged, 1-deleted, 2-updated, 3-newly inserted*/
 	
 	public MyRow(Table table,int rowNumber){
 		this.table=(MyTable)table;
