@@ -13,12 +13,12 @@ package metadata;
 public class Types {
 
 	private enum FixedType implements Type {
-		FLOAT(java.lang.Float.class, -1, "Float"), 
-		DOUBLE(java.lang.Double.class, -1, "Double"), 
-		INTEGER(java.lang.Integer.class, -1, "Integer"), 
-		LONG(java.lang.Long.class, -1, "Long"), 
-		VARCHAR(java.lang.String.class, -1, "Varchar"), 
-		DATE(java.util.Date.class, -1, "Date");
+		FLOAT(java.lang.Float.class, -1, "Float"), DOUBLE(
+				java.lang.Double.class, -1, "Double"), INTEGER(
+				java.lang.Integer.class, -1, "Integer"), LONG(
+				java.lang.Long.class, -1, "Long"), VARCHAR(
+				java.lang.String.class, -1, "Varchar"), DATE(
+				java.util.Date.class, -1, "Date");
 
 		private FixedType(Class<?> clazz, int length, String name) {
 			this.clazz = clazz;

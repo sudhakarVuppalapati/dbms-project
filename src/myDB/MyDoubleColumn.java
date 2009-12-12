@@ -48,7 +48,7 @@ public class MyDoubleColumn extends MyColumn {
 	
 	@Override
 	public Double getElement(int rowID) throws NoSuchRowException {
-		if(rowID>=curSize || statuses[rowID]==1)
+		if(rowID>= curSize || statuses[rowID]==1)
 			throw new NoSuchRowException();
 		
 		if(data[rowID] == Double.MIN_VALUE) 
@@ -80,7 +80,6 @@ public class MyDoubleColumn extends MyColumn {
 		}
 		
 		//add the new value
-		//System.out.println("New data:"+newData);
 		data[curSize]=((Double)newData).doubleValue();
 		statuses[curSize++]=3;
 	}

@@ -79,7 +79,6 @@ public class MyIntColumn extends MyColumn {
 		}
 		
 		//add the new value
-		//System.out.println("New data:"+newData);
 		data[curSize]=((Integer)newData).intValue();
 		statuses[curSize++]=3;
 	}

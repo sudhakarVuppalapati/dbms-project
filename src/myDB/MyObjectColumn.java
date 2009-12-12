@@ -2,7 +2,6 @@ package myDB;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import metadata.Type;
 import exceptions.NoSuchRowException;
 
@@ -81,9 +80,7 @@ public class MyObjectColumn extends MyColumn {
 	
 	@Override
 	public void update(int rowID, Object value) {
-		//System.out.println("Setting the current value "+data.get(rowID)+ " to "+value);
 		data.set(rowID,value);
-		//System.out.println("The new value: "+data.get(rowID));
 		statuses[rowID]=2;
 	}
 
