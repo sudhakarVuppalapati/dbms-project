@@ -9,20 +9,20 @@ import exceptions.NoSuchRowException;
 public class MyIntColumn extends MyColumn {
 	
 	private int[] data;
-	private byte[] statuses;
+	//private byte[] statuses;
 	private int curSize;
 	
 	public MyIntColumn(String name, Type type) {
 		super(name,type);
 		data= new int[this.defaulInitialCapacity];
-		statuses=new byte[this.defaulInitialCapacity];
+		//statuses=new byte[this.defaulInitialCapacity];
 		curSize=0;
 	}
 	
 	public MyIntColumn(String name, Type type,int initialCapacity) {
 		super(name,type);
 		data = new int[Math.round(initialCapacity*FACTOR)];
-		statuses=new byte[Math.round(initialCapacity*FACTOR)];
+		//statuses=new byte[Math.round(initialCapacity*FACTOR)];
 		curSize=0;
 	}
 	
@@ -30,7 +30,7 @@ public class MyIntColumn extends MyColumn {
 		super(name,type);
 		this.data=data;
 		curSize=data.length;
-		statuses=new byte[curSize];
+		//statuses=new byte[curSize];
 	}
 	
 	@Override
@@ -41,13 +41,13 @@ public class MyIntColumn extends MyColumn {
 	@Override
 	public void setData(Object data,int curSize){
 		this.data=(int[])data;
-		statuses=new byte[this.data.length];
+		//statuses=new byte[this.data.length];
 		this.curSize=curSize;
 	}
 	
 	@Override
 	public Integer getElement(int rowID) throws NoSuchRowException {
-		if(rowID>=curSize || statuses[rowID]==1)
+		if(rowID>=curSize /*|| statuses[rowID]==1*/)
 			throw new NoSuchRowException();
 		
 		if(data[rowID] == Integer.MIN_VALUE) 
@@ -72,20 +72,21 @@ public class MyIntColumn extends MyColumn {
 			data1=null; // try to force garbage collection
 			
 			//the same for statuses
-			byte[] statuses1=new byte[Math.round(FACTOR*curSize)];
-			System.arraycopy(statuses, 0, statuses1, 0, curSize);
-			statuses=statuses1;
-			statuses1=null;
+			//byte[] statuses1=new byte[Math.round(FACTOR*curSize)];
+			//System.arraycopy(statuses, 0, statuses1, 0, curSize);
+			//statuses=statuses1;
+			//statuses1=null;
 		}
 		
 		//add the new value
 		data[curSize]=((Integer)newData).intValue();
-		statuses[curSize++]=3;
+		curSize++;
+		//statuses[curSize++]=3;
 	}
 	
 	@Override
 	public void remove(int rowID) {
-		statuses[rowID]=1;
+		//statuses[rowID]=1;
 		data[rowID]=Integer.MAX_VALUE;
 	}
 	
@@ -95,6 +96,6 @@ public class MyIntColumn extends MyColumn {
 			data[rowID]=Integer.MIN_VALUE;
 		else 
 			data[rowID]=((Integer)value).intValue();
-		statuses[rowID]=2;
+		//statuses[rowID]=2;
 	}
 }
