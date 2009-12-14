@@ -8,6 +8,7 @@ import java.util.Random;
 
 import metadata.Type;
 import metadata.Types;
+import myDB.MyHelper;
 import operator.Operator;
 import sampleDB.ColumnInfo;
 import sampleDB.SampleRow;
@@ -47,7 +48,7 @@ public class FirstPhaseTest {
 		// actual table data
 		public final ArrayList<ArrayList<Object>> tableContents = new ArrayList<ArrayList<Object>>();
 
-		public String tableName;
+		public String tableName; 
 
 		// some more random data with same schema. source for new rows when
 		// adding/updating
@@ -61,7 +62,7 @@ public class FirstPhaseTest {
 	private static final Database myDatabase = Database.getInstance();
 
 	/* Random number generator -- add seed when repeatable experiments wanted */
-	private static final Random rand = new Random();
+	private static final Random rand = new Random(Consts.seed);
 
 	/* own local rep of tables */
 	private static final ArrayList<TestTable> tableList = new ArrayList<TestTable>();
@@ -72,9 +73,12 @@ public class FirstPhaseTest {
 		/*
 		 * Does DB contain same tables I have?
 		 */
+		long start=System.currentTimeMillis();
 		if (!checkTables()) {
 			return false;
 		}
+		long stop=System.currentTimeMillis();
+		System.out.println("\t check tables: "+(stop-start));
 
 		/******************************************************/
 
@@ -82,9 +86,12 @@ public class FirstPhaseTest {
 		/*
 		 * Check Table Schemas
 		 */
+		start=System.currentTimeMillis();
 		if (!checkTableSchemas()) {
 			return false;
 		}
+		stop=System.currentTimeMillis();
+		System.out.println("\t check table schemas: "+(stop-start));
 
 		/******************************************************/
 
@@ -92,10 +99,12 @@ public class FirstPhaseTest {
 		/*
 		 * Check table contents & cardinalities
 		 */
+		start=System.currentTimeMillis();
 		if (!checkTableContents()) {
 			return false;
 		}
-
+		stop=System.currentTimeMillis();
+		System.out.println("\t check table contents: "+(stop-start));
 		/******************************************************/
 
 		return true;
@@ -108,24 +117,33 @@ public class FirstPhaseTest {
 	 * @return true/false
 	 */
 	private static boolean checkTableContents() {
-
+		long start,stop;
 		int i = 0;
 		for (i = 0; i < currentNumberOfTables; i++) {
 
 			Operator<Row> rowOp = null;
-
+			
 			try {
+				
+				start=System.currentTimeMillis();
 				rowOp = (Operator<Row>) myDatabase.getStorageInterface()
 						.getTableByName(tableList.get(i).tableName).getRows();
-
+				stop=System.currentTimeMillis();
+				System.out.println("\t\t getting the rows for table "+i+": "+(stop-start));
+				
 			} catch (NoSuchTableException e) {
 				e.printStackTrace();
 			}
-
+			
+			start=System.currentTimeMillis();
 			rowOp.open();
-
+			stop=System.currentTimeMillis();
+			System.out.println("\t\t openning the rows for table "+i+": "+(stop-start));
+			
 			Row r = null;
 			int j = 0;
+			
+			start=System.currentTimeMillis();
 			for (j = 0; (r = rowOp.next()) != null; j++) {
 
 				/* Let us see if row is in our local representation on the table */
@@ -134,9 +152,9 @@ public class FirstPhaseTest {
 				// schema
 				ArrayList<Object> inputRowAsList = new ArrayList<Object>(
 						tableList.get(i).schema.size());
-				int ml=0;
+
 				for (int k = 0; k < tableList.get(i).schema.size(); k++) {
-					ml=k;
+
 					try {
 
 						inputRowAsList.add(k, r
@@ -149,8 +167,9 @@ public class FirstPhaseTest {
 
 				// now supplied row in a list, let us do a table scan.
 				boolean rowMatched = false;
+				int ml=0;
 				for (int k = 0; k < tableList.get(i).cardinality; k++) {
-
+					ml=k;
 					int l = 0;
 					for (l = 0; l < tableList.get(i).schema.size(); l++) {
 
@@ -172,33 +191,30 @@ public class FirstPhaseTest {
 						break;
 
 					}
-
+					
 				}
 
 				if (!rowMatched) {
 					Helpers.print("Row from table could not be matched",
 							Consts.printType.ERROR);
-					System.out.print("Unable to find row: ");
-					MyHelper.printRow(r);
-					System.out.println("Am incercat sa il caut pana la row: "+ml);
-					try {
+					//MyHelper.printArr(inputRowAsList.toArray());
+					/*try {
 						MyHelper.printTable(myDatabase.getStorageInterface()
 							.getTableByName(tableList.get(i).tableName));
-						for(int rp=0;rp<tableList.get(i).cardinality;rp++)
-							for(int rj=0;rj<tableList.get(i).schema.size();rj++)
-								System.out.println(tableList.get(i).tableContents.get(rj).get(rp)+"\t");
-						
-					} catch (Exception e) {
+					} catch (NoSuchTableException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
-					}
+					}*/
 					return false;
 
 				}
 
 			}
 			rowOp.close();
-
+			
+			stop=System.currentTimeMillis();
+			System.out.println("\t\t going through the rows for table: "+i+": "+(stop-start));
+			
 			// check for matching cardinalities
 			if (j != tableList.get(i).cardinality) {
 				Helpers.print("Cardinality mismatch", Consts.printType.ERROR);
@@ -858,7 +874,7 @@ public class FirstPhaseTest {
 		 * Init DB
 		 */
 
-		myDatabase.startSystem();
+		//myDatabase.startSystem();
 
 		/******************************************************/
 
@@ -866,7 +882,10 @@ public class FirstPhaseTest {
 		/*
 		 * Table Creation
 		 */
+		long start=System.currentTimeMillis();
 		createTablesInDB();
+		long stop=System.currentTimeMillis();
+		System.out.println("createTablesInDB: "+(stop-start));
 
 		/******************************************************/
 
@@ -874,41 +893,55 @@ public class FirstPhaseTest {
 		/*
 		 * Fill tables with all generated data Should do some timing Here
 		 */
+		start=System.currentTimeMillis();
 		fillDBTables();
+		stop=System.currentTimeMillis();
+		System.out.println("fillDBTables : "+(stop-start));
 		/******************************************************/
 
 		/******************************************************/
 		/*
 		 * test for correctness
 		 */
+		start=System.currentTimeMillis();
 		if (checkCorrectness()) {
 
 			Helpers.print("All correct", Consts.printType.INFO);
 		}
+		stop=System.currentTimeMillis();
+		System.out.println("checkCorrectness : "+(stop-start));
 		/******************************************************/
 
 		/******************************************************/
 		/*
 		 * Perform some delete/update
 		 */
+		start=System.currentTimeMillis();
 		manipulateContents(rand);
+		stop=System.currentTimeMillis();
+		System.out.println("manipulateContents : "+(stop-start));
 		/******************************************************/
 
 		/******************************************************/
 		/*
 		 * test for correctness
 		 */
+		start=System.currentTimeMillis();
 		if (checkCorrectness()) {
-
 			Helpers.print("All correct", Consts.printType.INFO);
 		}
+		stop=System.currentTimeMillis();
+		System.out.println("checkCorrectness 2nd time : "+(stop-start));
 		/******************************************************/
 
 		/******************************************************/
 		/*
 		 * Manipulate tables
 		 */
+		start=System.currentTimeMillis();
 		manipulateTables(rand);
+		stop=System.currentTimeMillis();
+		System.out.println("manipulateTables: "+(stop-start));
 		/******************************************************/
 
 		/******************************************************/
@@ -922,17 +955,20 @@ public class FirstPhaseTest {
 		/*
 		 * test for correctness
 		 */
+		start=System.currentTimeMillis();
 		if (checkCorrectness()) {
 
 			Helpers.print("All correct", Consts.printType.INFO);
 		}
+		stop=System.currentTimeMillis();
+		System.out.println("check correctness 3rd time: "+(stop-start));
 		/******************************************************/
 
 		/******************************************************/
 		/*
 		 * Database out
 		 */
-		myDatabase.shutdownSystem();
+		//myDatabase.shutdownSystem();
 
 		/******************************************************/
 		long newTime = System.currentTimeMillis();
