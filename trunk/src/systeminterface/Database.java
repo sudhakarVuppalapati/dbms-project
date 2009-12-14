@@ -49,7 +49,6 @@ public final class Database {
 			storageLayer.writeTablesFromMainMemoryBackToExtent(this
 					.getStorageInterface().getTables());
 		} catch (IOException ex) {
-			ex.printStackTrace();
 		}
 	}
 
@@ -61,7 +60,6 @@ public final class Database {
 		try {
 			storageLayer.loadTablesFromExtentIntoMainMemory();
 		} catch (IOException ex) {
-			ex.printStackTrace();
 		}
 	}
 

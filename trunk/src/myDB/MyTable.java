@@ -42,6 +42,14 @@ public class MyTable implements Table {
 	private List<Row> rows;
 	private Map<String, Column> cols;
 
+	
+	/*
+	 * temporary vars used all over the class
+	 */
+	String[] colNames;
+	Object[] tmpRowValues;
+	String[] schemaColNames;
+	int noRows=0;
 
 	public MyTable(String tableName, Map<String,Type> tableSchema){
 		name=tableName;
@@ -192,16 +200,21 @@ public class MyTable implements Table {
 	 */
 	@Override
 	public int addRow(Row row) throws SchemaMismatchException {
-		String[] colNames=row.getColumnNames();
-		Object[] tmpRowValues=new Object[colNames.length];
+		colNames=row.getColumnNames();
+		tmpRowValues=new Object[colNames.length];
+		
+		
 
-		/*//check size of the new rowSchema
+		//check size of the new rowSchema
 		if(colNames.length!=schema.size()){
 			throw new SchemaMismatchException();
 		}
 
+		//declare this auxiliary var if the sizes of the schemas are equal
+		boolean existingCols[]=new boolean[colNames.length];
+		
 		//check if the name of the columns are the same
-		//String[] schemaColNames=(String[])schema.keySet().toArray(new String[0]);
+		/*schemaColNames=(String[])schema.keySet().toArray(new String[0]);
 		boolean found=false;
 		for(int i=0;i<schemaColNames.length;i++){
 			for(int j=0;j<colNames.length;j++)
@@ -212,46 +225,38 @@ public class MyTable implements Table {
 			if(!found){
 				throw new SchemaMismatchException(); //the schema lacks at least one column name
 			}
-		}
+		}*/
 		
-		for(int i=0; i< colNames.length;i++)
-			if(!schema.containsKey(colNames[i])) throw new SchemaMismatchException();
+		for(int i=0; i< colNames.length;i++){
+			if(!schema.containsKey(colNames[i]) || existingCols[i]) throw new SchemaMismatchException();
+			existingCols[i]=true;
+		}
 		
 		
 		//check the actual types
+		try{
 		for(int j=0;j<colNames.length;j++){
-			try{
 				if(!row.getColumnType(colNames[j]).equals(schema.get(colNames[j]))){
 					throw new SchemaMismatchException();
 				}
 				tmpRowValues[j]=row.getColumnValue(colNames[j]);
-			}
-			catch(NoSuchColumnException nsce){
-				throw new SchemaMismatchException();
-			}
-		}*/
-		
-		try{
-			for(int j=0;j<colNames.length;j++)
-				tmpRowValues[j]=row.getColumnValue(colNames[j]);
-		
 			
-			Row newRow=new MyRow(this,rows.size());
-	
-			//add the row to the rows and then add to each column its correspondent value
-			rows.add(newRow);
-			
-			MyColumn curCol;
-			for(int i=0;i<colNames.length;i++){
-				curCol=((MyColumn)cols.get(colNames[i]));
-				if(curCol!=null) curCol.add(tmpRowValues[i]);
-			}
 		}
-		catch(Exception nsce){
+		}
+		catch(NoSuchColumnException nsce){
 			throw new SchemaMismatchException();
 		}
 		
-		return rows.size()-1;
+		rows.add(row);	
+		MyColumn curCol;
+		for(int i=0;i<colNames.length;i++){
+			curCol=((MyColumn)cols.get(colNames[i]));
+			/*if(curCol!=null)*/ curCol.add(tmpRowValues[i]);
+		}
+		noRows++;
+		
+		//return rows.size()-1;
+		return noRows-1;
 	}
 
 	/* (non-Javadoc)
@@ -270,16 +275,16 @@ public class MyTable implements Table {
 	public void deleteRow(Row row) throws NoSuchRowException,
 	SchemaMismatchException {
 
-		String[] colNames=row.getColumnNames();
-		Object[] tmpRowValues=new Object[colNames.length];
-
+		colNames=row.getColumnNames();
+		tmpRowValues=new Object[colNames.length];
+		
 		//check size of the new rowSchema
 		if(colNames.length!=schema.size()){
 			throw new SchemaMismatchException();
 		}
 
 		//check if the name of the columns are the same
-		String[] schemaColNames=(String[])schema.keySet().toArray(new String[0]);
+		schemaColNames=(String[])schema.keySet().toArray(new String[0]);
 		boolean col_found=false;
 		for(int i=0;i<schemaColNames.length;i++){
 			for(int j=0;j<colNames.length;j++)
@@ -336,7 +341,7 @@ public class MyTable implements Table {
 				}
 				if(found) {
 					deleted=true;
-					rows.set(i, null); //we finally decided to do it this way but thik about it
+					rows.set(i, null); //we finally decided to do it this way but think about it
 					
 					/*Operator<Column> columns=getAllColumns();
 					columns.open();
@@ -384,12 +389,6 @@ public class MyTable implements Table {
 		}
 		
 		throw new NoSuchColumnException();
-		
-		/*if(!cols.containsKey(columnName)){
-			throw new NoSuchColumnException();
-		}
-		schema.remove(columnName);
-		cols.remove(columnName);*/
 	}
 
 	/* (non-Javadoc)
@@ -454,14 +453,12 @@ public class MyTable implements Table {
 	public Operator<Row> getRows(PredicateTreeNode predicate)
 	throws SchemaMismatchException {
 		Operator<Row> op1=null,op2=null;
-		
-		
+
 		LogicalOperator lp=null;
 		ComparisonOperator co;
 		Row r,r1;
 		try{
 		if(!predicate.isLeaf()){
-			
 			PredicateTreeNode leftChild=predicate.getLeftChild();
 			PredicateTreeNode rightChild=predicate.getRightChild();
 			
@@ -765,10 +762,9 @@ public class MyTable implements Table {
 	public void updateRow(int tupleID, Row row)
 	throws SchemaMismatchException, NoSuchRowException {
 
-		String[] colNames=row.getColumnNames();
-		Object[] tmpRowValues=new Object[colNames.length];
-		
-		
+		colNames=row.getColumnNames();
+		tmpRowValues=new Object[colNames.length];
+
 		if(tupleID >= rows.size()) throw new NoSuchRowException();
 		
 		if(rows.get(tupleID)==null) throw new NoSuchRowException();
@@ -779,7 +775,7 @@ public class MyTable implements Table {
 		}
 
 		//check if the name of the columns are the same
-		String[] schemaColNames=(String[])schema.keySet().toArray(new String[0]);
+		schemaColNames=(String[])schema.keySet().toArray(new String[0]);
 		boolean found=false;
 		for(int i=0;i<schemaColNames.length;i++){
 			for(int j=0;j<colNames.length;j++)
@@ -811,6 +807,7 @@ public class MyTable implements Table {
 			col=cols.get(colNames[i]);
 			((MyColumn)col).update(tupleID,tmpRowValues[i]);
 		}
+		rows.set(tupleID,row);
 	}
 
 	/* (non-Javadoc)
@@ -819,8 +816,8 @@ public class MyTable implements Table {
 	@Override
 	public void updateRow(Row oldRow, Row newRow)
 	throws SchemaMismatchException, NoSuchRowException {
-		String[] colNames=newRow.getColumnNames();
-		Object[] tmpRowValues=new Object[colNames.length];
+		colNames=newRow.getColumnNames();
+		tmpRowValues=new Object[colNames.length];
 		
 		//check size of the new rowSchema
 		if(colNames.length!=schema.size()){
@@ -828,7 +825,7 @@ public class MyTable implements Table {
 		}
 
 		//check if the name of the columns are the same
-		String[] schemaColNames=(String[])schema.keySet().toArray(new String[0]);
+		schemaColNames=(String[])schema.keySet().toArray(new String[0]);
 		boolean col_found=false;
 		for(int i=0;i<schemaColNames.length;i++){
 			for(int j=0;j<colNames.length;j++)
@@ -859,6 +856,8 @@ public class MyTable implements Table {
 		Row r=null;
 		boolean found=false,updated=false;
 		Object rowCell=null,oldRowCell=null;
+		Column col=null;
+		Type t=null;
 		int i=0;
 		for(;i<rows.size();i++){
 			r=rows.get(i);
@@ -867,12 +866,30 @@ public class MyTable implements Table {
 				for(int j=0;j<colNames.length;j++){
 					try{
 						rowCell=r.getColumnValue(colNames[j]);
-						oldRowCell=oldRow.getColumnValue(colNames[j]);
+						col=cols.get(colNames[j]);
+						t=col.getColumnType();
+						if(t==Types.getFloatType()){
+							oldRowCell=((float[])(col.getDataArrayAsObject()))[i];
+						}
+						else if(t==Types.getDoubleType()){
+							oldRowCell=((double[])(col.getDataArrayAsObject()))[i];
+						}
+						else if(t==Types.getLongType()){
+							oldRowCell=((long[])(col.getDataArrayAsObject()))[i];
+						}
+						else if(t==Types.getIntegerType()){
+							oldRowCell=((int[])(col.getDataArrayAsObject()))[i];
+						}
+						else oldRowCell=((Object[])(col.getDataArrayAsObject()))[i];
+						
+						
+						//oldRowCell=oldRow.getColumnValue(colNames[j]);
 						if(rowCell==null && oldRowCell!=null){
 							found=false;
 							break;
 						}
 						if(!rowCell.equals(oldRowCell)){
+							System.out.println("mismatch: " + rowCell + " " + oldRowCell);
 							found=false;
 							break;
 						}
@@ -883,19 +900,21 @@ public class MyTable implements Table {
 				}
 				if(found) {
 					updated=true;
-					
-					Column col;
+					//Column col;
 					for(int k=0;k<colNames.length;k++){
 						col=cols.get(colNames[k]);
 						((MyColumn)col).update(i,tmpRowValues[k]);
 					}
+					rows.set(i, newRow);
 				}
 			}
 			
 		}
 		
+		
 		if(!updated)
 			throw new NoSuchRowException();
+		
 	}
 
 	public int getSize() {
