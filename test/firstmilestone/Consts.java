@@ -10,8 +10,8 @@ package firstmilestone;
 public class Consts {
 
 	/* set what kind of printing you want */
-	protected static final boolean infoMsg = true;
-	protected static final boolean warnMsg = true;
+	protected static final boolean infoMsg = false;
+	protected static final boolean warnMsg = false;
 	protected static final boolean errorMsg = true;
 
 	/* Rand seed, to get repeatable experiments */
@@ -37,11 +37,11 @@ public class Consts {
 	/* Params for rand Date -- see getRandDate() */
 
 	/* Table cardinality */
-	protected static final int minCardinality = 10;
-	protected static final int maxCardinality = 50;
+	protected static final int minCardinality = 100;
+	protected static final int maxCardinality = 5000;
 
 	/* Number of tables to create */
-	protected static final int numTables = 100;
+	protected static final int numTables = 10;
 
 	protected enum printType {
 
