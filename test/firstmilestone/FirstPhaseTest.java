@@ -8,7 +8,6 @@ import java.util.Random;
 
 import metadata.Type;
 import metadata.Types;
-import myDB.MyHelper;
 import operator.Operator;
 import sampleDB.ColumnInfo;
 import sampleDB.SampleRow;
