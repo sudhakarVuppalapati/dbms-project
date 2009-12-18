@@ -61,6 +61,8 @@ public class MyObjectColumn extends MyColumn {
 	@Override
 	public void add(Object newObject) {
 		data.add(newObject);
+		//Added by Tuan
+		curSize++;
 		
 		//if(curSize == statuses.length){
 			//the same for statuses
