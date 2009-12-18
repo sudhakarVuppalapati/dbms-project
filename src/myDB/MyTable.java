@@ -251,7 +251,7 @@ public class MyTable implements Table {
 		MyColumn curCol;
 		for(int i=0;i<colNames.length;i++){
 			curCol=((MyColumn)cols.get(colNames[i]));
-			/*if(curCol!=null)*/ curCol.add(tmpRowValues[i]);
+			/* if(curCol!=null) */ curCol.add(tmpRowValues[i]);
 		}
 		noRows++;
 		
@@ -866,30 +866,30 @@ public class MyTable implements Table {
 				for(int j=0;j<colNames.length;j++){
 					try{
 						rowCell=r.getColumnValue(colNames[j]);
-						col=cols.get(colNames[j]);
+						/*col=cols.get(colNames[j]);
 						t=col.getColumnType();
+						
 						if(t==Types.getFloatType()){
-							oldRowCell=((float[])(col.getDataArrayAsObject()))[i];
+							rowCell=((float[])(col.getDataArrayAsObject()))[i];
 						}
 						else if(t==Types.getDoubleType()){
-							oldRowCell=((double[])(col.getDataArrayAsObject()))[i];
+							rowCell=((double[])(col.getDataArrayAsObject()))[i];
 						}
 						else if(t==Types.getLongType()){
-							oldRowCell=((long[])(col.getDataArrayAsObject()))[i];
+							rowCell=((long[])(col.getDataArrayAsObject()))[i];
 						}
 						else if(t==Types.getIntegerType()){
-							oldRowCell=((int[])(col.getDataArrayAsObject()))[i];
+							rowCell=((int[])(col.getDataArrayAsObject()))[i];
 						}
-						else oldRowCell=((Object[])(col.getDataArrayAsObject()))[i];
+						else rowCell=((Object[])(col.getDataArrayAsObject()))[i];*/
 						
 						
-						//oldRowCell=oldRow.getColumnValue(colNames[j]);
+						oldRowCell=oldRow.getColumnValue(colNames[j]);
 						if(rowCell==null && oldRowCell!=null){
 							found=false;
 							break;
 						}
 						if(!rowCell.equals(oldRowCell)){
-							System.out.println("mismatch: " + rowCell + " " + oldRowCell);
 							found=false;
 							break;
 						}
