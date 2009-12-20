@@ -883,7 +883,6 @@ public class MyTable implements Table {
 						else if(t==Types.getIntegerType()){
 							rowCell=((int[])(col.getDataArrayAsObject()))[i];
 						}
-<<<<<<< .mine
 						else rowCell=((Object[])(col.getDataArrayAsObject()))[i];
 						*/			
 						oldRowCell=oldRow.getColumnValue(colNames[j]);
