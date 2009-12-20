@@ -252,7 +252,7 @@ public class MyTable implements Table {
 		MyColumn curCol;
 		for(int i=0;i<colNames.length;i++){
 			curCol=((MyColumn)cols.get(colNames[i]));
-			/* if(curCol!=null) */ //curCol.add(tmpRowValues[i]);
+			/* if(curCol!=null) */ curCol.add(tmpRowValues[i]);
 		}
 		noRows++;
 		
