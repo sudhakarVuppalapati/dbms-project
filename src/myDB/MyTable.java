@@ -248,9 +248,11 @@ public class MyTable implements Table {
 		}
 		
 		rows.add(row);	
+		//MyRow mRow=new MyRow(this,);
 		MyColumn curCol;
 		for(int i=0;i<colNames.length;i++){
 			curCol=((MyColumn)cols.get(colNames[i]));
+			curCol.add(tmpRowValues[i]);
 			/* if(curCol!=null) */ curCol.add(tmpRowValues[i]);
 		}
 		noRows++;
@@ -881,15 +883,18 @@ public class MyTable implements Table {
 						else if(t==Types.getIntegerType()){
 							rowCell=((int[])(col.getDataArrayAsObject()))[i];
 						}
-						else rowCell=((Object[])(col.getDataArrayAsObject()))[i];*/
-						
-						
+<<<<<<< .mine
+						else rowCell=((Object[])(col.getDataArrayAsObject()))[i];
+						*/			
 						oldRowCell=oldRow.getColumnValue(colNames[j]);
 						if(rowCell==null && oldRowCell!=null){
 							found=false;
 							break;
 						}
 						if(!rowCell.equals(oldRowCell)){
+							//System.out.println("mismatch: " + rowCell + " " + oldRowCell);
+
+
 							found=false;
 							break;
 						}
