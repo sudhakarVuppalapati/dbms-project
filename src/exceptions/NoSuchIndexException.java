@@ -2,13 +2,14 @@ package exceptions;
 
 /**
  * 
+ * 
  */
-public class NotLeafNodeException extends Exception {
+public class NoSuchIndexException extends Exception {
 
 	/**
 	 * 
 	 */
-	public NotLeafNodeException() {
+	public NoSuchIndexException() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
@@ -17,7 +18,7 @@ public class NotLeafNodeException extends Exception {
 	 * @param message
 	 * @param cause
 	 */
-	public NotLeafNodeException(String message, Throwable cause) {
+	public NoSuchIndexException(String message, Throwable cause) {
 		super(message, cause);
 		// TODO Auto-generated constructor stub
 	}
@@ -25,7 +26,7 @@ public class NotLeafNodeException extends Exception {
 	/**
 	 * @param message
 	 */
-	public NotLeafNodeException(String message) {
+	public NoSuchIndexException(String message) {
 		super(message);
 		// TODO Auto-generated constructor stub
 	}
@@ -33,7 +34,7 @@ public class NotLeafNodeException extends Exception {
 	/**
 	 * @param cause
 	 */
-	public NotLeafNodeException(Throwable cause) {
+	public NoSuchIndexException(Throwable cause) {
 		super(cause);
 		// TODO Auto-generated constructor stub
 	}

@@ -3,12 +3,12 @@ package exceptions;
 /**
  * 
  */
-public class NotLeafNodeException extends Exception {
+public class InvalidKeyException extends Exception {
 
 	/**
 	 * 
 	 */
-	public NotLeafNodeException() {
+	public InvalidKeyException() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
@@ -17,7 +17,7 @@ public class NotLeafNodeException extends Exception {
 	 * @param message
 	 * @param cause
 	 */
-	public NotLeafNodeException(String message, Throwable cause) {
+	public InvalidKeyException(String message, Throwable cause) {
 		super(message, cause);
 		// TODO Auto-generated constructor stub
 	}
@@ -25,7 +25,7 @@ public class NotLeafNodeException extends Exception {
 	/**
 	 * @param message
 	 */
-	public NotLeafNodeException(String message) {
+	public InvalidKeyException(String message) {
 		super(message);
 		// TODO Auto-generated constructor stub
 	}
@@ -33,7 +33,7 @@ public class NotLeafNodeException extends Exception {
 	/**
 	 * @param cause
 	 */
-	public NotLeafNodeException(Throwable cause) {
+	public InvalidKeyException(Throwable cause) {
 		super(cause);
 		// TODO Auto-generated constructor stub
 	}
@@ -41,6 +41,6 @@ public class NotLeafNodeException extends Exception {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = -2135192863734237777L;
 
 }
