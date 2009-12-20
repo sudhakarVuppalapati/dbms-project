@@ -26,6 +26,8 @@ public class MyRow implements Row {
 	private MyTable table;
 	private int rowNo;
 	
+	private Map<String,Object> data;
+	
 	
 	//private byte status; /* 0-unchanged, 1-deleted, 2-updated, 3-newly inserted*/
 	
