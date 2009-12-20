@@ -20,9 +20,14 @@ public final class Database {
 	}
 
 	private final StorageLayer storageLayer;
+
+	private final IndexLayer indexLayer;
+
+	private final QueryLayer queryLayer;
+
 	private final static Database singleton = new Database();
 
-	/************************************************************************************************
+	/***************************************************************************
 	 * Static methods instance is singleton
 	 */
 	/**
@@ -30,10 +35,14 @@ public final class Database {
 	 * 
 	 */
 	private Database() {
-		this.storageLayer = new myDB.MyStorageLayer();
+		
+		  this.storageLayer = new myDB.MyStorageLayer(); this.indexLayer = new
+		  myDB.MyIndexLayer(this.storageLayer); this.queryLayer = new
+		  myDB.MyQueryLayer(this.storageLayer, this.indexLayer);
+		 
 	}
 
-	/****************************************************************************************
+	/***************************************************************************
 	 * Non-static methods
 	 * 
 	 * @return storage layer of DB
@@ -48,6 +57,7 @@ public final class Database {
 		try {
 			storageLayer.writeTablesFromMainMemoryBackToExtent(this
 					.getStorageInterface().getTables());
+			indexLayer.storeIndexInformation();
 		} catch (IOException ex) {
 		}
 	}
@@ -59,6 +69,7 @@ public final class Database {
 	public void startSystem() {
 		try {
 			storageLayer.loadTablesFromExtentIntoMainMemory();
+			indexLayer.rebuildAllIndexes();
 		} catch (IOException ex) {
 		}
 	}
@@ -66,10 +77,28 @@ public final class Database {
 	/**
 	 * Gives access to the singleton storage layer instance of the database
 	 * 
-	 * @return reference to the storage interface
+	 * @return reference to the storage interface.
 	 */
 	public StorageLayer getStorageInterface() {
 		return storageLayer;
+	}
+
+	/**
+	 * Gives access to the singleton index layer instance of the database.
+	 * 
+	 * @return reference to the index interface.
+	 */
+	public IndexLayer getIndexInterface() {
+		return indexLayer;
+	}
+
+	/**
+	 * Gives access to the singleton query layer instance of the database.
+	 * 
+	 * @return reference to the query interface.
+	 */
+	public QueryLayer getQueryInterface() {
+		return this.queryLayer;
 	}
 
 }
