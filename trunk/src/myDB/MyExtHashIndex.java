@@ -244,7 +244,7 @@ public class MyExtHashIndex implements HashIndirectIndex {
 				}
 				if (found) {
 					System.arraycopy(entry, low1 + 1, entry, low1, entry.length - low1 - 1);
-
+					entry[1]--;
 				}
 				return;
 			}
