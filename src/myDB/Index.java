@@ -3,6 +3,7 @@
  */
 package myDB;
 
+import systeminterface.Table;
 import exceptions.InvalidKeyException;
 
 /**
@@ -18,17 +19,14 @@ public interface Index {
 	
 	/** Describe this index */
 	public String describeIndex();
-
-	/** The method checking if this index is direct or not */
-	public boolean isDirect();
 	
 	/**
 	 * Add to this index the content of (key, rowID). The index
-	 * is unchanged when the values exist. Note that to keep it 
-	 * flexible, we have no exception regarding the checking of 
-	 * the key type 
+	 * is unchanged when the values exist. 
 	 * @param key value of search key
 	 * @param rowID the rowID to be added
+	 * @throws InvalidKeyException if the key is not the instance of the 
+	 * appropriate class
 	 */
 	public void insert(Object key, int rowID) throws InvalidKeyException;
 	
@@ -38,6 +36,8 @@ public interface Index {
 	 * (key, rowID) does not exist.
 	 * @param key
 	 * @param rowID
+	 * @throws InvalidKeyException if the key is not the instance of the 
+	 * appropriate class
 	 */
 	public void delete(Object key, int rowID) throws InvalidKeyException;
 	
@@ -45,7 +45,8 @@ public interface Index {
 	 * Delete from this index the data entry corresponding to the given
 	 * search key
 	 * @param key
-	 * @throws InvalidKeyException
+	 * @throws InvalidKeyException if the key is not the instance of the 
+	 * appropriate class
 	 */
 	public void delete(Object key) throws InvalidKeyException;	
 	/**
@@ -55,6 +56,16 @@ public interface Index {
 	 * @param key
 	 * @param oldRowID
 	 * @param newRowID
+	 * @throws InvalidKeyException if the key is not the instance of the 
+	 * appropriate class	 
 	 */
 	public void update(Object key, int oldRowID, int newRowID) throws InvalidKeyException;
+	
+	/** TENTATIVE -$BEGIN */
+	/**
+	 * Return the reference to base table. Might not be implemented in some indexes, so be
+	 * cautious to use this method
+	 */
+	public Table getBaseTable();
+	/** TENTATIVE -$END */
 }

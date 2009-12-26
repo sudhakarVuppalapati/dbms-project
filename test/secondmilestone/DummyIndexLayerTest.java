@@ -102,7 +102,7 @@ public class DummyIndexLayerTest extends TestCase {
 	}
 
 	/**
-	 * Range queries
+	 * point queries
 	 */
 	public void testPointQueryRowID() {
 
@@ -114,7 +114,7 @@ public class DummyIndexLayerTest extends TestCase {
 		try {
 			myDatabase.getIndexInterface().createIndex(index1, tName, att3,
 					false);
-			//index1Created = true;
+			index1Created = true;
 		} catch (IndexAlreadyExistsException e) {
 			fail("Unexpected IndexAlreadyExistsException");
 		} catch (SchemaMismatchException e) {
@@ -145,116 +145,74 @@ public class DummyIndexLayerTest extends TestCase {
 		}
 
 		int rowIDs[] = null;
-		TreeSet<Integer> resultSet = new TreeSet<Integer>();
 		TreeSet<Integer> expectedResultSet = new TreeSet<Integer>(valuesList);
 
 		/** First query* */
 
 		try {
-			rowIDs = myDatabase.getIndexInterface().rangeQueryRowIDs(index1,
-					new Integer(0), new Integer(100));
+			rowIDs = myDatabase.getIndexInterface().pointQueryRowIDs(index1,
+					new Integer(20));
 		} catch (NoSuchIndexException e) {
 			fail("Unexpected NoSuchIndexException");
 			e.printStackTrace();
-		} catch (InvalidRangeException e) {
-			fail("Unexpected InvalidRangeException");
 		} catch (InvalidKeyException e) {
 			fail("Unexpected InvalidKeyException");
-		} catch (RangeQueryNotSupportedException e) {
-			fail("Unexpected RangeQueryNotSupportedException");
-		}
+		} 
 
 		assertTrue(rowIDs != null);
 
 		System.out.println("Result size= " + rowIDs.length);
 
 		for (int i = 0; i < rowIDs.length; i++) {
-			resultSet.add(rowIDs[i]);
+			System.out.println(rowIDs[i]);
 		}
-
-		assertTrue(expectedResultSet.equals(resultSet));
 
 		/** Second query* */
 		rowIDs = null;
-		resultSet = new TreeSet<Integer>();
 		expectedResultSet = new TreeSet<Integer>();
 		expectedResultSet.add(5);
 		expectedResultSet.add(6);
 
 		try {
-			rowIDs = myDatabase.getIndexInterface().rangeQueryRowIDs(index1,
-					new Integer(12), new Integer(21));
+			rowIDs = myDatabase.getIndexInterface().pointQueryRowIDs(index1,
+					new Integer(12));
 		} catch (NoSuchIndexException e) {
 			fail("Unexpected NoSuchIndexException");
 			e.printStackTrace();
-		} catch (InvalidRangeException e) {
-			fail("Unexpected InvalidRangeException");
 		} catch (InvalidKeyException e) {
 			fail("Unexpected InvalidKeyException");
-		} catch (RangeQueryNotSupportedException e) {
-			fail("Unexpected RangeQueryNotSupportedException");
-		}
+		} 
 
 		assertTrue(rowIDs != null);
 
 		System.out.println("Result size= " + rowIDs.length);
 
 		for (int i = 0; i < rowIDs.length; i++) {
-			resultSet.add(rowIDs[i]);
+			System.out.println(rowIDs[i]);
 		}
-
-		assertTrue(expectedResultSet.equals(resultSet));
 
 		/** Third query * */
 
 		rowIDs = null;
 
+
 		try {
-			rowIDs = myDatabase.getIndexInterface().rangeQueryRowIDs(index1,
-					new Integer(34), new Integer(34));
+			rowIDs = myDatabase.getIndexInterface().pointQueryRowIDs(index1,
+					new Integer(34));
 		} catch (NoSuchIndexException e) {
 			fail("Unexpected NoSuchIndexException");
 			e.printStackTrace();
-		} catch (InvalidRangeException e) {
-			fail("Unexpected InvalidRangeException");
 		} catch (InvalidKeyException e) {
 			fail("Unexpected InvalidKeyException");
-		} catch (RangeQueryNotSupportedException e) {
-			fail("Unexpected RangeQueryNotSupportedException");
-		}
+		} 
 
 		assertTrue(rowIDs != null);
 
 		System.out.println("Result size= " + rowIDs.length);
 
-		assertTrue(rowIDs.length == 1);
-
-		assertTrue(rowIDs[0] == 43);
-
-		/** Fourth query * */
-
-		rowIDs = null;
-
-		try {
-			rowIDs = myDatabase.getIndexInterface().rangeQueryRowIDs(index1,
-					new Integer(50), new Integer(2000));
-		} catch (NoSuchIndexException e) {
-			fail("Unexpected NoSuchIndexException");
-			e.printStackTrace();
-		} catch (InvalidRangeException e) {
-			fail("Unexpected InvalidRangeException");
-		} catch (InvalidKeyException e) {
-			fail("Unexpected InvalidKeyException");
-		} catch (RangeQueryNotSupportedException e) {
-			fail("Unexpected RangeQueryNotSupportedException");
+		for (int i = 0; i < rowIDs.length; i++) {
+			System.out.println(rowIDs[i]);
 		}
-
-		assertTrue(rowIDs != null);
-
-		System.out.println("Result size= " + rowIDs.length);
-
-		assertTrue(rowIDs.length == 0);
-
 	}
 
 	/**
@@ -267,7 +225,7 @@ public class DummyIndexLayerTest extends TestCase {
 		 */
 		try {
 			myDatabase.getIndexInterface().createIndex(index1, tName, att1,
-					true);
+					false);
 			index1Created = true;
 		} catch (IndexAlreadyExistsException e) {
 			fail("Unexpected IndexAlreadyExistsException");
@@ -284,11 +242,10 @@ public class DummyIndexLayerTest extends TestCase {
 		try {
 
 			myDatabase.getIndexInterface().insertIntoIndex(index1,
-					new String("DB"), 1);
+					new String("DBDBD"), 1);
 			myDatabase.getIndexInterface().insertIntoIndex(index1,
-					new String("DB"), 2);
+					new String("DBDBD"), 2);
 		} catch (NoSuchIndexException e) {
-			fail("Unexpected NoSuchIndexException");
 		} catch (InvalidKeyException e) {
 			fail("Unexpected InvalidKeyException");
 		}
@@ -299,7 +256,7 @@ public class DummyIndexLayerTest extends TestCase {
 
 		try {
 			myDatabase.getIndexInterface().deleteFromIndex(index1,
-					new String("DB"), 2);
+					new String("DBDBD"), 2);
 		} catch (NoSuchIndexException e) {
 			fail("Unexpected NoSuchIndexException");
 		} catch (InvalidKeyException e) {
@@ -313,7 +270,7 @@ public class DummyIndexLayerTest extends TestCase {
 		int rowIDs[] = null;
 		try {
 			rowIDs = myDatabase.getIndexInterface().pointQueryRowIDs(index1,
-					new String("DB"));
+					new String("DBDBD"));
 		} catch (NoSuchIndexException e) {
 			fail("Unexpected NoSuchIndexException");
 		} catch (InvalidKeyException e) {
@@ -336,7 +293,7 @@ public class DummyIndexLayerTest extends TestCase {
 		 */
 		try {
 			myDatabase.getIndexInterface().createIndex(index1, tName, att1,
-					true);
+					false);
 			index1Created = true;
 		} catch (IndexAlreadyExistsException e) {
 			fail("Unexpected IndexAlreadyExistsException");
@@ -353,9 +310,9 @@ public class DummyIndexLayerTest extends TestCase {
 		try {
 
 			myDatabase.getIndexInterface().insertIntoIndex(index1,
-					new String("DB"), 1);
+					new String("DBDBD"), 1);
 			myDatabase.getIndexInterface().insertIntoIndex(index1,
-					new String("DB"), 2);
+					new String("DBDBD"), 2);
 		} catch (NoSuchIndexException e) {
 			fail("Unexpected NoSuchIndexException");
 		} catch (InvalidKeyException e) {
@@ -368,7 +325,7 @@ public class DummyIndexLayerTest extends TestCase {
 
 		try {
 			myDatabase.getIndexInterface().deleteFromIndex(index1,
-					new String("DB"));
+					new String("DBDBD"));
 		} catch (NoSuchIndexException e) {
 			fail("Unexpected NoSuchIndexException");
 		} catch (InvalidKeyException e) {
@@ -382,7 +339,7 @@ public class DummyIndexLayerTest extends TestCase {
 		int rowIDs[] = null;
 		try {
 			rowIDs = myDatabase.getIndexInterface().pointQueryRowIDs(index1,
-					new String("DB"));
+					new String("DBDBD"));
 		} catch (NoSuchIndexException e) {
 			fail("Unexpected NoSuchIndexException");
 		} catch (InvalidKeyException e) {
@@ -404,7 +361,7 @@ public class DummyIndexLayerTest extends TestCase {
 		 */
 		try {
 			myDatabase.getIndexInterface().createIndex(index1, tName, att2,
-					true);
+					false);
 			index1Created = true;
 		} catch (IndexAlreadyExistsException e) {
 			fail("Unexpected IndexAlreadyExistsException");
@@ -484,7 +441,7 @@ public class DummyIndexLayerTest extends TestCase {
 		 */
 		try {
 			myDatabase.getIndexInterface().createIndex(index1, tName, att3,
-					true);
+					false);
 			myDatabase.getIndexInterface().createIndex(index2, tName, att3,
 					false);
 			index1Created = true;
@@ -524,7 +481,7 @@ public class DummyIndexLayerTest extends TestCase {
 		assertTrue(expectedResultSet.equals(resultSet));
 
 		/*
-		 * Find indexes on att3
+		 * Find indexes on att1
 		 */
 
 		try {
@@ -534,77 +491,6 @@ public class DummyIndexLayerTest extends TestCase {
 		} catch (NoSuchTableException e) {
 			fail("Unexpected NoSuchTableException");
 		}
-	}
-
-	/**
-	 * Test supportsRangeQueries
-	 */
-	public void testSupportsRangeQueries() {
-
-		/*
-		 * Create two indexes
-		 */
-		try {
-			myDatabase.getIndexInterface().createIndex(index1, tName, att2,
-					true);
-			myDatabase.getIndexInterface().createIndex(index2, tName, att3,
-					false);
-			index1Created = true;
-			index2Created = true;
-		} catch (IndexAlreadyExistsException e) {
-			fail("Unexpected IndexAlreadyExistsException");
-		} catch (SchemaMismatchException e) {
-			fail("Unexpected SchemaMismatchException");
-		} catch (NoSuchTableException e) {
-			fail("Unexpected NoSuchTableException");
-		}
-
-		/*
-		 * Perform tests
-		 */
-		try {
-			assertTrue(myDatabase.getIndexInterface().supportsRangeQueries(
-					index1));
-			assertFalse(myDatabase.getIndexInterface().supportsRangeQueries(
-					index2));
-		} catch (NoSuchIndexException e) {
-			fail("Unexpected NoSuchTableException");
-		}
-
-		/*
-		 * Some insertions into index2
-		 */
-
-		try {
-			myDatabase.getIndexInterface().insertIntoIndex(index2,
-					new Integer(10), 5);
-			myDatabase.getIndexInterface().insertIntoIndex(index2,
-					new Integer(20), 5);
-		} catch (NoSuchIndexException e) {
-			fail("Unexpected NoSuchIndexException");
-		} catch (InvalidKeyException e) {
-			fail("Unexpected InvalidKeyException");
-		}
-
-		/*
-		 * Perform range deletion on index2, should not work, index2 does not
-		 * support range queries.
-		 */
-
-		try {
-			myDatabase.getIndexInterface().deleteFromIndex(index2,
-					new Integer(1), new Integer(100));
-			fail("Expecting RangeQueryNotSupportedException");
-		} catch (NoSuchIndexException e) {
-			fail("Unexpected NoSuchIndexException");
-		} catch (InvalidKeyException e) {
-			fail("Unexpected InvalidRangeException");
-		} catch (InvalidRangeException e) {
-			fail("Unexpected InvalidRangeException");
-		} catch (RangeQueryNotSupportedException e) {
-			System.out.println("RangeQueryNotSupportedException, this is good");
-		}
-
 	}
 
 	/*

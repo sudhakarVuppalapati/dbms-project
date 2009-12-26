@@ -35,6 +35,6 @@ public interface TreeIndex extends HashIndex {
 	 * @param endingKey
 	 * @return Operator of Row types, or null if not found
 	 */
-	public Operator<Row> rangQuery(Object startingKey, Object endingKey) 
+	public Operator<Row> rangeQuery(Object startingKey, Object endingKey) 
 	throws InvalidKeyException, InvalidRangeException;
 }
