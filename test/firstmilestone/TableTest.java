@@ -90,7 +90,6 @@ public class TableTest extends TestCase {
 		}
 	}
 
-
 	/**
 	 * test get all columns
 	 */
@@ -351,9 +350,9 @@ public class TableTest extends TestCase {
 			}
 
 		}
-		
-		if(i!=1){
-			
+
+		if (i != 1) {
+
 			fail("empty result");
 		}
 

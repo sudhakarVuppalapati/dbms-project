@@ -1,4 +1,4 @@
-package firstmilestone;
+package util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,7 +20,7 @@ public class RandomInputGenerator {
 	 * @return
 	 * 
 	 */
-	protected static Map<String, Type> generateRandSchema(Random rand) {
+	public static Map<String, Type> generateRandSchema(Random rand) {
 
 		Types types = new Types();
 
@@ -92,7 +92,7 @@ public class RandomInputGenerator {
 	 * @param rand
 	 * @return
 	 */
-	protected static java.util.Date getRandDate(Random rand) {
+	public static java.util.Date getRandDate(Random rand) {
 
 		long tStart = 0;
 		long tEnd = (System.currentTimeMillis());
@@ -106,15 +106,14 @@ public class RandomInputGenerator {
 
 	/**
 	 * @param rand
-	 * @param tableCardinatlity
-	 * @return
+	 * @param size
+	 * @return return a random list
 	 */
-	public static ArrayList<Object> getRandDateList(Random rand,
-			int tableCardinatlity) {
+	public static ArrayList<Object> getRandDateList(Random rand, int size) {
 
 		ArrayList<Object> randList = new ArrayList<Object>();
 
-		for (int i = 0; i < tableCardinatlity; i++) {
+		for (int i = 0; i < size; i++) {
 
 			randList.add(getRandDate(rand));
 		}
@@ -124,15 +123,14 @@ public class RandomInputGenerator {
 
 	/**
 	 * @param rand
-	 * @param tableCardinality
-	 * @return
+	 * @param size
+	 * @return return a random list
 	 */
-	public static ArrayList<Object> getRandDoubleList(Random rand,
-			int tableCardinality) {
+	public static ArrayList<Object> getRandDoubleList(Random rand, int size) {
 
 		ArrayList<Object> randList = new ArrayList<Object>();
 
-		for (int i = 0; i < tableCardinality; i++) {
+		for (int i = 0; i < size; i++) {
 
 			java.lang.Double D = new java.lang.Double(rand.nextDouble());
 			randList.add(D);
@@ -143,12 +141,16 @@ public class RandomInputGenerator {
 		return randList;
 	}
 
-	public static ArrayList<Object> getRandFloatList(Random rand,
-			int tableCardinality) {
+	/**
+	 * @param rand
+	 * @param size
+	 * @return return a random list
+	 */
+	public static ArrayList<Object> getRandFloatList(Random rand, int size) {
 
 		ArrayList<Object> randList = new ArrayList<Object>();
 
-		for (int i = 0; i < tableCardinality; i++) {
+		for (int i = 0; i < size; i++) {
 
 			java.lang.Float F = new java.lang.Float(rand.nextFloat());
 			randList.add(F);
@@ -159,12 +161,16 @@ public class RandomInputGenerator {
 		return randList;
 	}
 
-	protected static ArrayList<Object> getRandIntegerList(Random rand,
-			int tableCardinality) {
+	/**
+	 * @param rand
+	 * @param size
+	 * @return
+	 */
+	public static ArrayList<Object> getRandIntegerList(Random rand, int size) {
 
 		ArrayList<Object> randList = new ArrayList<Object>();
 
-		for (int i = 0; i < tableCardinality; i++) {
+		for (int i = 0; i < size; i++) {
 
 			java.lang.Integer I = new java.lang.Integer(rand.nextInt());
 			randList.add(I);
@@ -177,20 +183,19 @@ public class RandomInputGenerator {
 
 	/**
 	 * @param rand
-	 * @param tableCardinality
-	 * @return
+	 * @param size
+	 * @return return a random list
 	 */
-	public static ArrayList<Object> getRandLongList(Random rand,
-			int tableCardinality) {
+	public static ArrayList<Object> getRandLongList(Random rand, int size) {
 
 		// Random long covers Long.MIN_VALUE to Long.MAX_VALUE
 		// For nulls, must ensure that Long.MIN_VALUE does not get generated
-		
+
 		Long minLong = new Long(java.lang.Long.MIN_VALUE);
 
 		ArrayList<Object> randList = new ArrayList<Object>();
 
-		for (int i = 0; i < tableCardinality; i++) {
+		for (int i = 0; i < size; i++) {
 
 			java.lang.Long L;
 			while ((L = new java.lang.Long(rand.nextLong())).equals(minLong)) {
@@ -206,15 +211,14 @@ public class RandomInputGenerator {
 
 	/**
 	 * @param rand
-	 * @param tableCardinality
-	 * @return
+	 * @param size
+	 * @return return a random list
 	 */
-	public static ArrayList<Object> getRandVarcharList(Random rand,
-			int tableCardinality) {
+	public static ArrayList<Object> getRandVarcharList(Random rand, int size) {
 
 		ArrayList<Object> randList = new ArrayList<Object>();
 
-		for (int i = 0; i < tableCardinality; i++) {
+		for (int i = 0; i < size; i++) {
 
 			int length = rand.nextInt(Consts.maxVarcharLength
 					- Consts.minVarcharLength + 1)
@@ -227,11 +231,17 @@ public class RandomInputGenerator {
 		return randList;
 	}
 
-	public static ArrayList<Object> getRandCharList(Random rand,
-			int tableCardinality, int maxLength) {
+	/**
+	 * @param rand
+	 * @param size
+	 * @param maxLength
+	 * @return return a random list
+	 */
+	public static ArrayList<Object> getRandCharList(Random rand, int size,
+			int maxLength) {
 		ArrayList<Object> randList = new ArrayList<Object>();
 
-		for (int i = 0; i < tableCardinality; i++) {
+		for (int i = 0; i < size; i++) {
 
 			int length = rand.nextInt(maxLength - Consts.minCharLength + 1)
 					+ Consts.minCharLength;
@@ -244,7 +254,7 @@ public class RandomInputGenerator {
 
 	}
 
-	protected static String getRandString(Random rand, int length) {
+	public static String getRandString(Random rand, int length) {
 
 		StringBuffer sb = new StringBuffer(length);
 
@@ -258,4 +268,7 @@ public class RandomInputGenerator {
 		return sb.toString();
 
 	}
+
+	/*****************************************************************/
+
 }

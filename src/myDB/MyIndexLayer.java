@@ -1,5 +1,6 @@
 package myDB;
 
+import java.io.IOException;
 import java.util.Map;
 
 import operator.Operator;
@@ -101,13 +102,6 @@ public class MyIndexLayer implements IndexLayer {
 		//return false;
 	}
 
-	@Override
-	public void deleteFromIndex(String indexName, Object startSearchKey,
-			Object endSearchKey) throws NoSuchIndexException,
-			InvalidKeyException {
-		// TODO Auto-generated method stub
-
-	}
 
 	@Override
 	public String describeAllIndexes() {
@@ -243,11 +237,10 @@ public class MyIndexLayer implements IndexLayer {
 		//return null;
 	}
 
-	//Why does this function not support RangeQueryNotSupportedException ?
 	@Override
 	public int[] rangeQueryRowIDs(String indexName, Object startSearchKey,
 			Object endSearchKey) throws NoSuchIndexException,
-			InvalidRangeException, InvalidKeyException {
+			InvalidRangeException, InvalidKeyException, RangeQueryNotSupportedException {
 		/** Tentative -$BEGIN */
 		try {
 			TreeIndex index = (TreeIndex)namedIndexes.get(indexName);
@@ -266,13 +259,6 @@ public class MyIndexLayer implements IndexLayer {
 		/** Tentative -$END */
 		//return null;
 	}
-
-	@Override
-	public void rebuildAllIndexes() {
-		// TODO Auto-generated method stub
-
-	}
-
 
 	@Override
 	public boolean supportsRangeQueries(String indexName)
@@ -304,9 +290,24 @@ public class MyIndexLayer implements IndexLayer {
 	}
 
 	@Override
-	public void storeIndexInformation() {
+	public void deleteFromIndex(String indexName, Object startSearchKey,
+			Object endSearchKey) throws NoSuchIndexException,
+			InvalidKeyException, InvalidRangeException,
+			RangeQueryNotSupportedException {
 		// TODO Auto-generated method stub
+		
+	}
 
+	@Override
+	public void rebuildAllIndexes() throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void storeIndexInformation() throws IOException {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

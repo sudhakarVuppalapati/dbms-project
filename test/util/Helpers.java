@@ -1,4 +1,4 @@
-package firstmilestone;
+package util;
 
 /**
  * @author myahya
@@ -11,7 +11,7 @@ public class Helpers {
 	 * @param msg
 	 * @param ptype
 	 */
-	protected static void print(String msg, Consts.printType ptype) {
+	public static void print(String msg, Consts.printType ptype) {
 
 		if ((ptype == Consts.printType.INFO && Consts.infoMsg)) {
 			System.out.println(msg);
