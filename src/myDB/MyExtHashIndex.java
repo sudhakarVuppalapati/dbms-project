@@ -1247,5 +1247,57 @@ public class MyExtHashIndex implements HashIndex {
 	@Override
 	public boolean isDirect() {
 		return false;
+	}
+
+	@Override
+	public void delete(Object objKey) throws InvalidKeyException {
+		int[] entry;			
+		int key = 0;
+		
+		try {
+			if (type == Types.getDateType()) 
+				key = ((Date)objKey).hashCode();
+			else if (type == Types.getDoubleType())
+				key = ((Double)objKey).hashCode();
+			else if (type == Types.getFloatType())
+				key = ((Float)objKey).hashCode();
+			else if (type == Types.getLongType())
+				key = ((Long)objKey).hashCode();
+			else if (type == Types.getIntegerType())
+				key = ((Integer)objKey).hashCode();
+			else if (type == Types.getVarcharType())
+				key = ((String)objKey).hashCode();
+			else if (type.equals(objKey))
+				key = objKey.hashCode();
+		}
+		catch (ClassCastException cce) {
+			throw new InvalidKeyException();
+		}				
+		
+		int bucketNo = hash(key);
+		
+		Object tmp = buckets.get(bucketNo);
+		int i = freeSlot[bucketNo];
+		
+		if (tmp != null) { 	
+			Object[] bucket = (Object[])tmp;
+			int low = 0, high = i - 1;
+							
+			for (; low <= high;) {
+				int mid = (low + high) >> 1;
+				entry = (int[])bucket[mid];
+				int tmpKey = entry[0];		//The beginning element is key content
+				if (tmpKey < key) 
+					low = mid + 1;
+				else if (tmpKey > key)
+					high = mid - 1;
+				// Key found, further search for the matching row and delete if found.
+				else {				
+					System.arraycopy(bucket, mid + 1, bucket, mid, i - 1 - mid);
+					freeSlot[bucketNo]--;
+					return;
+				}
+			}	
+		}
 	}	
 }
