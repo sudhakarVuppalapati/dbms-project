@@ -42,6 +42,13 @@ public interface Index {
 	public void delete(Object key, int rowID) throws InvalidKeyException;
 	
 	/**
+	 * Delete from this index the data entry corresponding to the given
+	 * search key
+	 * @param key
+	 * @throws InvalidKeyException
+	 */
+	public void delete(Object key) throws InvalidKeyException;	
+	/**
 	 * Update in this index the record with rowIDs matching oldRowID 
 	 * and search key matching key. The index is unchanged if such
 	 * matchings could not be found. 

@@ -75,15 +75,30 @@ public class MyIndexLayer implements IndexLayer {
 	@Override
 	public void deleteFromIndex(String indexName, Object key, int rowID)
 	throws NoSuchIndexException, InvalidKeyException {
-		// TODO Auto-generated method stub
+		/** Tentative -$BEGIN */
+		try {
+			namedIndexes.get(indexName).delete(key, rowID);	
+		}
+		catch (NullPointerException npe) {
+			throw new NoSuchIndexException();
+		}		
+		/** Tentative -$END */
+		//return false;
 
 	}
 
 	@Override
 	public void deleteFromIndex(String indexName, Object key)
 	throws NoSuchIndexException, InvalidKeyException {
-		// TODO Auto-generated method stub
-
+		/** Tentative -$BEGIN */
+		try {
+			namedIndexes.get(indexName).delete(key);	
+		}
+		catch (NullPointerException npe) {
+			throw new NoSuchIndexException();
+		}		
+		/** Tentative -$END */
+		//return false;
 	}
 
 	@Override
@@ -228,12 +243,28 @@ public class MyIndexLayer implements IndexLayer {
 		//return null;
 	}
 
+	//Why does this function not support RangeQueryNotSupportedException ?
 	@Override
 	public int[] rangeQueryRowIDs(String indexName, Object startSearchKey,
 			Object endSearchKey) throws NoSuchIndexException,
 			InvalidRangeException, InvalidKeyException {
-		// TODO Auto-generated method stub
-		return null;
+		/** Tentative -$BEGIN */
+		try {
+			TreeIndex index = (TreeIndex)namedIndexes.get(indexName);
+			if (!index.supportRangeQueries())
+				throw new RangeQueryNotSupportedException();
+				
+			return index.rangeQueryRowIDs(startSearchKey, endSearchKey);
+			}
+		
+		catch (NullPointerException npe) {
+			throw new NoSuchIndexException();
+		}
+		catch (ClassCastException cce) {
+			throw new RangeQueryNotSupportedException();
+		}
+		/** Tentative -$END */
+		//return null;
 	}
 
 	@Override
@@ -270,7 +301,7 @@ public class MyIndexLayer implements IndexLayer {
 		}		
 		/** Tentative -$END */
 		//return false;
-		}
+	}
 
 	@Override
 	public void storeIndexInformation() {
