@@ -12,10 +12,10 @@ import systeminterface.Row;
 public interface HashIndex extends Index {
 	/**
 	 * Look up in this index the corresponding data entry of the 
-	 * given key, return as a primitive array. Note that to keep 
-	 * it flexible, we have no exception regarding the checking of 
-	 * the key type 
+	 * given key, return as a primitive array. 
 	 * @return list of rowIDs
+	 * @throws InvalidKeyException if the key is not the instance of the 
+	 * appropriate class 
 	 */
 	public int[] pointQueryRowIDs(Object key) throws InvalidKeyException;
 	
@@ -23,11 +23,11 @@ public interface HashIndex extends Index {
 	/**
 	 * Look up in this index, returning the List of Row objects
 	 * with search key matching the supplied one. This method returns
-	 * null if not found. Note that to aid the flexibility, we dispatch
-	 * the checking of key type to the caller method (usually pointQuery()
-	 * in IndexLayer)
+	 * null if not found. 
 	 * @param searchKey
 	 * @return Operator of Row types, or null if not found
+	 * @throws InvalidKeyException if the key is not the instance of the 
+	 * appropriate class
 	 */
 	public Operator<Row> pointQuery(Object searchKey) throws InvalidKeyException;
 }

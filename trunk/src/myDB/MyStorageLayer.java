@@ -611,7 +611,7 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 		}
 	}
 
-	private final String buildFileName(String input) {
+	private static String buildFileName(String input) {
 		return new StringBuilder().
 		append(MyPersistentExtent.DISK_PREFIX).
 		append(input).append(MyPersistentExtent.TABLE_EXT).toString();

@@ -1,7 +1,12 @@
 package myDB;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import metadata.Type;
 
 import operator.Operator;
 import systeminterface.Column;
@@ -26,14 +31,14 @@ import exceptions.SchemaMismatchException;
 public class MyIndexLayer implements IndexLayer {
 
 	private final StorageLayer storageLayer;
-
+	
 	/** Tentative -$BEGIN */
 
 	/** Mapping from index names to index */
 	private Map<String, Index> namedIndexes;
 
 	/** Mapping from column to index names */
-	private Map<Column, Object> colIndexes;
+	private Map<Column, List<String>> colIndexes;
 
 	/** Tentative -$END */
 
@@ -50,6 +55,10 @@ public class MyIndexLayer implements IndexLayer {
 
 		this.storageLayer = storageLayer;
 
+		/** TENTATIVE -$BEGIN */
+		namedIndexes = new HashMap<String, Index>();
+		colIndexes = new HashMap<Column, List<String>>();
+		/** TENTATIVE -$END */
 	}
 
 	@Override
@@ -58,16 +67,46 @@ public class MyIndexLayer implements IndexLayer {
 	throws IndexAlreadyExistsException, SchemaMismatchException,
 	NoSuchTableException {
 
-		/**
-		 * Tuan - Check the functionality of MyExtHashIndex only. Need to be replaced
-		 * by a complete piece of code later
-		 */
 		/** Tentative -$BEGIN */
+		/**
+		 * Tuan - This code fragment is only to check the functionality of 
+		 * MyExtHashIndex. Need to be replaced later
+		 */
+		
 		if (supportRangeQueries) {
 			return;
 		}
 		else {
-			MyExtHashIndex mehi = new MyExtHashIndex(indexName);
+			try {
+				if (namedIndexes.containsKey(indexName))
+					throw new IndexAlreadyExistsException();
+				
+				Table t = storageLayer.getTableByName(tableName);
+				Column c = t.getColumnByName(keyAttributeName);
+				Type type = c.getColumnType();
+				MyExtHashIndex mehi = new MyExtHashIndex(indexName, type, t);
+				namedIndexes.put(indexName, mehi);
+				
+				//Add to column/index-names mapping
+				List<String> list = colIndexes.get(c);
+				if (list != null) {
+					list.add(indexName);
+				}
+				else {
+					list = new ArrayList<String>();
+					list.add(indexName);
+					colIndexes.put(c, list);
+				}			
+			}
+			catch (NoSuchColumnException nsce) {
+				throw new SchemaMismatchException();
+			}
+			catch (NullPointerException npe) {
+				throw new SchemaMismatchException();
+			}			
+			catch (Exception e) {
+				throw new NoSuchTableException();
+			}
 		}
 		/** Tentative -$END */
 
@@ -142,8 +181,12 @@ public class MyIndexLayer implements IndexLayer {
 			Table t = storageLayer.getTableByName(tableName);
 			try {
 				Column c = t.getColumnByName(keyAttributeName);
-				Object obj = colIndexes.get(c);
-				return (String[]) obj;
+				List<String> obj = colIndexes.get(c);
+				String[] indexes = null;
+				if (obj!= null) {
+					indexes = obj.toArray(new String[obj.size()]);
+				}
+				return indexes;
 			} 
 			catch (NoSuchColumnException e) {
 				//make nonsense to throw SchemaMismatchException here
@@ -163,7 +206,12 @@ public class MyIndexLayer implements IndexLayer {
 	@Override
 	public void insertIntoIndex(String indexName, Object key, int rowID)
 	throws NoSuchIndexException, InvalidKeyException {
-
+		try {
+			namedIndexes.get(indexName).insert(key, rowID);
+		}
+		catch (NullPointerException npe) {
+			throw new NoSuchIndexException();
+		}
 	}
 
 	@Override
@@ -171,15 +219,7 @@ public class MyIndexLayer implements IndexLayer {
 	throws NoSuchIndexException, InvalidKeyException {
 		/** Tentative -$BEGIN */
 		try {
-			HashIndex index = (HashIndex)namedIndexes.get(indexName);
-			if (index.isDirect()) {
-				return index.pointQuery(searchKey);
-			}
-			else {
-				int[] rowIDs = index.pointQueryRowIDs(searchKey);
-				return ...;
-			}
-
+			return ((HashIndex)namedIndexes.get(indexName)).pointQuery(searchKey);
 		}
 		catch (NullPointerException npe) {
 			throw new NoSuchIndexException();
@@ -198,7 +238,6 @@ public class MyIndexLayer implements IndexLayer {
 
 			return index.pointQueryRowIDs(searchKey);
 
-
 		}
 		catch (NullPointerException npe) {
 			throw new NoSuchIndexException();
@@ -215,18 +254,14 @@ public class MyIndexLayer implements IndexLayer {
 		
 		/** Tentative -$BEGIN */
 		try {
-			TreeIndex index = (TreeIndex)namedIndexes.get(indexName);
+			Index index = namedIndexes.get(indexName);
 			if (!index.supportRangeQueries())
 				throw new RangeQueryNotSupportedException();
-			if (index.isDirect()) {
-				return index.rangQuery(startSearchKey, endSearchKey);
+			
+			TreeIndex tIndex = (TreeIndex)index;
+			return tIndex.rangeQuery(startSearchKey, endSearchKey);
 			}
-			else {
-				int[] rowIDs = index.rangeQueryRowIDs(startSearchKey, endSearchKey);
-				return ...;
-			}
-
-		}
+		
 		catch (NullPointerException npe) {
 			throw new NoSuchIndexException();
 		}
@@ -243,11 +278,12 @@ public class MyIndexLayer implements IndexLayer {
 			InvalidRangeException, InvalidKeyException, RangeQueryNotSupportedException {
 		/** Tentative -$BEGIN */
 		try {
-			TreeIndex index = (TreeIndex)namedIndexes.get(indexName);
+			Index index = namedIndexes.get(indexName);
 			if (!index.supportRangeQueries())
 				throw new RangeQueryNotSupportedException();
-				
-			return index.rangeQueryRowIDs(startSearchKey, endSearchKey);
+			
+			TreeIndex tIndex = (TreeIndex)index;
+			return tIndex.rangeQueryRowIDs(startSearchKey, endSearchKey);
 			}
 		
 		catch (NullPointerException npe) {

@@ -8,6 +8,7 @@ import exceptions.InvalidKeyException;
 
 import operator.Operator;
 import systeminterface.Row;
+import systeminterface.Table;
 
 import metadata.Type;
 import metadata.Types;
@@ -39,6 +40,10 @@ public class MyExtHashIndex implements HashIndex {
 		
 	/** Current global depth */
 	private int gDepth;
+	
+	/** Since Java has no exponential operator, I store the value of
+	 * 2^gDepth here, to fast compute when needed */
+	private int powerDepth;
 
 	/** Lists of buckets, of which items are an array of size BUCKET_SIZE.
 	 * Items of an array is an array-liked list with key's hashCode at the
@@ -64,13 +69,17 @@ public class MyExtHashIndex implements HashIndex {
 	 * this property
 	 */
 	private final Type type;
+	
+	/** The reference to base table. We might be able to do other way - I let
+	 * table be of MyTable type, so that we can avoid unnecessary casting later */
+	private final MyTable table;
 	/** TENTATIVE -$END */
 
 	/**
 	 * Return the buckets no. which contains the key
 	 */
 	private int hash(int key) {
-		return MyHashFunctions.hash32shiftmult(key)	% gDepth;	
+		return MyHashFunctions.hash32shiftmult(key)	& powerDepth;	
 	}
 	
 	/** 
@@ -78,10 +87,12 @@ public class MyExtHashIndex implements HashIndex {
 	 * should be given the column values array, obtained by calling method 
 	 * MyColumn.getDataArrayAsObject() 
 	 */
-	public MyExtHashIndex(String indexName, Type t) {
+	public MyExtHashIndex(String indexName, Type t, Table tableObj) {
 		type = t;
+		table = (MyTable)tableObj;
 		des = indexName;
 		gDepth = DEPTH;
+		powerDepth = CARD - 1;
 		buckets = new ArrayList(CARD);
 		lDepths = new int[CARD];
 		freeSlot = new int[CARD];
@@ -96,6 +107,7 @@ public class MyExtHashIndex implements HashIndex {
 		int[] entry;			
 		int key = 0;
 		
+		//This is really stupid
 		try {
 			if (type == Types.getDateType()) 
 				key = ((Date)objKey).hashCode();
@@ -109,8 +121,10 @@ public class MyExtHashIndex implements HashIndex {
 				key = ((Integer)objKey).hashCode();
 			else if (type == Types.getVarcharType())
 				key = ((String)objKey).hashCode();
-			else if (type.equals(objKey))
+			else if (type.getLength() == ((String)objKey).length())
 				key = objKey.hashCode();
+			else
+				throw new InvalidKeyException();
 		}
 		catch (ClassCastException cce) {
 			throw new InvalidKeyException();
@@ -133,6 +147,7 @@ public class MyExtHashIndex implements HashIndex {
 			bucket = new Object[BUCKET_SIZE];
 			bucket[i++] = entry;
 			freeSlot[bucketNo] = i;
+			buckets.set(bucketNo, bucket);
 			return;
  		}
 		/**
@@ -231,6 +246,8 @@ public class MyExtHashIndex implements HashIndex {
 			while (i++ < high)
 				buckets.add(null);
 			
+			powerDepth = high - 1;
+			
 			//Rehash the key
 			bucketNo = hash(key);
 			tmp = buckets.get(bucketNo);
@@ -269,11 +286,13 @@ public class MyExtHashIndex implements HashIndex {
 	/** Construct the index in bulk loading-liked fashion. colVals is obtained
 	 * by calling MyColumn.getDataArrayAsObject() 
 	 */	
-	public MyExtHashIndex(String indexName, Object colVals, Type t) {
+	public MyExtHashIndex(String indexName, Object colVals, Type t, Table tableObj) {
 		//Initialize index as usual
 		type = t;
+		table = (MyTable)tableObj;
 		des = indexName;
 		gDepth = DEPTH;
+		powerDepth = CARD;
 		buckets = new ArrayList(CARD);
 		lDepths = new int[CARD];
 		freeSlot = new int[CARD];
@@ -289,9 +308,11 @@ public class MyExtHashIndex implements HashIndex {
 		Object tmp;
 		Object[] bucket;
 		
+		boolean added;
 		if(t == Types.getIntegerType()) {
 			int[] keys = (int[])colVals;
 			n = keys.length;
+						
 			for (r = 0; r < n; r++) {
 				k = keys[r];
 				
@@ -302,6 +323,8 @@ public class MyExtHashIndex implements HashIndex {
 				tmp = buckets.get(bucketNo);
 				i = freeSlot[bucketNo];
 				
+				added = false; 
+				
 				/** Step 1 */
 				if (tmp == null) {
 					entry = new int[INITIAL_CAPACITY];
@@ -311,6 +334,7 @@ public class MyExtHashIndex implements HashIndex {
 					bucket = new Object[BUCKET_SIZE];
 					bucket[i++] = entry;
 					freeSlot[bucketNo] = i;
+					buckets.set(bucketNo, bucket);
 					continue;
 		 		}
 				
@@ -330,6 +354,7 @@ public class MyExtHashIndex implements HashIndex {
 					else {				
 						int entrySize = entry[1]; 	//The second elements are data entry size
 						int low1 = 2, high1 = entrySize - 1;
+						boolean valFound = false;
 						for (; low1 <= high1;) {
 							int mid1 = (low1 + high1) >> 1;
 							int midVals = entry[mid1];
@@ -337,8 +362,13 @@ public class MyExtHashIndex implements HashIndex {
 								low1 = mid1 + 1;
 							else if (midVals > r)
 								high1 = mid1 - 1;
-							else continue;		//value found, do nothing			
+							else {
+								added = true;
+								break;		//value found, do nothing			
+							}
 						}
+						if (added)
+							break;
 						// Value not found, insert new value into current data entry.
 						// First check for free slots in the entry. Expand entry if full
 						if (entrySize == entry.length) {
@@ -353,10 +383,13 @@ public class MyExtHashIndex implements HashIndex {
 							entry[low1] = r;
 						}
 						else entry[entrySize] = r;
-						entry[1]++;				
-						continue;
+						entry[1]++;	
+						added = true;
+						break;
 					}
 				}
+				if (added)
+					continue;
 				
 				/** Step 3 */
 				entry = new int[INITIAL_CAPACITY];
@@ -448,6 +481,8 @@ public class MyExtHashIndex implements HashIndex {
 				bucketNo = hash(k);
 				tmp = buckets.get(bucketNo);
 				i = freeSlot[bucketNo];
+
+				added = false; 
 				
 				/** Step 1 */
 				if (tmp == null) {
@@ -458,6 +493,7 @@ public class MyExtHashIndex implements HashIndex {
 					bucket = new Object[BUCKET_SIZE];
 					bucket[i++] = entry;
 					freeSlot[bucketNo] = i;
+					buckets.set(bucketNo, bucket);
 					continue;
 		 		}
 				
@@ -477,6 +513,7 @@ public class MyExtHashIndex implements HashIndex {
 					else {				
 						int entrySize = entry[1]; 	//The second elements are data entry size
 						int low1 = 2, high1 = entrySize - 1;
+						boolean valFound = false;
 						for (; low1 <= high1;) {
 							int mid1 = (low1 + high1) >> 1;
 							int midVals = entry[mid1];
@@ -484,8 +521,13 @@ public class MyExtHashIndex implements HashIndex {
 								low1 = mid1 + 1;
 							else if (midVals > r)
 								high1 = mid1 - 1;
-							else continue;		//value found, do nothing			
+							else {
+								added = true;
+								break;		//value found, do nothing			
+							}
 						}
+						if (added)
+							break;
 						// Value not found, insert new value into current data entry.
 						// First check for free slots in the entry. Expand entry if full
 						if (entrySize == entry.length) {
@@ -500,10 +542,13 @@ public class MyExtHashIndex implements HashIndex {
 							entry[low1] = r;
 						}
 						else entry[entrySize] = r;
-						entry[1]++;				
-						continue;
+						entry[1]++;	
+						added = true;
+						break;
 					}
 				}
+				if (added)
+					continue;
 				
 				/** Step 3 */
 				entry = new int[INITIAL_CAPACITY];
@@ -594,6 +639,8 @@ public class MyExtHashIndex implements HashIndex {
 				bucketNo = hash(k);
 				tmp = buckets.get(bucketNo);
 				i = freeSlot[bucketNo];
+
+				added = false; 
 				
 				/** Step 1 */
 				if (tmp == null) {
@@ -604,6 +651,7 @@ public class MyExtHashIndex implements HashIndex {
 					bucket = new Object[BUCKET_SIZE];
 					bucket[i++] = entry;
 					freeSlot[bucketNo] = i;
+					buckets.set(bucketNo, bucket);
 					continue;
 		 		}
 				
@@ -623,6 +671,7 @@ public class MyExtHashIndex implements HashIndex {
 					else {				
 						int entrySize = entry[1]; 	//The second elements are data entry size
 						int low1 = 2, high1 = entrySize - 1;
+						boolean valFound = false;
 						for (; low1 <= high1;) {
 							int mid1 = (low1 + high1) >> 1;
 							int midVals = entry[mid1];
@@ -630,8 +679,13 @@ public class MyExtHashIndex implements HashIndex {
 								low1 = mid1 + 1;
 							else if (midVals > r)
 								high1 = mid1 - 1;
-							else continue;		//value found, do nothing			
+							else {
+								added = true;
+								break;		//value found, do nothing			
+							}
 						}
+						if (added)
+							break;
 						// Value not found, insert new value into current data entry.
 						// First check for free slots in the entry. Expand entry if full
 						if (entrySize == entry.length) {
@@ -646,10 +700,13 @@ public class MyExtHashIndex implements HashIndex {
 							entry[low1] = r;
 						}
 						else entry[entrySize] = r;
-						entry[1]++;				
-						continue;
+						entry[1]++;	
+						added = true;
+						break;
 					}
 				}
+				if (added)
+					continue;
 				
 				/** Step 3 */
 				entry = new int[INITIAL_CAPACITY];
@@ -739,6 +796,8 @@ public class MyExtHashIndex implements HashIndex {
 				bucketNo = hash(k);
 				tmp = buckets.get(bucketNo);
 				i = freeSlot[bucketNo];
+
+				added = false; 
 				
 				/** Step 1 */
 				if (tmp == null) {
@@ -749,6 +808,7 @@ public class MyExtHashIndex implements HashIndex {
 					bucket = new Object[BUCKET_SIZE];
 					bucket[i++] = entry;
 					freeSlot[bucketNo] = i;
+					buckets.set(bucketNo, bucket);
 					continue;
 		 		}
 				
@@ -768,6 +828,7 @@ public class MyExtHashIndex implements HashIndex {
 					else {				
 						int entrySize = entry[1]; 	//The second elements are data entry size
 						int low1 = 2, high1 = entrySize - 1;
+						boolean valFound = false;
 						for (; low1 <= high1;) {
 							int mid1 = (low1 + high1) >> 1;
 							int midVals = entry[mid1];
@@ -775,8 +836,13 @@ public class MyExtHashIndex implements HashIndex {
 								low1 = mid1 + 1;
 							else if (midVals > r)
 								high1 = mid1 - 1;
-							else continue;		//value found, do nothing			
+							else {
+								added = true;
+								break;		//value found, do nothing			
+							}
 						}
+						if (added)
+							break;
 						// Value not found, insert new value into current data entry.
 						// First check for free slots in the entry. Expand entry if full
 						if (entrySize == entry.length) {
@@ -791,10 +857,13 @@ public class MyExtHashIndex implements HashIndex {
 							entry[low1] = r;
 						}
 						else entry[entrySize] = r;
-						entry[1]++;				
-						continue;
+						entry[1]++;	
+						added = true;
+						break;
 					}
 				}
+				if (added)
+					continue;
 				
 				/** Step 3 */
 				entry = new int[INITIAL_CAPACITY];
@@ -883,6 +952,8 @@ public class MyExtHashIndex implements HashIndex {
 			bucketNo = hash(k);
 			tmp = buckets.get(bucketNo);
 			i = freeSlot[bucketNo];
+
+			added = false; 
 			
 			/** Step 1 */
 			if (tmp == null) {
@@ -893,6 +964,7 @@ public class MyExtHashIndex implements HashIndex {
 				bucket = new Object[BUCKET_SIZE];
 				bucket[i++] = entry;
 				freeSlot[bucketNo] = i;
+				buckets.set(bucketNo, bucket);
 				continue;
 	 		}
 			
@@ -912,6 +984,7 @@ public class MyExtHashIndex implements HashIndex {
 				else {				
 					int entrySize = entry[1]; 	//The second elements are data entry size
 					int low1 = 2, high1 = entrySize - 1;
+					boolean valFound = false;
 					for (; low1 <= high1;) {
 						int mid1 = (low1 + high1) >> 1;
 						int midVals = entry[mid1];
@@ -919,8 +992,13 @@ public class MyExtHashIndex implements HashIndex {
 							low1 = mid1 + 1;
 						else if (midVals > r)
 							high1 = mid1 - 1;
-						else continue;		//value found, do nothing			
+						else {
+							added = true;
+							break;		//value found, do nothing			
+						}
 					}
+					if (added)
+						break;
 					// Value not found, insert new value into current data entry.
 					// First check for free slots in the entry. Expand entry if full
 					if (entrySize == entry.length) {
@@ -935,10 +1013,13 @@ public class MyExtHashIndex implements HashIndex {
 						entry[low1] = r;
 					}
 					else entry[entrySize] = r;
-					entry[1]++;				
-					continue;
+					entry[1]++;	
+					added = true;
+					break;
 				}
 			}
+			if (added)
+				continue;
 			
 			/** Step 3 */
 			entry = new int[INITIAL_CAPACITY];
@@ -1010,15 +1091,15 @@ public class MyExtHashIndex implements HashIndex {
 					buckets.set(bucketNo, bucket);
 				}
 			}
-		}
-		
+		}		
 	}
 	
 	@Override
 	public int[] pointQueryRowIDs(Object objKey) throws InvalidKeyException {
-		int[] entry = null;			
+		int[] entry = new int[0];			
 		int key = 0;
 		
+		//This is really stupid
 		try {
 			if (type == Types.getDateType()) 
 				key = ((Date)objKey).hashCode();
@@ -1032,12 +1113,14 @@ public class MyExtHashIndex implements HashIndex {
 				key = ((Integer)objKey).hashCode();
 			else if (type == Types.getVarcharType())
 				key = ((String)objKey).hashCode();
-			else if (type.equals(objKey))
+			else if (type.getLength() == ((String)objKey).length())
 				key = objKey.hashCode();
+			else
+				throw new InvalidKeyException();
 		}
 		catch (ClassCastException cce) {
 			throw new InvalidKeyException();
-		}				
+		}						
 		
 		int bucketNo = hash(key);
 		
@@ -1060,6 +1143,7 @@ public class MyExtHashIndex implements HashIndex {
 					int size = tmpEntry[1];
 					entry = new int[size - 2];
 					System.arraycopy(tmpEntry, 2, entry, 0, size - 2);
+					break;
 				}
 			}
 		}
@@ -1071,6 +1155,7 @@ public class MyExtHashIndex implements HashIndex {
 		int[] entry;			
 		int key = 0;
 		
+		//This is really stupid
 		try {
 			if (type == Types.getDateType()) 
 				key = ((Date)objKey).hashCode();
@@ -1084,12 +1169,14 @@ public class MyExtHashIndex implements HashIndex {
 				key = ((Integer)objKey).hashCode();
 			else if (type == Types.getVarcharType())
 				key = ((String)objKey).hashCode();
-			else if (type.equals(objKey))
+			else if (type.getLength() == ((String)objKey).length())
 				key = objKey.hashCode();
+			else
+				throw new InvalidKeyException();
 		}
 		catch (ClassCastException cce) {
 			throw new InvalidKeyException();
-		}				
+		}						
 		
 		int bucketNo = hash(key);
 		
@@ -1145,6 +1232,7 @@ public class MyExtHashIndex implements HashIndex {
 		int[] entry;			
 		int key = 0;
 		
+		//This is really stupid
 		try {
 			if (type == Types.getDateType()) 
 				key = ((Date)objKey).hashCode();
@@ -1158,12 +1246,14 @@ public class MyExtHashIndex implements HashIndex {
 				key = ((Integer)objKey).hashCode();
 			else if (type == Types.getVarcharType())
 				key = ((String)objKey).hashCode();
-			else if (type.equals(objKey))
+			else if (type.getLength() == ((String)objKey).length())
 				key = objKey.hashCode();
+			else
+				throw new InvalidKeyException();
 		}
 		catch (ClassCastException cce) {
 			throw new InvalidKeyException();
-		}				
+		}					
 		
 		int bucketNo = hash(key);
 		
@@ -1229,7 +1319,6 @@ public class MyExtHashIndex implements HashIndex {
 
 	@Override
 	public String describeIndex() {
-		final String des = null; 
 		return des;
 	}
 
@@ -1238,20 +1327,12 @@ public class MyExtHashIndex implements HashIndex {
 		return false;
 	}
 
+	//This method relies completely on the consistency of the index, it
+	//assumes that every rows returned by index is not deleted in the
+	//base table
 	@Override
-	public Operator<Row> pointQuery(Object searchKey) {
-		// Since this is indirect index, there's no way to fetch the rows directly
-		return null;
-	}
-
-	@Override
-	public boolean isDirect() {
-		return false;
-	}
-
-	@Override
-	public void delete(Object objKey) throws InvalidKeyException {
-		int[] entry;			
+	public Operator<Row> pointQuery(Object objKey) throws InvalidKeyException {
+		int[] entry = new int[0];			
 		int key = 0;
 		
 		try {
@@ -1273,6 +1354,62 @@ public class MyExtHashIndex implements HashIndex {
 		catch (ClassCastException cce) {
 			throw new InvalidKeyException();
 		}				
+		
+		int bucketNo = hash(key);
+		
+		Object tmp = buckets.get(bucketNo);
+		
+		if (tmp != null) { 		
+			Object[] bucket = (Object[])tmp;
+			int low = 0, high = freeSlot[bucketNo] - 1;
+			int[] tmpEntry;				
+			for (; low <= high;) {
+				int mid = (low + high) >> 1;
+				tmpEntry = (int[])bucket[mid];
+				int tmpKey = tmpEntry[0];		//The beginning elements is key content
+				if (tmpKey < key) 
+					low = mid + 1;
+				else if (tmpKey > key)
+					high = mid - 1;
+				// Key found, just retrieve the values in entry from 3rd elements on
+				else {					
+					int size = tmpEntry[1];
+					entry = new int[size - 2];
+					System.arraycopy(tmpEntry, 2, entry, 0, size - 2);
+					break;
+				}
+			}
+		}
+		return table.getRows(entry);		
+	}
+
+	@Override
+	public void delete(Object objKey) throws InvalidKeyException {
+		int[] entry;			
+		int key = 0;
+		
+		//This is really stupid
+		try {
+			if (type == Types.getDateType()) 
+				key = ((Date)objKey).hashCode();
+			else if (type == Types.getDoubleType())
+				key = ((Double)objKey).hashCode();
+			else if (type == Types.getFloatType())
+				key = ((Float)objKey).hashCode();
+			else if (type == Types.getLongType())
+				key = ((Long)objKey).hashCode();
+			else if (type == Types.getIntegerType())
+				key = ((Integer)objKey).hashCode();
+			else if (type == Types.getVarcharType())
+				key = ((String)objKey).hashCode();
+			else if (type.getLength() == ((String)objKey).length())
+				key = objKey.hashCode();
+			else
+				throw new InvalidKeyException();
+		}
+		catch (ClassCastException cce) {
+			throw new InvalidKeyException();
+		}						
 		
 		int bucketNo = hash(key);
 		
@@ -1299,5 +1436,10 @@ public class MyExtHashIndex implements HashIndex {
 				}
 			}	
 		}
+	}
+
+	@Override
+	public Table getBaseTable() {
+		return table;
 	}	
 }

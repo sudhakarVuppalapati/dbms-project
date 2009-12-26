@@ -16,7 +16,7 @@ public final class MyHashFunctions {
 	  key = key + (key << 3);
 	  key = key ^ (key >>> 4);
 	  key = key * c2;
-	  key = key ^ (key >>> 15);
+	  key = key ^ (key >>> 16);
 	  return key;
 	}
 }

@@ -931,4 +931,28 @@ public class MyTable implements Table {
 	public Row getRow(int i){
 		return rows.get(i);
 	}
+	
+	/** TENTATIVE -$BEGIN */
+	/**
+	 * This method is to fast retrieve the rows through their rowIDs. I'm not sure
+	 * it's a good idea in sense of OO design: It tightens the coupling between
+	 * MyTable and Index classes. But in terms of performance, this could be the
+	 * best solution
+	 * 
+	 * @param rowIDs list of row IDs
+	 * @return Operator of row types. Note that elements in the operator can be NULL,
+	 * since I skipped checking the deleted rows - we already did that when maintaining
+	 * indexes. Doing check twice can hit the performance.
+	 * @author attran
+	 */
+	protected Operator<Row> getRows(int[] rowIDs) {
+		List matchingRows = new ArrayList();
+		int i = 0, n = rowIDs.length;
+		for(; i < n; i++) {
+			matchingRows.add(rows.get(i));
+		}
+		return new MyOperator<Row>(matchingRows);
+		
+	}
+	/** TENTATIVE -$END */
 }
