@@ -90,8 +90,8 @@ public class StorageLayerTest extends TestCase {
 	}
 
 	/**
-     * 
-     */
+	 * 
+	 */
 	public void testPersistence() {
 
 		// get new database instance
@@ -128,8 +128,8 @@ public class StorageLayerTest extends TestCase {
 
 		tablesOp.open();
 		Table t;
-
-		for (int i = 0; (t = tablesOp.next()) != null; i++) {
+		int i = 0;
+		for (i = 0; (t = tablesOp.next()) != null; i++) {
 
 			assertEquals(tName, t.getTableName());
 
@@ -138,6 +138,11 @@ public class StorageLayerTest extends TestCase {
 		}
 
 		tablesOp.close();
+
+		if (i != 1) {
+
+			fail("Incorrect number of tables.");
+		}
 
 	}
 

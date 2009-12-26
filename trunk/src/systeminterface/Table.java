@@ -8,7 +8,7 @@ import exceptions.NoSuchRowException;
 import exceptions.SchemaMismatchException;
 
 /**
- *
+ * 
  */
 public interface Table {
 
@@ -45,7 +45,8 @@ public interface Table {
 	 * 
 	 * @param row
 	 *            New row
-	 * @return int A row ID that is unique in for this table (can be useful for indexing later on)
+	 * @return int A row ID that is unique in for this table (can be useful for
+	 *         indexing later on)
 	 * @throws SchemaMismatchException
 	 *             Schema of supplied row does not match that of table
 	 */

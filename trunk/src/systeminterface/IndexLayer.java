@@ -203,7 +203,7 @@ public interface IndexLayer {
 	/**
 	 * Delete all entries in the index with a matching key (all payloads)
 	 * 
-	 * @param indexName
+	 * @param indexName 
 	 * @param key
 	 *            Key to be deleted.
 	 * @throws NoSuchIndexException
