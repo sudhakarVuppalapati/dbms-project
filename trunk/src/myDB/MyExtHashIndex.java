@@ -7,6 +7,7 @@ import java.util.List;
 import exceptions.InvalidKeyException;
 
 import operator.Operator;
+import systeminterface.Column;
 import systeminterface.Row;
 import systeminterface.Table;
 
@@ -35,12 +36,11 @@ public class MyExtHashIndex implements HashIndex {
 	/** Default cardinality of directory */
 	private static final int CARD = 4;
 	
-	/** Index description. I'm not sure if we need this property, maybe 
-	 * we should create it on the fly */
-	private final String des;
-		
 	/** Current global depth */
 	private int gDepth;
+	
+	/** Store the index description */
+	private final String des;
 	
 	/** Since Java has no exponential operator, I store the value of
 	 * 2^gDepth here, to fast compute when needed */
@@ -88,10 +88,10 @@ public class MyExtHashIndex implements HashIndex {
 	 * should be given the column values array, obtained by calling method 
 	 * MyColumn.getDataArrayAsObject() 
 	 */
-	public MyExtHashIndex(String indexName, Type t, Table tableObj) {
+	public MyExtHashIndex(String indexDes, Type t, Table tableObj) {
 		type = t;
 		table = (MyTable)tableObj;
-		des = indexName;
+		des = null;
 		gDepth = DEPTH;
 		powerDepth = CARD - 1;
 		buckets = new ArrayList(CARD);
@@ -284,14 +284,17 @@ public class MyExtHashIndex implements HashIndex {
 	}
 
 
-	/** Construct the index in bulk loading-liked fashion. colVals is obtained
+	/** Construct the index in bulk loading-liked fashion. Column values are obtained
 	 * by calling MyColumn.getDataArrayAsObject() 
 	 */	
-	public MyExtHashIndex(String indexName, Object colVals, Type t, Table tableObj) {
+	public MyExtHashIndex(String indexDes, Table tableObj, Column colObj) {
 		//Initialize index as usual
-		type = t;
+		des = indexDes;
+		
+		type = colObj.getColumnType();
+		Object colVals = colObj.getDataArrayAsObject();
+		
 		table = (MyTable)tableObj;
-		des = indexName;
 		gDepth = DEPTH;
 		powerDepth = CARD;
 		buckets = new ArrayList(CARD);
@@ -310,7 +313,7 @@ public class MyExtHashIndex implements HashIndex {
 		Object[] bucket;
 		
 		boolean added;
-		if(t == Types.getIntegerType()) {
+		if (type == Types.getIntegerType()) {
 			int[] keys = (int[])colVals;
 			n = keys.length;
 						
@@ -465,7 +468,7 @@ public class MyExtHashIndex implements HashIndex {
 			}
 			return;
 		}
-		if(t == Types.getDoubleType()) {
+		if(type == Types.getDoubleType()) {
 			double[] keys = (double[])colVals;
 			n = keys.length;
 			double d;
@@ -624,7 +627,7 @@ public class MyExtHashIndex implements HashIndex {
 			}
 			return;
 		}
-		if(t == Types.getFloatType()) {
+		if(type == Types.getFloatType()) {
 			float[] keys = (float[])colVals;
 			float f;
 			n = keys.length;
@@ -782,7 +785,7 @@ public class MyExtHashIndex implements HashIndex {
 			}
 			return;
 		}
-		if(t == Types.getLongType()) {
+		if(type == Types.getLongType()) {
 			long[] keys = (long[])colVals;
 			n = keys.length;
 			long l;

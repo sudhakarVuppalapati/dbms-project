@@ -5,9 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import metadata.Type;
-
 import operator.Operator;
 import systeminterface.Column;
 import systeminterface.IndexLayer;
@@ -66,7 +64,7 @@ public class MyIndexLayer implements IndexLayer {
 			String keyAttributeName, boolean supportRangeQueries)
 	throws IndexAlreadyExistsException, SchemaMismatchException,
 	NoSuchTableException {
-
+		// TODO Auto-generated method stub
 		/** Tentative -$BEGIN */
 		/**
 		 * Tuan - This code fragment is only to check the functionality of 
@@ -144,8 +142,15 @@ public class MyIndexLayer implements IndexLayer {
 
 	@Override
 	public String describeAllIndexes() {
-		// TODO Auto-generated method stub
-		return null;
+		StringBuffer des = new StringBuffer();
+		
+		String[] indexes = (String[])namedIndexes.keySet().toArray(new String[0]);
+		
+		int i = 0, n = indexes.length;
+		for (; i < n; i++) 
+			des.append(namedIndexes.get(indexes[i]).describeIndex()).append(".");
+				
+		return des.toString();
 	}
 
 	@Override
@@ -327,10 +332,31 @@ public class MyIndexLayer implements IndexLayer {
 			Object endSearchKey) throws NoSuchIndexException,
 			InvalidKeyException, InvalidRangeException,
 			RangeQueryNotSupportedException {
-		// TODO Auto-generated method stub
+		/** Tentative -$BEGIN */
+		try {
+			Index index = namedIndexes.get(indexName);
+			if (!index.supportRangeQueries())
+				throw new RangeQueryNotSupportedException();
+			
+			TreeIndex tIndex = (TreeIndex)index;
+			tIndex.delete(startSearchKey, endSearchKey);
+			}
 		
+		catch (NullPointerException npe) {
+			throw new NoSuchIndexException();
+		}
+		catch (ClassCastException cce) {
+			throw new RangeQueryNotSupportedException();
+		}
+		/** Tentative -$END */
+		//return null;
 	}
 
+	/**
+	 * Need to evaluate the performance between two alternatives:
+	 * 1 - Serialize a single string (save more I/O time but worse computing)
+	 * 2 - Serialize a complex object (don't need to parse string, but I/O is worse)
+	 */
 	@Override
 	public void rebuildAllIndexes() throws IOException {
 		// TODO Auto-generated method stub
@@ -341,6 +367,30 @@ public class MyIndexLayer implements IndexLayer {
 	public void storeIndexInformation() throws IOException {
 		// TODO Auto-generated method stub
 		
+	}
+
+	/**
+	 *  '0' - MyExtHashIndex
+	 *  '1' - MyCSBTreeIndex
+	 *  
+	 * @throws NoSuchTableException 
+	 * @throws NoSuchColumnException 
+	 */
+	private Index newInstance(String arg, int iTable) 
+	throws NoSuchTableException, NoSuchColumnException {
+	
+		int iAtt = arg.indexOf('-', iTable);
+		int iType = arg.indexOf('-', iAtt);
+		
+		Table t = storageLayer.getTableByName(arg.substring(iTable + 1, iAtt));
+		Column c = t.getColumnByName(arg.substring(iAtt + 1, iType));
+		Type type = c.getColumnType();
+		int index = arg.charAt(iType + 1);
+		
+		switch (index) {
+		case '0': return new MyExtHashIndex(arg, t, c);
+		default: return null;
+		}
 	}
 
 }

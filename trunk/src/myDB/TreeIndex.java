@@ -37,4 +37,17 @@ public interface TreeIndex extends HashIndex {
 	 */
 	public Operator<Row> rangeQuery(Object startingKey, Object endingKey) 
 	throws InvalidKeyException, InvalidRangeException;
+	
+	/**
+	 * Look up in this index, deleting every data entries with search key
+	 * ranging between the supplied ones. Note that when querying the deleted
+	 * data entries, the querying method should return empty arrays or empty
+	 * operators, not the null reference.
+	 * @param startingKEy
+	 * @param endingKey
+	 * @throws InvalidKeyException
+	 * @throws InvalidRangeException
+	 */
+	public void delete(Object startingKey, Object endingKey)
+	throws InvalidKeyException, InvalidRangeException;
 }
