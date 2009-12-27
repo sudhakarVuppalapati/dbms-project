@@ -192,9 +192,6 @@ public class MyIndexLayer implements IndexLayer {
 				//make nonsense to throw SchemaMismatchException here
 				throw new SchemaMismatchException();
 			}
-			catch (ClassCastException cce) {
-				throw new SchemaMismatchException();
-			}
 		}
 		catch (NullPointerException npe) {
 			throw new NoSuchTableException();
