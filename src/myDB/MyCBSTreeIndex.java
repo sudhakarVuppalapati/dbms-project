@@ -87,4 +87,11 @@ public class MyCBSTreeIndex implements TreeIndex {
 		
 	}
 
+	@Override
+	public void delete(Object startingKey, Object endingKey)
+			throws InvalidKeyException, InvalidRangeException {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
