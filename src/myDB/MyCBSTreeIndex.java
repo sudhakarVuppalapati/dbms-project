@@ -11,7 +11,7 @@ import exceptions.InvalidRangeException;
 
 /**
  * Java implementation of CSB+ Tree Index, based on samples
- * provided by Prof. Dittrich
+ * provided by Prof. Dittrich and the TAs
  * @author attran
  *
  */
