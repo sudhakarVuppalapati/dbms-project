@@ -17,13 +17,15 @@ public class MyPersistentExtent implements PersistentExtent {
 
 	public static final String TABLES_METADATA_FILE = "disk/dbtables.dat";
 	
+	public static final String INDEXES_METADATA_FILE = "disk/dbindexes.dat";
+	
 	public static final String DISK_PREFIX = "disk/";
 	
 	public static final String TABLE_EXT = ".tbl";
 	
 	public static final String DISK = "disk";
 	
-	public static final int BUFF_SIZE = 1048576;
+	public static final int BUFF_SIZE = 4096;
 	
 	public static final byte[] buff = new byte[BUFF_SIZE];
 	
