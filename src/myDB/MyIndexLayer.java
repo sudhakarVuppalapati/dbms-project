@@ -1,5 +1,7 @@
 package myDB;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,7 +31,7 @@ import exceptions.SchemaMismatchException;
 public class MyIndexLayer implements IndexLayer {
 
 	private final StorageLayer storageLayer;
-	
+
 	/** Tentative -$BEGIN */
 
 	/** Mapping from index names to index */
@@ -70,7 +72,7 @@ public class MyIndexLayer implements IndexLayer {
 		 * Tuan - This code fragment is only to check the functionality of 
 		 * MyExtHashIndex. Need to be replaced later
 		 */
-		
+
 		if (supportRangeQueries) {
 			return;
 		}
@@ -78,13 +80,13 @@ public class MyIndexLayer implements IndexLayer {
 			try {
 				if (namedIndexes.containsKey(indexName))
 					throw new IndexAlreadyExistsException();
-				
+
 				Table t = storageLayer.getTableByName(tableName);
 				Column c = t.getColumnByName(keyAttributeName);
 				Type type = c.getColumnType();
 				MyExtHashIndex mehi = new MyExtHashIndex(indexName, type, t);
 				namedIndexes.put(indexName, mehi);
-				
+
 				//Add to column/index-names mapping
 				List<String> list = colIndexes.get(c);
 				if (list != null) {
@@ -143,13 +145,13 @@ public class MyIndexLayer implements IndexLayer {
 	@Override
 	public String describeAllIndexes() {
 		StringBuffer des = new StringBuffer();
-		
+
 		String[] indexes = (String[])namedIndexes.keySet().toArray(new String[0]);
-		
+
 		int i = 0, n = indexes.length;
 		for (; i < n; i++) 
-			des.append(namedIndexes.get(indexes[i]).describeIndex()).append(".");
-				
+			des.append(namedIndexes.get(indexes[i]).describeIndex()).append("$");
+
 		return des.toString();
 	}
 
@@ -232,8 +234,8 @@ public class MyIndexLayer implements IndexLayer {
 
 	@Override
 	public int[] pointQueryRowIDs(String indexName, Object searchKey)
-			throws NoSuchIndexException, InvalidKeyException {
-		
+	throws NoSuchIndexException, InvalidKeyException {
+
 		/** Tentative -$BEGIN */
 		try {
 			HashIndex index = (HashIndex)namedIndexes.get(indexName);
@@ -253,17 +255,17 @@ public class MyIndexLayer implements IndexLayer {
 			Object endSearchKey) throws NoSuchIndexException,
 			InvalidRangeException, InvalidKeyException,
 			RangeQueryNotSupportedException {
-		
+
 		/** Tentative -$BEGIN */
 		try {
 			Index index = namedIndexes.get(indexName);
 			if (!index.supportRangeQueries())
 				throw new RangeQueryNotSupportedException();
-			
+
 			TreeIndex tIndex = (TreeIndex)index;
 			return tIndex.rangeQuery(startSearchKey, endSearchKey);
-			}
-		
+		}
+
 		catch (NullPointerException npe) {
 			throw new NoSuchIndexException();
 		}
@@ -283,11 +285,11 @@ public class MyIndexLayer implements IndexLayer {
 			Index index = namedIndexes.get(indexName);
 			if (!index.supportRangeQueries())
 				throw new RangeQueryNotSupportedException();
-			
+
 			TreeIndex tIndex = (TreeIndex)index;
 			return tIndex.rangeQueryRowIDs(startSearchKey, endSearchKey);
-			}
-		
+		}
+
 		catch (NullPointerException npe) {
 			throw new NoSuchIndexException();
 		}
@@ -337,11 +339,11 @@ public class MyIndexLayer implements IndexLayer {
 			Index index = namedIndexes.get(indexName);
 			if (!index.supportRangeQueries())
 				throw new RangeQueryNotSupportedException();
-			
+
 			TreeIndex tIndex = (TreeIndex)index;
 			tIndex.delete(startSearchKey, endSearchKey);
-			}
-		
+		}
+
 		catch (NullPointerException npe) {
 			throw new NoSuchIndexException();
 		}
@@ -359,38 +361,86 @@ public class MyIndexLayer implements IndexLayer {
 	 */
 	@Override
 	public void rebuildAllIndexes() throws IOException {
-		// TODO Auto-generated method stub
+		FileInputStream fis = new FileInputStream(MyPersistentExtent.INDEXES_METADATA_FILE);
+		int i = 0;
+		int length = fis.available();
+		final byte[] bytes = new byte[length];
+
+		fis.read(bytes);
+		fis.close();
+
+		String str = new String(bytes);
+		String[] des = str.split("$");		
+		length = des.length;
+
+		int k, a, y, indexType;
+		String tmp, indexName;
+		Table t;
+		Column c;
+		Index index;
+		List<String> list;
 		
+		try {
+			for (i = 0; i < length; i++) {
+				tmp = des[i];
+				k = tmp.indexOf('-');
+				a = tmp.indexOf('-', k);
+				y = tmp.indexOf('-', a);
+				indexName = tmp.substring(0, k);
+
+				t = storageLayer.getTableByName(tmp.substring(k + 1, a));
+				c = t.getColumnByName(tmp.substring(a + 1, y));
+
+				indexType = tmp.charAt(y + 1);
+
+				index = newIndex(tmp, t, c, indexType);
+			
+				namedIndexes.put(indexName, index);
+				
+				if (colIndexes.containsKey(c)) {
+					list = colIndexes.get(c);
+					list.add(indexName);
+				}
+				else {
+					list = new ArrayList<String>();
+					list.add(indexName);
+					colIndexes.put(c, list);
+				}
+			}
+		}
+		catch (NoSuchTableException nste) {
+			throw new IOException();
+		}
+		catch (NoSuchColumnException nsce) {
+			throw new IOException();
+		}
+		catch (IllegalArgumentException iae) {
+			throw new IOException();
+		}
+
 	}
 
 	@Override
 	public void storeIndexInformation() throws IOException {
-		// TODO Auto-generated method stub
-		
+		String str = describeAllIndexes();
+		byte[] bytes = str.getBytes();
+		FileOutputStream fos = new FileOutputStream(MyPersistentExtent.INDEXES_METADATA_FILE);
+		fos.write(bytes);
+		fos.close();
 	}
 
 	/**
 	 *  '0' - MyExtHashIndex
 	 *  '1' - MyCSBTreeIndex
 	 *  
-	 * @throws NoSuchTableException 
-	 * @throws NoSuchColumnException 
 	 */
-	private Index newInstance(String arg, int iTable) 
-	throws NoSuchTableException, NoSuchColumnException {
-	
-		int iAtt = arg.indexOf('-', iTable);
-		int iType = arg.indexOf('-', iAtt);
-		
-		Table t = storageLayer.getTableByName(arg.substring(iTable + 1, iAtt));
-		Column c = t.getColumnByName(arg.substring(iAtt + 1, iType));
-		Type type = c.getColumnType();
-		int index = arg.charAt(iType + 1);
-		
-		switch (index) {
-		case '0': return new MyExtHashIndex(arg, t, c);
+	private Index newIndex(String des, Table iTable, Column iCol, int indexType) {
+
+		switch (indexType) {
+
+		case '0': return new MyExtHashIndex(des, iTable, iCol);
+
 		default: return null;
 		}
 	}
-
 }
