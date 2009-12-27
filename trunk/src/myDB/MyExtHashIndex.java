@@ -35,7 +35,8 @@ public class MyExtHashIndex implements HashIndex {
 	/** Default cardinality of directory */
 	private static final int CARD = 4;
 	
-	/** Index description */
+	/** Index description. I'm not sure if we need this property, maybe 
+	 * we should create it on the fly */
 	private final String des;
 		
 	/** Current global depth */
