@@ -3,6 +3,7 @@ package secondmilestone;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Random;
 import java.util.TreeSet;
 
 import junit.framework.TestCase;
@@ -11,6 +12,7 @@ import metadata.Types;
 import operator.Operator;
 import systeminterface.Database;
 import systeminterface.Table;
+import util.RandomInputGenerator;
 import exceptions.IndexAlreadyExistsException;
 import exceptions.InvalidKeyException;
 import exceptions.InvalidRangeException;
@@ -123,27 +125,46 @@ public class DummyIndexLayerTest extends TestCase {
 			fail("Unexpected NoSuchTableException");
 		}
 
+		/** Make random index search keys */
+		Random random = new Random();
+		int LENGTH = 128;
+		int CARDINALITY = 1000;
+		
+		/** Add entries to index * */
+		ArrayList<Object> keys = RandomInputGenerator.getRandIntegerList(random, CARDINALITY);
+		
+		try {
+			for (int i = 0; i < CARDINALITY; i++) {
+				myDatabase.getIndexInterface().insertIntoIndex(index1, new Integer(i % LENGTH), 
+						(Integer)keys.get(i));
+			}
+		}
+		catch (NoSuchIndexException e) {
+			fail("Unexpected NoSuchIndexException");
+		} catch (InvalidKeyException e) {
+			fail("Unexpected InvalidKeyException");
+		}
+
 		/** Add entries to index * */
 		ArrayList<Integer> valuesList = new ArrayList<Integer>();
 		valuesList.add(5);
 		valuesList.add(6);
 		valuesList.add(43);
 
-		try {
-
-			myDatabase.getIndexInterface().insertIntoIndex(index1,
-					new Integer(20), valuesList.get(1));
-			myDatabase.getIndexInterface().insertIntoIndex(index1,
-					new Integer(34), valuesList.get(2));
-			myDatabase.getIndexInterface().insertIntoIndex(index1,
-					new Integer(12), valuesList.get(0));
-
-		} catch (NoSuchIndexException e) {
+		try {		
+		myDatabase.getIndexInterface().insertIntoIndex(index1,
+				new Integer(20), valuesList.get(0));
+		myDatabase.getIndexInterface().insertIntoIndex(index1,
+				new Integer(34), valuesList.get(1));
+		myDatabase.getIndexInterface().insertIntoIndex(index1,
+				new Integer(12), valuesList.get(2));
+		}
+		catch (NoSuchIndexException e) {
 			fail("Unexpected NoSuchIndexException");
 		} catch (InvalidKeyException e) {
 			fail("Unexpected InvalidKeyException");
 		}
-
+		
 		int rowIDs[] = null;
 		TreeSet<Integer> expectedResultSet = new TreeSet<Integer>(valuesList);
 

@@ -141,6 +141,7 @@ public class MyExtHashIndex implements HashIndex {
 		 * appropriate bucket
 		 */
 		if (tmp == null) {
+			System.out.println(" Key " + key + "is new");
 			entry = new int[INITIAL_CAPACITY];
 			entry[0] = key;
 			entry[1] = 3;
@@ -181,8 +182,13 @@ public class MyExtHashIndex implements HashIndex {
 						low1 = mid1 + 1;
 					else if (midVals > rowID)
 						high1 = mid1 - 1;
-					else return;		//value found, do nothing			
+					else {
+						System.out.println(" Couple (" + key + "," + + rowID + ") is found");
+						return;		//value found, do nothing			
+					}
 				}
+				System.out.println(" Key" + key + " is found, but rowID " + + rowID + " is new");
+
 				// Value not found, insert new value into current data entry.
 				// First check for free slots in the entry. Expand entry if full
 				if (entrySize == entry.length) {
@@ -204,7 +210,7 @@ public class MyExtHashIndex implements HashIndex {
 		/**
 		 * Step 3: Found the bucket, but key is new, then try to add it into the bucket.
 		 */
-		
+		System.out.println(" Add key " + key + " to matching bucket");
 		// Create a data entry in format: [key,size,[list of rowID]]
 		entry = new int[INITIAL_CAPACITY];
 		entry[0] = key;
@@ -224,63 +230,81 @@ public class MyExtHashIndex implements HashIndex {
 		/** 
 		 * Step 4: Adding failed, do extendible hashing 
 		 */
+		System.out.println(" Add key " + key + " to matching bucket failed. Do extending");
+
+		Object[] oldBucket = bucket.clone();	
 		
-		Object[] oldBucket = bucket.clone();			
-		if (gDepth > lDepths[bucketNo]) {
-			lDepths[bucketNo]++;	
-			bucket[freeSlot[bucketNo]++] = entry;
-		}		
-		else {
-			lDepths[bucketNo] = ++gDepth;
-			
-			//Double the directory
-			i = lDepths.length;
-			high = i * 2;
-			int[] newLDepths = new int[high];
-			System.arraycopy(lDepths, 0, newLDepths, 0, i);
-			lDepths = newLDepths;
-			
-			int[] newFreeSlot = new int[high];
-			System.arraycopy(freeSlot, 0, newFreeSlot, 0, i);
-			freeSlot = newFreeSlot;
-			
-			while (i++ < high)
-				buckets.add(null);
-			
-			powerDepth = high - 1;
-			
-			//Rehash the key
-			bucketNo = hash(key);
-			tmp = buckets.get(bucketNo);
-			
-			if (tmp != null) {
-				bucket = (Object[])tmp;
-				bucket[freeSlot[bucketNo]++] = entry;
-			}					
-			else {
-				lDepths[bucketNo] = gDepth;
-				bucket = new Object[BUCKET_SIZE];
-				bucket[freeSlot[bucketNo]++] = entry;
-				buckets.set(bucketNo, bucket);
-			}				
-		}
+		int k = lDepths.length;
 		
-		//Rehash other keys in the old bucket
-		for (i = 0; i < BUCKET_SIZE; i++) { 
-			bucketNo = hash(((int[])oldBucket[i])[0]);
-			tmp = buckets.get(bucketNo);
-			if (tmp != null) {
-				bucket = (Object[])tmp;
-				bucket[freeSlot[bucketNo]++] = oldBucket[i];
-			}					
-			else {
-				lDepths[bucketNo] = gDepth;
-				bucket = new Object[BUCKET_SIZE];
-				bucket[freeSlot[bucketNo]++] = oldBucket[i];
-				buckets.set(bucketNo, bucket);
+		while (true) {	//Repeat do extending until every data entries fit within a bucket
+			freeSlot[bucketNo] = 0;
+
+			if (gDepth > lDepths[bucketNo]) {
+				lDepths[bucketNo] = gDepth;	
+				bucket[freeSlot[bucketNo]++] = entry;
+			}		
+			else {				
+				lDepths[bucketNo] = ++gDepth;
+				
+				//Double the directory
+				i = lDepths.length;
+				high = i * 2;
+				int[] newLDepths = new int[high];
+				System.arraycopy(lDepths, 0, newLDepths, 0, i);
+				lDepths = newLDepths;
+				
+				int[] newFreeSlot = new int[high];
+				System.arraycopy(freeSlot, 0, newFreeSlot, 0, i);
+				freeSlot = newFreeSlot;
+				
+				for (i = k; i < high; i++) {
+					buckets.add(null);
+					freeSlot[i] = 0;
+				}				
+				
+				powerDepth = high - 1;
+				
+				//Rehash the key
+				bucketNo = hash(key);
+				tmp = buckets.get(bucketNo);
+				
+				if (tmp != null) {
+					bucket = (Object[])tmp;
+					if (freeSlot[bucketNo] < BUCKET_SIZE)
+						bucket[freeSlot[bucketNo]++] = entry;
+					else 
+						continue;
+				}					
+				else {
+					lDepths[bucketNo] = gDepth;
+					bucket = new Object[BUCKET_SIZE];
+					bucket[freeSlot[bucketNo]++] = entry;
+					buckets.set(bucketNo, bucket);
+				}			
 			}
+			
+			//Rehash other keys in the old bucket
+			for (i = 0; i < BUCKET_SIZE; i++) { 
+				bucketNo = hash(((int[])oldBucket[i])[0]);
+				tmp = buckets.get(bucketNo);
+				if (tmp != null) {
+					bucket = (Object[])tmp;
+					if (freeSlot[bucketNo] < BUCKET_SIZE)
+						bucket[freeSlot[bucketNo]++] = oldBucket[i];
+					else {
+						freeSlot[bucketNo] = 0;
+						continue;
+					}
+				}					
+				else {
+					lDepths[bucketNo] = gDepth;
+					bucket = new Object[BUCKET_SIZE];
+					bucket[freeSlot[bucketNo]++] = oldBucket[i];
+					buckets.set(bucketNo, bucket);
+				}
+			}
+			break;		
 		}
-		
 	}
 
 
@@ -412,58 +436,78 @@ public class MyExtHashIndex implements HashIndex {
 				}
 				
 				/** Step 4 */
-				Object[] oldBucket = bucket.clone();			
-				if (gDepth > lDepths[bucketNo]) {
-					lDepths[bucketNo]++;	
-					bucket[freeSlot[bucketNo]++] = entry;
-				}		
-				else {
-					lDepths[bucketNo] = ++gDepth;
-					
-					//Double the directory
-					i = lDepths.length;
-					high = i * 2;
-					int[] newLDepths = new int[high];
-					System.arraycopy(lDepths, 0, newLDepths, 0, i);
-					lDepths = newLDepths;
-					
-					int[] newFreeSlot = new int[high];
-					System.arraycopy(freeSlot, 0, newFreeSlot, 0, i);
-					freeSlot = newFreeSlot;
-					
-					while (i++ < high)
-						buckets.add(null);
-					
-					//Rehash the key
-					bucketNo = hash(k);
-					tmp = buckets.get(bucketNo);
-					
-					if (tmp != null) {
-						bucket = (Object[])tmp;
-						bucket[freeSlot[bucketNo]++] = entry;
-					}					
-					else {
-						lDepths[bucketNo] = gDepth;
-						bucket = new Object[BUCKET_SIZE];
-						bucket[freeSlot[bucketNo]++] = entry;
-						buckets.set(bucketNo, bucket);
-					}				
-				}
+				Object[] oldBucket = bucket.clone();	
 				
-				//Rehash other keys in the old bucket
-				for (i = 0; i < BUCKET_SIZE; i++) { 
-					bucketNo = hash(((int[])oldBucket[i])[0]);
-					tmp = buckets.get(bucketNo);
-					if (tmp != null) {
-						bucket = (Object[])tmp;
-						bucket[freeSlot[bucketNo]++] = oldBucket[i];
-					}					
-					else {
-						lDepths[bucketNo] = gDepth;
-						bucket = new Object[BUCKET_SIZE];
-						bucket[freeSlot[bucketNo]++] = oldBucket[i];
-						buckets.set(bucketNo, bucket);
+				int origin = lDepths.length;
+				
+				while (true) {	//Repeat do extending until every data entries fit within a bucket
+					freeSlot[bucketNo] = 0;
+
+					if (gDepth > lDepths[bucketNo]) {
+						lDepths[bucketNo] = gDepth;	
+						bucket[freeSlot[bucketNo]++] = entry;
+					}		
+					else {				
+						lDepths[bucketNo] = ++gDepth;
+						
+						//Double the directory
+						i = lDepths.length;
+						high = i * 2;
+						int[] newLDepths = new int[high];
+						System.arraycopy(lDepths, 0, newLDepths, 0, i);
+						lDepths = newLDepths;
+						
+						int[] newFreeSlot = new int[high];
+						System.arraycopy(freeSlot, 0, newFreeSlot, 0, i);
+						freeSlot = newFreeSlot;
+						
+						for (i = origin; i < high; i++) {
+							buckets.add(null);
+							freeSlot[i] = 0;
+						}				
+						
+						powerDepth = high - 1;
+						
+						//Rehash the key
+						bucketNo = hash(k);
+						tmp = buckets.get(bucketNo);
+						
+						if (tmp != null) {
+							bucket = (Object[])tmp;
+							if (freeSlot[bucketNo] < BUCKET_SIZE)
+								bucket[freeSlot[bucketNo]++] = entry;
+							else 
+								continue;
+						}					
+						else {
+							lDepths[bucketNo] = gDepth;
+							bucket = new Object[BUCKET_SIZE];
+							bucket[freeSlot[bucketNo]++] = entry;
+							buckets.set(bucketNo, bucket);
+						}			
 					}
+					
+					//Rehash other keys in the old bucket
+					for (i = 0; i < BUCKET_SIZE; i++) { 
+						bucketNo = hash(((int[])oldBucket[i])[0]);
+						tmp = buckets.get(bucketNo);
+						if (tmp != null) {
+							bucket = (Object[])tmp;
+							if (freeSlot[bucketNo] < BUCKET_SIZE)
+								bucket[freeSlot[bucketNo]++] = oldBucket[i];
+							else {
+								freeSlot[bucketNo] = 0;
+								continue;
+							}
+						}					
+						else {
+							lDepths[bucketNo] = gDepth;
+							bucket = new Object[BUCKET_SIZE];
+							bucket[freeSlot[bucketNo]++] = oldBucket[i];
+							buckets.set(bucketNo, bucket);
+						}
+					}
+					break;		
 				}
 			}
 			return;
@@ -571,58 +615,78 @@ public class MyExtHashIndex implements HashIndex {
 				}
 				
 				/** Step 4 */
-				Object[] oldBucket = bucket.clone();			
-				if (gDepth > lDepths[bucketNo]) {
-					lDepths[bucketNo]++;	
-					bucket[freeSlot[bucketNo]++] = entry;
-				}		
-				else {
-					lDepths[bucketNo] = ++gDepth;
-					
-					//Double the directory
-					i = lDepths.length;
-					high = i * 2;
-					int[] newLDepths = new int[high];
-					System.arraycopy(lDepths, 0, newLDepths, 0, i);
-					lDepths = newLDepths;
-					
-					int[] newFreeSlot = new int[high];
-					System.arraycopy(freeSlot, 0, newFreeSlot, 0, i);
-					freeSlot = newFreeSlot;
-					
-					while (i++ < high)
-						buckets.add(null);
-					
-					//Rehash the key
-					bucketNo = hash(k);
-					tmp = buckets.get(bucketNo);
-					
-					if (tmp != null) {
-						bucket = (Object[])tmp;
-						bucket[freeSlot[bucketNo]++] = entry;
-					}					
-					else {
-						lDepths[bucketNo] = gDepth;
-						bucket = new Object[BUCKET_SIZE];
-						bucket[freeSlot[bucketNo]++] = entry;
-						buckets.set(bucketNo, bucket);
-					}				
-				}
+Object[] oldBucket = bucket.clone();	
 				
-				//Rehash other keys in the old bucket
-				for (i = 0; i < BUCKET_SIZE; i++) { 
-					bucketNo = hash(((int[])oldBucket[i])[0]);
-					tmp = buckets.get(bucketNo);
-					if (tmp != null) {
-						bucket = (Object[])tmp;
-						bucket[freeSlot[bucketNo]++] = oldBucket[i];
-					}					
-					else {
-						lDepths[bucketNo] = gDepth;
-						bucket = new Object[BUCKET_SIZE];
-						bucket[freeSlot[bucketNo]++] = oldBucket[i];
-						buckets.set(bucketNo, bucket);
+				int origin = lDepths.length;
+				
+				while (true) {	//Repeat do extending until every data entries fit within a bucket
+					freeSlot[bucketNo] = 0;
+
+					if (gDepth > lDepths[bucketNo]) {
+						lDepths[bucketNo] = gDepth;	
+						bucket[freeSlot[bucketNo]++] = entry;
+					}		
+					else {				
+						lDepths[bucketNo] = ++gDepth;
+						
+						//Double the directory
+						i = lDepths.length;
+						high = i * 2;
+						int[] newLDepths = new int[high];
+						System.arraycopy(lDepths, 0, newLDepths, 0, i);
+						lDepths = newLDepths;
+						
+						int[] newFreeSlot = new int[high];
+						System.arraycopy(freeSlot, 0, newFreeSlot, 0, i);
+						freeSlot = newFreeSlot;
+						
+						for (i = origin; i < high; i++) {
+							buckets.add(null);
+							freeSlot[i] = 0;
+						}				
+						
+						powerDepth = high - 1;
+						
+						//Rehash the key
+						bucketNo = hash(k);
+						tmp = buckets.get(bucketNo);
+						
+						if (tmp != null) {
+							bucket = (Object[])tmp;
+							if (freeSlot[bucketNo] < BUCKET_SIZE)
+								bucket[freeSlot[bucketNo]++] = entry;
+							else 
+								continue;
+						}					
+						else {
+							lDepths[bucketNo] = gDepth;
+							bucket = new Object[BUCKET_SIZE];
+							bucket[freeSlot[bucketNo]++] = entry;
+							buckets.set(bucketNo, bucket);
+						}			
 					}
+					
+					//Rehash other keys in the old bucket
+					for (i = 0; i < BUCKET_SIZE; i++) { 
+						bucketNo = hash(((int[])oldBucket[i])[0]);
+						tmp = buckets.get(bucketNo);
+						if (tmp != null) {
+							bucket = (Object[])tmp;
+							if (freeSlot[bucketNo] < BUCKET_SIZE)
+								bucket[freeSlot[bucketNo]++] = oldBucket[i];
+							else {
+								freeSlot[bucketNo] = 0;
+								continue;
+							}
+						}					
+						else {
+							lDepths[bucketNo] = gDepth;
+							bucket = new Object[BUCKET_SIZE];
+							bucket[freeSlot[bucketNo]++] = oldBucket[i];
+							buckets.set(bucketNo, bucket);
+						}
+					}
+					break;		
 				}
 			}
 			return;
@@ -729,59 +793,79 @@ public class MyExtHashIndex implements HashIndex {
 				}
 				
 				/** Step 4 */
-				Object[] oldBucket = bucket.clone();			
-				if (gDepth > lDepths[bucketNo]) {
-					lDepths[bucketNo]++;	
-					bucket[freeSlot[bucketNo]++] = entry;
-				}		
-				else {
-					lDepths[bucketNo] = ++gDepth;
-					
-					//Double the directory
-					i = lDepths.length;
-					high = i * 2;
-					int[] newLDepths = new int[high];
-					System.arraycopy(lDepths, 0, newLDepths, 0, i);
-					lDepths = newLDepths;
-					
-					int[] newFreeSlot = new int[high];
-					System.arraycopy(freeSlot, 0, newFreeSlot, 0, i);
-					freeSlot = newFreeSlot;
-					
-					while (i++ < high)
-						buckets.add(null);
-					
-					//Rehash the key
-					bucketNo = hash(k);
-					tmp = buckets.get(bucketNo);
-					
-					if (tmp != null) {
-						bucket = (Object[])tmp;
-						bucket[freeSlot[bucketNo]++] = entry;
-					}					
-					else {
-						lDepths[bucketNo] = gDepth;
-						bucket = new Object[BUCKET_SIZE];
-						bucket[freeSlot[bucketNo]++] = entry;
-						buckets.set(bucketNo, bucket);
-					}				
-				}
+				Object[] oldBucket = bucket.clone();	
 				
-				//Rehash other keys in the old bucket
-				for (i = 0; i < BUCKET_SIZE; i++) { 
-					bucketNo = hash(((int[])oldBucket[i])[0]);
-					tmp = buckets.get(bucketNo);
-					if (tmp != null) {
-						bucket = (Object[])tmp;
-						bucket[freeSlot[bucketNo]++] = oldBucket[i];
-					}					
-					else {
-						lDepths[bucketNo] = gDepth;
-						bucket = new Object[BUCKET_SIZE];
-						bucket[freeSlot[bucketNo]++] = oldBucket[i];
-						buckets.set(bucketNo, bucket);
+				int origin = lDepths.length;
+				
+				while (true) {	//Repeat do extending until every data entries fit within a bucket
+					freeSlot[bucketNo] = 0;
+
+					if (gDepth > lDepths[bucketNo]) {
+						lDepths[bucketNo] = gDepth;	
+						bucket[freeSlot[bucketNo]++] = entry;
+					}		
+					else {				
+						lDepths[bucketNo] = ++gDepth;
+						
+						//Double the directory
+						i = lDepths.length;
+						high = i * 2;
+						int[] newLDepths = new int[high];
+						System.arraycopy(lDepths, 0, newLDepths, 0, i);
+						lDepths = newLDepths;
+						
+						int[] newFreeSlot = new int[high];
+						System.arraycopy(freeSlot, 0, newFreeSlot, 0, i);
+						freeSlot = newFreeSlot;
+						
+						for (i = origin; i < high; i++) {
+							buckets.add(null);
+							freeSlot[i] = 0;
+						}				
+						
+						powerDepth = high - 1;
+						
+						//Rehash the key
+						bucketNo = hash(k);
+						tmp = buckets.get(bucketNo);
+						
+						if (tmp != null) {
+							bucket = (Object[])tmp;
+							if (freeSlot[bucketNo] < BUCKET_SIZE)
+								bucket[freeSlot[bucketNo]++] = entry;
+							else 
+								continue;
+						}					
+						else {
+							lDepths[bucketNo] = gDepth;
+							bucket = new Object[BUCKET_SIZE];
+							bucket[freeSlot[bucketNo]++] = entry;
+							buckets.set(bucketNo, bucket);
+						}			
 					}
-				}
+					
+					//Rehash other keys in the old bucket
+					for (i = 0; i < BUCKET_SIZE; i++) { 
+						bucketNo = hash(((int[])oldBucket[i])[0]);
+						tmp = buckets.get(bucketNo);
+						if (tmp != null) {
+							bucket = (Object[])tmp;
+							if (freeSlot[bucketNo] < BUCKET_SIZE)
+								bucket[freeSlot[bucketNo]++] = oldBucket[i];
+							else {
+								freeSlot[bucketNo] = 0;
+								continue;
+							}
+						}					
+						else {
+							lDepths[bucketNo] = gDepth;
+							bucket = new Object[BUCKET_SIZE];
+							bucket[freeSlot[bucketNo]++] = oldBucket[i];
+							buckets.set(bucketNo, bucket);
+						}
+					}
+					break;		
+				}	
 			}
 			return;
 		}
@@ -886,59 +970,79 @@ public class MyExtHashIndex implements HashIndex {
 				}
 				
 				/** Step 4 */
-				Object[] oldBucket = bucket.clone();			
-				if (gDepth > lDepths[bucketNo]) {
-					lDepths[bucketNo]++;	
-					bucket[freeSlot[bucketNo]++] = entry;
-				}		
-				else {
-					lDepths[bucketNo] = ++gDepth;
-					
-					//Double the directory
-					i = lDepths.length;
-					high = i * 2;
-					int[] newLDepths = new int[high];
-					System.arraycopy(lDepths, 0, newLDepths, 0, i);
-					lDepths = newLDepths;
-					
-					int[] newFreeSlot = new int[high];
-					System.arraycopy(freeSlot, 0, newFreeSlot, 0, i);
-					freeSlot = newFreeSlot;
-					
-					while (i++ < high)
-						buckets.add(null);
-					
-					//Rehash the key
-					bucketNo = hash(k);
-					tmp = buckets.get(bucketNo);
-					
-					if (tmp != null) {
-						bucket = (Object[])tmp;
-						bucket[freeSlot[bucketNo]++] = entry;
-					}					
-					else {
-						lDepths[bucketNo] = gDepth;
-						bucket = new Object[BUCKET_SIZE];
-						bucket[freeSlot[bucketNo]++] = entry;
-						buckets.set(bucketNo, bucket);
-					}				
-				}
+Object[] oldBucket = bucket.clone();	
 				
-				//Rehash other keys in the old bucket
-				for (i = 0; i < BUCKET_SIZE; i++) { 
-					bucketNo = hash(((int[])oldBucket[i])[0]);
-					tmp = buckets.get(bucketNo);
-					if (tmp != null) {
-						bucket = (Object[])tmp;
-						bucket[freeSlot[bucketNo]++] = oldBucket[i];
-					}					
-					else {
-						lDepths[bucketNo] = gDepth;
-						bucket = new Object[BUCKET_SIZE];
-						bucket[freeSlot[bucketNo]++] = oldBucket[i];
-						buckets.set(bucketNo, bucket);
+				int origin = lDepths.length;
+				
+				while (true) {	//Repeat do extending until every data entries fit within a bucket
+					freeSlot[bucketNo] = 0;
+
+					if (gDepth > lDepths[bucketNo]) {
+						lDepths[bucketNo] = gDepth;	
+						bucket[freeSlot[bucketNo]++] = entry;
+					}		
+					else {				
+						lDepths[bucketNo] = ++gDepth;
+						
+						//Double the directory
+						i = lDepths.length;
+						high = i * 2;
+						int[] newLDepths = new int[high];
+						System.arraycopy(lDepths, 0, newLDepths, 0, i);
+						lDepths = newLDepths;
+						
+						int[] newFreeSlot = new int[high];
+						System.arraycopy(freeSlot, 0, newFreeSlot, 0, i);
+						freeSlot = newFreeSlot;
+						
+						for (i = origin; i < high; i++) {
+							buckets.add(null);
+							freeSlot[i] = 0;
+						}				
+						
+						powerDepth = high - 1;
+						
+						//Rehash the key
+						bucketNo = hash(k);
+						tmp = buckets.get(bucketNo);
+						
+						if (tmp != null) {
+							bucket = (Object[])tmp;
+							if (freeSlot[bucketNo] < BUCKET_SIZE)
+								bucket[freeSlot[bucketNo]++] = entry;
+							else 
+								continue;
+						}					
+						else {
+							lDepths[bucketNo] = gDepth;
+							bucket = new Object[BUCKET_SIZE];
+							bucket[freeSlot[bucketNo]++] = entry;
+							buckets.set(bucketNo, bucket);
+						}			
 					}
-				}
+					
+					//Rehash other keys in the old bucket
+					for (i = 0; i < BUCKET_SIZE; i++) { 
+						bucketNo = hash(((int[])oldBucket[i])[0]);
+						tmp = buckets.get(bucketNo);
+						if (tmp != null) {
+							bucket = (Object[])tmp;
+							if (freeSlot[bucketNo] < BUCKET_SIZE)
+								bucket[freeSlot[bucketNo]++] = oldBucket[i];
+							else {
+								freeSlot[bucketNo] = 0;
+								continue;
+							}
+						}					
+						else {
+							lDepths[bucketNo] = gDepth;
+							bucket = new Object[BUCKET_SIZE];
+							bucket[freeSlot[bucketNo]++] = oldBucket[i];
+							buckets.set(bucketNo, bucket);
+						}
+					}
+					break;		
+				}	
 			}
 			return;
 		}
@@ -1042,59 +1146,79 @@ public class MyExtHashIndex implements HashIndex {
 			}
 			
 			/** Step 4 */
-			Object[] oldBucket = bucket.clone();			
-			if (gDepth > lDepths[bucketNo]) {
-				lDepths[bucketNo]++;	
-				bucket[freeSlot[bucketNo]++] = entry;
-			}		
-			else {
-				lDepths[bucketNo] = ++gDepth;
-				
-				//Double the directory
-				i = lDepths.length;
-				high = i * 2;
-				int[] newLDepths = new int[high];
-				System.arraycopy(lDepths, 0, newLDepths, 0, i);
-				lDepths = newLDepths;
-				
-				int[] newFreeSlot = new int[high];
-				System.arraycopy(freeSlot, 0, newFreeSlot, 0, i);
-				freeSlot = newFreeSlot;
-				
-				while (i++ < high)
-					buckets.add(null);
-				
-				//Rehash the key
-				bucketNo = hash(k);
-				tmp = buckets.get(bucketNo);
-				
-				if (tmp != null) {
-					bucket = (Object[])tmp;
-					bucket[freeSlot[bucketNo]++] = entry;
-				}					
-				else {
-					lDepths[bucketNo] = gDepth;
-					bucket = new Object[BUCKET_SIZE];
-					bucket[freeSlot[bucketNo]++] = entry;
-					buckets.set(bucketNo, bucket);
-				}				
-			}
+			Object[] oldBucket = bucket.clone();	
 			
-			//Rehash other keys in the old bucket
-			for (i = 0; i < BUCKET_SIZE; i++) { 
-				bucketNo = hash(((int[])oldBucket[i])[0]);
-				tmp = buckets.get(bucketNo);
-				if (tmp != null) {
-					bucket = (Object[])tmp;
-					bucket[freeSlot[bucketNo]++] = oldBucket[i];
-				}					
-				else {
-					lDepths[bucketNo] = gDepth;
-					bucket = new Object[BUCKET_SIZE];
-					bucket[freeSlot[bucketNo]++] = oldBucket[i];
-					buckets.set(bucketNo, bucket);
+			int origin = lDepths.length;
+			
+			while (true) {	//Repeat do extending until every data entries fit within a bucket
+				freeSlot[bucketNo] = 0;
+
+				if (gDepth > lDepths[bucketNo]) {
+					lDepths[bucketNo] = gDepth;	
+					bucket[freeSlot[bucketNo]++] = entry;
+				}		
+				else {				
+					lDepths[bucketNo] = ++gDepth;
+					
+					//Double the directory
+					i = lDepths.length;
+					high = i * 2;
+					int[] newLDepths = new int[high];
+					System.arraycopy(lDepths, 0, newLDepths, 0, i);
+					lDepths = newLDepths;
+					
+					int[] newFreeSlot = new int[high];
+					System.arraycopy(freeSlot, 0, newFreeSlot, 0, i);
+					freeSlot = newFreeSlot;
+					
+					for (i = origin; i < high; i++) {
+						buckets.add(null);
+						freeSlot[i] = 0;
+					}				
+					
+					powerDepth = high - 1;
+					
+					//Rehash the key
+					bucketNo = hash(k);
+					tmp = buckets.get(bucketNo);
+					
+					if (tmp != null) {
+						bucket = (Object[])tmp;
+						if (freeSlot[bucketNo] < BUCKET_SIZE)
+							bucket[freeSlot[bucketNo]++] = entry;
+						else 
+							continue;
+					}					
+					else {
+						lDepths[bucketNo] = gDepth;
+						bucket = new Object[BUCKET_SIZE];
+						bucket[freeSlot[bucketNo]++] = entry;
+						buckets.set(bucketNo, bucket);
+					}			
 				}
-			}
+				
+				//Rehash other keys in the old bucket
+				for (i = 0; i < BUCKET_SIZE; i++) { 
+					bucketNo = hash(((int[])oldBucket[i])[0]);
+					tmp = buckets.get(bucketNo);
+					if (tmp != null) {
+						bucket = (Object[])tmp;
+						if (freeSlot[bucketNo] < BUCKET_SIZE)
+							bucket[freeSlot[bucketNo]++] = oldBucket[i];
+						else {
+							freeSlot[bucketNo] = 0;
+							continue;
+						}
+					}					
+					else {
+						lDepths[bucketNo] = gDepth;
+						bucket = new Object[BUCKET_SIZE];
+						bucket[freeSlot[bucketNo]++] = oldBucket[i];
+						buckets.set(bucketNo, bucket);
+					}
+				}
+				break;		
+			}	
 		}		
 	}
 	
