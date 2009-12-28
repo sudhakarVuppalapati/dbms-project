@@ -155,6 +155,10 @@ public class MyIndexLayer implements IndexLayer {
 		return des.toString();
 	}
 
+	/**
+	 * Format of the index description:
+	 * [indexName]-[tableName]-[attribute]-[identifier]-[other info]
+	 */
 	@Override
 	public String describeIndex(String indexName) throws NoSuchIndexException {
 		/** Tentative -$BEGIN */
