@@ -126,17 +126,16 @@ public class DummyIndexLayerTest extends TestCase {
 		}
 
 		/** Make random index search keys */
-		Random random = new Random();
+		Random random = new Random(100);
 		int LENGTH = 128;
 		int CARDINALITY = 1000;
-		
-		/** Add entries to index * */
-		ArrayList<Object> keys = RandomInputGenerator.getRandIntegerList(random, CARDINALITY);
+		int tmp = 0;
 		
 		try {
 			for (int i = 0; i < CARDINALITY; i++) {
+				tmp = random.nextInt(450);
 				myDatabase.getIndexInterface().insertIntoIndex(index1, new Integer(i % LENGTH), 
-						(Integer)keys.get(i));
+						tmp);
 			}
 		}
 		catch (NoSuchIndexException e) {
@@ -263,9 +262,9 @@ public class DummyIndexLayerTest extends TestCase {
 		try {
 
 			myDatabase.getIndexInterface().insertIntoIndex(index1,
-					new String("DBDBD"), 1);
+					new String("DB"), 1);
 			myDatabase.getIndexInterface().insertIntoIndex(index1,
-					new String("DBDBD"), 2);
+					new String("DB"), 2);
 		} catch (NoSuchIndexException e) {
 		} catch (InvalidKeyException e) {
 			fail("Unexpected InvalidKeyException");
@@ -277,7 +276,7 @@ public class DummyIndexLayerTest extends TestCase {
 
 		try {
 			myDatabase.getIndexInterface().deleteFromIndex(index1,
-					new String("DBDBD"), 2);
+					new String("DB"), 2);
 		} catch (NoSuchIndexException e) {
 			fail("Unexpected NoSuchIndexException");
 		} catch (InvalidKeyException e) {
@@ -291,7 +290,7 @@ public class DummyIndexLayerTest extends TestCase {
 		int rowIDs[] = null;
 		try {
 			rowIDs = myDatabase.getIndexInterface().pointQueryRowIDs(index1,
-					new String("DBDBD"));
+					new String("DB"));
 		} catch (NoSuchIndexException e) {
 			fail("Unexpected NoSuchIndexException");
 		} catch (InvalidKeyException e) {
@@ -331,9 +330,9 @@ public class DummyIndexLayerTest extends TestCase {
 		try {
 
 			myDatabase.getIndexInterface().insertIntoIndex(index1,
-					new String("DBDBD"), 1);
+					new String("DB"), 1);
 			myDatabase.getIndexInterface().insertIntoIndex(index1,
-					new String("DBDBD"), 2);
+					new String("DB"), 2);
 		} catch (NoSuchIndexException e) {
 			fail("Unexpected NoSuchIndexException");
 		} catch (InvalidKeyException e) {
@@ -346,7 +345,7 @@ public class DummyIndexLayerTest extends TestCase {
 
 		try {
 			myDatabase.getIndexInterface().deleteFromIndex(index1,
-					new String("DBDBD"));
+					new String("DB"));
 		} catch (NoSuchIndexException e) {
 			fail("Unexpected NoSuchIndexException");
 		} catch (InvalidKeyException e) {
@@ -360,7 +359,7 @@ public class DummyIndexLayerTest extends TestCase {
 		int rowIDs[] = null;
 		try {
 			rowIDs = myDatabase.getIndexInterface().pointQueryRowIDs(index1,
-					new String("DBDBD"));
+					new String("DB"));
 		} catch (NoSuchIndexException e) {
 			fail("Unexpected NoSuchIndexException");
 		} catch (InvalidKeyException e) {

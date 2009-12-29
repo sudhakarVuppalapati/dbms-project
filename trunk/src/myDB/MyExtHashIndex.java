@@ -122,7 +122,7 @@ public class MyExtHashIndex implements HashIndex {
 				key = ((Integer)objKey).hashCode();
 			else if (type == Types.getVarcharType())
 				key = ((String)objKey).hashCode();
-			else if (type.getLength() == ((String)objKey).length())
+			else if (type.getLength() >= ((String)objKey).length())
 				key = objKey.hashCode();
 			else
 				throw new InvalidKeyException();
@@ -1241,7 +1241,7 @@ Object[] oldBucket = bucket.clone();
 				key = ((Integer)objKey).hashCode();
 			else if (type == Types.getVarcharType())
 				key = ((String)objKey).hashCode();
-			else if (type.getLength() == ((String)objKey).length())
+			else if (type.getLength() >= ((String)objKey).length())
 				key = objKey.hashCode();
 			else
 				throw new InvalidKeyException();
@@ -1297,7 +1297,7 @@ Object[] oldBucket = bucket.clone();
 				key = ((Integer)objKey).hashCode();
 			else if (type == Types.getVarcharType())
 				key = ((String)objKey).hashCode();
-			else if (type.getLength() == ((String)objKey).length())
+			else if (type.getLength() >= ((String)objKey).length())
 				key = objKey.hashCode();
 			else
 				throw new InvalidKeyException();
@@ -1374,7 +1374,7 @@ Object[] oldBucket = bucket.clone();
 				key = ((Integer)objKey).hashCode();
 			else if (type == Types.getVarcharType())
 				key = ((String)objKey).hashCode();
-			else if (type.getLength() == ((String)objKey).length())
+			else if (type.getLength() >= ((String)objKey).length())
 				key = objKey.hashCode();
 			else
 				throw new InvalidKeyException();
@@ -1463,6 +1463,7 @@ Object[] oldBucket = bucket.clone();
 		int[] entry = new int[0];			
 		int key = 0;
 		
+		//This is really stupid
 		try {
 			if (type == Types.getDateType()) 
 				key = ((Date)objKey).hashCode();
@@ -1476,12 +1477,14 @@ Object[] oldBucket = bucket.clone();
 				key = ((Integer)objKey).hashCode();
 			else if (type == Types.getVarcharType())
 				key = ((String)objKey).hashCode();
-			else if (type.equals(objKey))
+			else if (type.getLength() >= ((String)objKey).length())
 				key = objKey.hashCode();
+			else
+				throw new InvalidKeyException();
 		}
 		catch (ClassCastException cce) {
 			throw new InvalidKeyException();
-		}				
+		}					
 		
 		int bucketNo = hash(key);
 		
@@ -1530,7 +1533,7 @@ Object[] oldBucket = bucket.clone();
 				key = ((Integer)objKey).hashCode();
 			else if (type == Types.getVarcharType())
 				key = ((String)objKey).hashCode();
-			else if (type.getLength() == ((String)objKey).length())
+			else if (type.getLength() >= ((String)objKey).length())
 				key = objKey.hashCode();
 			else
 				throw new InvalidKeyException();
