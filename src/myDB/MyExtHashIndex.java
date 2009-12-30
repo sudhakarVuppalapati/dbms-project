@@ -1511,7 +1511,24 @@ Object[] oldBucket = bucket.clone();
 				}
 			}
 		}
-		return table.getRows(entry);		
+		//return table.getRows(entry);		
+		
+		/** TENTATIVE -$BEGIN */
+		/**
+		 * Using asynchronous row-deletion: Do not trust the fetched result. Check
+		 * the underlying data
+		 */
+		List filteredRows = new ArrayList();
+		Row r;
+		int m, n = entry.length;
+		
+		for (m = 0; m < n; m++) {
+			r = table.getRow(entry[m]);
+			if (r != null)
+				filteredRows.add(r);
+		}
+		return new MyOperator<Row>(filteredRows);
+		/** TENTATIVE -$END */
 	}
 
 	@Override
