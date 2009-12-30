@@ -954,5 +954,21 @@ public class MyTable implements Table {
 		return new MyOperator<Row>(matchingRows);
 		
 	}
+	
+	/**
+	 * This method is to retrieve EVERY Row from Rows, regardless they are deleted or not.
+	 * I'm not sure it's a good idea in sense of OO design: It tightens the coupling 
+	 * between MyTable and MyQueryLaver classes. But in terms of performance, this could 
+	 * be the best solution
+	 * @return Operator of Row type
+	 */
+	protected Operator<Row> getAllRows() {
+		return new MyOperator<Row> (rows);
+	}
+	
+	protected int getAllRowCount() {
+		return rows.size();
+	}
+	
 	/** TENTATIVE -$END */
 }
