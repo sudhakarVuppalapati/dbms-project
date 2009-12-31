@@ -202,7 +202,8 @@ public class MyQueryLayer implements QueryLayer {
 	//Need review try catch
 	@Override
 	public void updateRow(String tableName, Row oldRow, Row newRow)
-			throws NoSuchRowException, SchemaMismatchException {
+			throws NoSuchRowException, NoSuchTableException, 
+			SchemaMismatchException {
 		
 		Table t;
 		try {
