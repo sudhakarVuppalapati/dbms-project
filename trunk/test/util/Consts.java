@@ -10,43 +10,47 @@ package util;
 public class Consts {
 
 	/* set what kind of printing you want */
-	protected static final boolean infoMsg = false;
+	protected static final boolean infoMsg = true;
 
 	protected static final boolean warnMsg = true;
 
 	protected static final boolean errorMsg = true;
 
-	/* Rand seed, to get repeatable experiments */
+	/** Rand seed, to get repeatable experiments */
 	public static final long seed = 81;
 
 	/* Schema generation params */
 
+	/** Min # of attributes in schema */
 	public static final int schemaMinDim = 1;
-
+	/** Max # of attributes in schema */
 	public static final int schemaMaxDim = 7;
 
 	/* String types */
+	/** characters for random string generation */
 	public static char chars[] = (new String("abcdefghijklmnopqrstuvwxyz12345"))
 			.toCharArray();
 
 	/* CHAR type */
+	/** Min CHAR length */
 	public static final int minCharLength = 1;
-
+	/** Max CHAR length */
 	public static final int maxCharLength = 10;
 
 	/* VARCHAR type */
+	/** Min VARCHAR length */
 	public static final int minVarcharLength = 1;
-
+	/** Max CHAR length */
 	public static final int maxVarcharLength = 5;
 
 	/* Params for rand Date -- see getRandDate() */
 
-	/* Table cardinality */
+	/** Min Table cardinality */
 	public static final int minCardinality = 10;
-
+	/** Max Table cardinality */
 	public static final int maxCardinality = 50;
 
-	/* Number of tables to create */
+	/** Number of tables to create */
 	public static final int numTables = 100;
 
 	public enum printType {
@@ -72,14 +76,30 @@ public class Consts {
 		T_CHAR, T_DATE, T_DOUBLE, T_FLOAT, T_INT, T_LONG, T_VARCHAR
 	}
 
-	/**************************************************************/
-	/**************** For 2nd Phase *******************************/
+	/** *********************************************************** */
+	/** ************** For 2nd Phase ****************************** */
 
+	/** Minimum # payloads per key */
 	public static final int minEntriesPerKey = 1;
-	/* Max # of row IDs per key */
+	/** Maximum # payloads per key */
 	public static final int maxEntriesPerKey = 3;
 
+	/** Min # unique keys in index */
 	public static final int minNumKeys = 100;
+	/** Max # unique keys in index */
 	public static final int maxNumKeys = 500;
 
+	/** Number of inserts in index at a time */
+	public static final int numIndexInserts = 200;
+	/** Number of point deletes from index at a time */
+	public static final int numIndexPointDeletes = 1;
+	/** Number of Key deletes from index at a time */
+	public static final int numIndexKeyDeletes = 1;
+	/** Number of range deletes from index at a time */
+	public static final int numIndexRangeDeletes = 1;
+
+	/** Number of point queries to perform on an index at a time */
+	public static final int numIndexPointQueries = 10;
+	/** Number of range queries to perform on an index at a time */
+	public static final int numIndexRangeQueries = 3;
 }

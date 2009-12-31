@@ -19,7 +19,7 @@ import exceptions.IndexAlreadyExistsException;
 import exceptions.InvalidKeyException;
 import exceptions.InvalidRangeException;
 import exceptions.NoSuchIndexException;
-import exceptions.NoSuchTableException;
+import exceptions.NoSuchTableException; 
 import exceptions.RangeQueryNotSupportedException;
 import exceptions.SchemaMismatchException;
 import exceptions.TableAlreadyExistsException;
