@@ -910,10 +910,8 @@ public class MyTable implements Table {
 					}
 					rows.set(i, newRow);
 				}
-			}
-			
-		}
-		
+			}			
+		}		
 		
 		if(!updated)
 			throw new NoSuchRowException();
@@ -949,7 +947,8 @@ public class MyTable implements Table {
 		List matchingRows = new ArrayList();
 		int i = 0, n = rowIDs.length;
 		for(; i < n; i++) {
-			matchingRows.add(rows.get(i));
+			if (rows.get(i) != null)
+				matchingRows.add(rows.get(i));
 		}
 		return new MyOperator<Row>(matchingRows);
 		
@@ -968,6 +967,41 @@ public class MyTable implements Table {
 	
 	protected int getAllRowCount() {
 		return rows.size();
+	}
+	
+	/**
+	 * This method is to map from Row to rowID value
+	 * @throws SchemaMismatchException 
+	 */
+	protected int getRowID(Row row) throws SchemaMismatchException {
+		
+		//search the table for the row that is identical to the given row 
+		// or -1 if not found
+		Row r = null;
+		Object rowCell = null, givenRowCell = null;
+		int i=0, m = rows.size(), p = colNames.length;
+		for(; i < m; i++){
+			r = rows.get(i);
+			if(r != null) {			
+				for(int j = 0; j < p; j++) {
+					try{
+						rowCell = r.getColumnValue(colNames[j]);								
+						givenRowCell = row.getColumnValue(colNames[j]);
+						if(rowCell == null && givenRowCell != null) {							
+							break;
+						}
+						if(!rowCell.equals(givenRowCell)) {							
+							break;
+						}
+					}
+					catch(NoSuchColumnException nsce){
+						throw new SchemaMismatchException();
+					}
+				}
+				return i;
+			}			
+		}	
+		return -1;
 	}
 	
 	/** TENTATIVE -$END */

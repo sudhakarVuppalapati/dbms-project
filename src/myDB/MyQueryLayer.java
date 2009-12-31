@@ -1,5 +1,6 @@
 package myDB;
 
+import java.util.List;
 import java.util.Map;
 
 import operator.Operator;
@@ -12,6 +13,7 @@ import systeminterface.Row;
 import systeminterface.StorageLayer;
 import systeminterface.Table;
 import exceptions.ColumnAlreadyExistsException;
+import exceptions.InvalidKeyException;
 import exceptions.NoSuchColumnException;
 import exceptions.NoSuchIndexException;
 import exceptions.NoSuchRowException;
@@ -68,7 +70,6 @@ public class MyQueryLayer implements QueryLayer {
 		
 	}
 
-	//Pending
 	@Override
 	public void deleteRow(String tableName, Row row)
 			throws NoSuchTableException, NoSuchRowException,
@@ -77,7 +78,7 @@ public class MyQueryLayer implements QueryLayer {
 		Table t = storageLayer.getTableByName(tableName);
 		
 		/**
-		 * The following code is too costly, think about it.
+		 * The deleting is costly, think about it.
 		 * One possible alternative: Increase coupling between MyQueryLayer and 
 		 * MyTable, create methods like deleteIndexesByRow(Row) in MyIndexLayer
 		 * 
@@ -89,24 +90,12 @@ public class MyQueryLayer implements QueryLayer {
 		 * when we search for data of a search key, we need to ensure that the
 		 * underlying data is consistent.
 		 * 
-		 * I'm currently using approach 1
+		 * I'm currently using approach 3. In this approach, I just delete row
+		 * from the table and then do nothing.
 		 * @author tuanta
 		 */
 		
-		//Step 1: Looking for a matching row by full scanning and comparing
-		Operator<Row> op = (Operator<Row>) ((MyTable)t).getAllRows();
-		String[] colNames = row.getColumnNames();
-		int colCnt = colNames.length;
-		int rowCnt = ((MyTable)t).getAllRowCount(); 
-		boolean[] checked = new boolean[rowCnt];
-				
-		Row r;
-		Column c;
-		Type type;
-		
-		int i, j;
-		String tmpCol;		
-		boolean found = true;
+		t.deleteRow(row);
 		
 		// TODO Some code in query layers are written here
 
@@ -131,13 +120,15 @@ public class MyQueryLayer implements QueryLayer {
 			}
 		} catch (SchemaMismatchException e) {
 			e.printStackTrace();		
-			//make nosense to throw NoSuchTableException here
+			//make nonsense to throw NoSuchTableException here
 			throw new NoSuchTableException();
 		} catch (NoSuchIndexException e) {
 			e.printStackTrace();
-			//make nosense to throw NoSuchTableException here
+			//make nonsense to throw NoSuchTableException here
 			throw new NoSuchTableException();
 		}
+		
+		storageLayer.deleteTable(tableName);
 		
 		// TODO Some code in query layers are written here
 
@@ -160,20 +151,53 @@ public class MyQueryLayer implements QueryLayer {
 		
 		try {
 			for (i = 0; i < n; i++)
-			indexLayer.dropIndex(indexNames[i]);
+				indexLayer.dropIndex(indexNames[i]);
 		} catch (NoSuchIndexException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			throw new NoSuchColumnException();
 		}	
 		
+		Table t = storageLayer.getTableByName(tableName);
+		t.dropColumnByName(columnName);
 		// TODO Some code in query layers are written here
 	}
 
 	@Override
 	public void insertRow(String tableName, Row row)
 			throws NoSuchTableException, SchemaMismatchException {
+				
 		Table t = storageLayer.getTableByName(tableName);
+		
+		int size = ((MyTable)t).getAllRowCount();
+		
+		try {
+			String[] colNames = row.getColumnNames();
+			int i =0, n = colNames.length, j = 0;
+			Column col;
+			String[] indexes;
+			
+			//Might need a better solution
+			
+			try {
+				for (; i < n; i++) {
+					indexes = indexLayer.findIndex(tableName, colNames[i]);
+					for (; j < indexes.length; j++) {
+						indexLayer.insertIntoIndex(indexes[j], row.getColumnValue(colNames[i]), size);
+					}
+				}
+			} catch (NoSuchIndexException e) {	
+				e.printStackTrace();
+				throw new SchemaMismatchException();
+			} catch (InvalidKeyException e) {
+				e.printStackTrace();
+				throw new SchemaMismatchException();
+			}		
+			
+		} catch (NoSuchColumnException e) {	
+			e.printStackTrace();
+			throw new SchemaMismatchException();
+		}
+				
 		t.addRow(row);
 		
 		// TODO Some code in query layers are written here
@@ -184,9 +208,8 @@ public class MyQueryLayer implements QueryLayer {
 			String newColumnName) throws NoSuchTableException,
 			ColumnAlreadyExistsException, NoSuchColumnException {
 		
-		Table t = storageLayer.getTableByName(tableName);
+		Table t = storageLayer.getTableByName(tableName);	
 		t.renameColumn(oldColumnName, newColumnName);
-		
 		// TODO Some code in query layers are written here
 
 	}
@@ -199,19 +222,42 @@ public class MyQueryLayer implements QueryLayer {
 		// TODO Some code in query layers are written here
 	}
 
-	//Need review try catch
+	//Pending
 	@Override
 	public void updateRow(String tableName, Row oldRow, Row newRow)
 			throws NoSuchRowException, NoSuchTableException, 
 			SchemaMismatchException {
 		
-		Table t;
+		Table t;			
+		t = storageLayer.getTableByName(tableName);
+		
+		/** TENTATIVE - $BEGIN */
+		/**
+		 * The following code is too costly. Think about it
+		 */
+		String[] indexes, colNames = oldRow.getColumnNames();
+		int j = 0, i = 0, k = ((MyTable)t).getRowID(oldRow), n = colNames.length;
+				
 		try {
-			t = storageLayer.getTableByName(tableName);
-		} catch (NoSuchTableException e) {			
+			for (; i < n; i++) {
+				indexes = indexLayer.findIndex(tableName, colNames[i]);
+				for (; j < indexes.length; j++) {
+					indexLayer.deleteFromIndex(indexes[j], oldRow.getColumnValue(colNames[i]), k);
+					indexLayer.insertIntoIndex(indexes[j], newRow.getColumnValue(colNames[i]), k);
+				}
+			}
+		} catch (NoSuchIndexException e) {	
 			e.printStackTrace();
 			throw new SchemaMismatchException();
-		}
+		} catch (InvalidKeyException e) {
+			e.printStackTrace();
+			throw new SchemaMismatchException();
+		} catch (NoSuchColumnException e) {			
+			e.printStackTrace();
+			throw new SchemaMismatchException();
+		}		
+		/** TENTATIVE - $END */
+
 		t.updateRow(oldRow, newRow);
 		
 		// TODO Some code in query layers are written here
