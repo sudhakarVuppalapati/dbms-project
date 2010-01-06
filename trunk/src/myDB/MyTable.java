@@ -943,7 +943,7 @@ public class MyTable implements Table {
 	 * indexes. Doing check twice can hit the performance.
 	 * @author attran
 	 */
-	protected Operator<Row> getRows(int[] rowIDs) {
+	public Operator<Row> getRows(int[] rowIDs) {
 		List matchingRows = new ArrayList();
 		int i = 0, n = rowIDs.length;
 		for(; i < n; i++) {
