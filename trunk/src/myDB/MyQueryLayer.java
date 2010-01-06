@@ -1,10 +1,7 @@
 package myDB;
 
-import java.util.List;
 import java.util.Map;
-
 import operator.Operator;
-
 import metadata.Type;
 import systeminterface.Column;
 import systeminterface.IndexLayer;
@@ -94,6 +91,35 @@ public class MyQueryLayer implements QueryLayer {
 		 * from the table and then do nothing.
 		 * @author tuanta
 		 */
+		
+		/** TENTATIVE - $BEGIN */
+		/**
+		 * The following code is too costly. Think about it
+		 */
+		String[] indexes, colNames = row.getColumnNames();
+		int j, i,  n = colNames.length, m = 0;
+		int[] k = ((MyTable)t).getRowID(row);
+				
+		try {
+			for (m = 0; m < k.length; m++) {
+				for (i = 0 ; i < n; i++) {
+					indexes = indexLayer.findIndex(tableName, colNames[i]);
+					for (j = 0; j < indexes.length; j++) {
+						indexLayer.deleteFromIndex(indexes[j], row.getColumnValue(colNames[i]), k[m]);
+					}
+				}	
+			}			
+			
+		} catch (NoSuchIndexException e) {	
+			e.printStackTrace();
+			throw new SchemaMismatchException();
+		} catch (InvalidKeyException e) {
+			e.printStackTrace();
+			throw new SchemaMismatchException();
+		} catch (NoSuchColumnException e) {			
+			e.printStackTrace();
+			throw new SchemaMismatchException();
+		}
 		
 		t.deleteRow(row);
 		
@@ -236,16 +262,20 @@ public class MyQueryLayer implements QueryLayer {
 		 * The following code is too costly. Think about it
 		 */
 		String[] indexes, colNames = oldRow.getColumnNames();
-		int j = 0, i = 0, k = ((MyTable)t).getRowID(oldRow), n = colNames.length;
+		int j, i,  n = colNames.length, m = 0;
+		int[] k = ((MyTable)t).getRowID(oldRow);
 				
 		try {
-			for (; i < n; i++) {
-				indexes = indexLayer.findIndex(tableName, colNames[i]);
-				for (; j < indexes.length; j++) {
-					indexLayer.deleteFromIndex(indexes[j], oldRow.getColumnValue(colNames[i]), k);
-					indexLayer.insertIntoIndex(indexes[j], newRow.getColumnValue(colNames[i]), k);
-				}
-			}
+			for (m = 0; m < k.length; m++) {
+				for (i = 0 ; i < n; i++) {
+					indexes = indexLayer.findIndex(tableName, colNames[i]);
+					for (j = 0; j < indexes.length; j++) {
+						indexLayer.deleteFromIndex(indexes[j], oldRow.getColumnValue(colNames[i]), k[m]);
+						indexLayer.insertIntoIndex(indexes[j], newRow.getColumnValue(colNames[i]), k[m]);
+					}
+				}	
+			}			
+			
 		} catch (NoSuchIndexException e) {	
 			e.printStackTrace();
 			throw new SchemaMismatchException();
