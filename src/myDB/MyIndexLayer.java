@@ -4,7 +4,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -159,6 +158,14 @@ public class MyIndexLayer implements IndexLayer {
 			indexDes.append(BTreeConstants.DEFAULT_K_STAR);
 			namedIndexes.put(indexName, newIndex(indexDes.toString(), t, c, B_TREE_INDEX));
 		}
+		
+		List<String> indexNames = colIndexes.get(c);
+		if (indexNames == null) {
+			indexNames = new ArrayList<String>();
+			colIndexes.put(c, indexNames);
+		}
+		indexNames.add(indexName);
+		
 		/** Tentative -$END */
 
 	}
@@ -389,6 +396,7 @@ public class MyIndexLayer implements IndexLayer {
 			Object endSearchKey) throws NoSuchIndexException,
 			InvalidKeyException, InvalidRangeException,
 			RangeQueryNotSupportedException {
+		
 		/** Tentative -$BEGIN */
 		try {
 			Index index = namedIndexes.get(indexName);
@@ -428,7 +436,8 @@ public class MyIndexLayer implements IndexLayer {
 		String[] des = str.split("$");		
 		length = des.length;
 		
-		int k, a, y, indexType;
+		int k, a, y;
+		char indexType;
 		String tmp, indexName;
 		Table t;
 		Column c;
@@ -499,18 +508,28 @@ public class MyIndexLayer implements IndexLayer {
 		
 		case '1': 
 			Type type = iCol.getColumnType();
+			int pos1 = des.indexOf("-1");
+			int pos2 = des.indexOf("-", pos1 + 3);
+			
+			int k = Integer.parseInt(des.substring(pos1 + 3, pos2));
+			
+			int k_star = Integer.parseInt(des.substring(pos2 + 1));
 			if (type == Types.getDoubleType())
-				return new DoubleBTreeMap(des, iTable, iCol);
+				return new DoubleBTreeMap(des, iTable, iCol, k, k_star);
 			if (type == Types.getFloatType())
-				return new FloatBTreeMap(des, iTable, iCol);
+				return new FloatBTreeMap(des, iTable, iCol, k, k_star);
 			if (type == Types.getLongType())
-				return new LongBTreeMap(des, iTable, iCol);
+				return new LongBTreeMap(des, iTable, iCol, k, k_star);
 			if (type == Types.getIntegerType())
-				return new IntBTreeMap(des, iTable, iCol);
+				return new IntBTreeMap(des, iTable, iCol, k, k_star);
 			else
-				return new ObjectBTreeMap(des, iTable, iCol);
+				return new ObjectBTreeMap(des, iTable, iCol, k, k_star);
 		
 		default: return null;
 		}
+	}
+	
+	public Index getIndexByName(String indexName) {
+		return namedIndexes.get(indexName);
 	}
 }

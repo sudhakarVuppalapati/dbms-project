@@ -306,7 +306,7 @@ public class MyExtHashIndex implements HashIndex {
 		}
 		
 		gDepth = DEPTH;
-		powerDepth = CARD;
+		powerDepth = CARD - 1;
 		buckets = new ArrayList(CARD);
 		lDepths = new int[CARD];
 		freeSlot = new int[CARD];
@@ -321,7 +321,7 @@ public class MyExtHashIndex implements HashIndex {
 		
 		if (type == Types.getIntegerType()) {
 			int[] keys = (int[])colVals;
-			n = keys.length;
+			n = colObj.getRowCount();
 						
 			for (r = 0; r < n; r++) {
 				k = keys[r];
@@ -335,7 +335,7 @@ public class MyExtHashIndex implements HashIndex {
 		}
 		if(type == Types.getDoubleType()) {
 			double[] keys = (double[])colVals;
-			n = keys.length;
+			n = colObj.getRowCount();
 			double d;
 			long l;
 			for (r = 0; r < n; r++) {
@@ -353,7 +353,7 @@ public class MyExtHashIndex implements HashIndex {
 		if(type == Types.getFloatType()) {
 			float[] keys = (float[])colVals;
 			float f;
-			n = keys.length;
+			n = colObj.getRowCount();
 			for (r = 0; r < n; r++) {
 				
 				f = keys[r];
@@ -369,7 +369,7 @@ public class MyExtHashIndex implements HashIndex {
 		}
 		if(type == Types.getLongType()) {
 			long[] keys = (long[])colVals;
-			n = keys.length;
+			n = colObj.getRowCount();
 			long l;
 			for (r = 0; r < n; r++) {
 				l = keys[r];
@@ -384,7 +384,7 @@ public class MyExtHashIndex implements HashIndex {
 			return;
 		}
 		Object[] keys = (Object[])colVals;
-		n = keys.length;
+		n = colObj.getRowCount();
 		Object o;
 		for (r = 0; r < n; r++) {
 			o = keys[r];

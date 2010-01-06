@@ -937,6 +937,8 @@ public class MyTable implements Table {
 	 * MyTable and Index classes. But in terms of performance, this could be the
 	 * best solution
 	 * 
+	 * Currently I'm using public modifier, but it needs to be set to protected later
+	 * 
 	 * @param rowIDs list of row IDs
 	 * @return Operator of row types. Note that elements in the operator can be NULL,
 	 * since I skipped checking the deleted rows - we already did that when maintaining
@@ -947,7 +949,7 @@ public class MyTable implements Table {
 		List matchingRows = new ArrayList();
 		int i = 0, n = rowIDs.length;
 		for(; i < n; i++) {
-			if (rows.get(i) != null)
+			if (rows.get(rowIDs[i]) != null)
 				matchingRows.add(rows.get(i));
 		}
 		return new MyOperator<Row>(matchingRows);
@@ -973,12 +975,14 @@ public class MyTable implements Table {
 	 * This method is to map from Row to rowID value
 	 * @throws SchemaMismatchException 
 	 */
-	protected int getRowID(Row row) throws SchemaMismatchException {
+	protected int[] getRowID(Row row) throws SchemaMismatchException {
 		
+		List<Integer> rowIDs = new ArrayList<Integer>();
 		//search the table for the row that is identical to the given row 
 		// or -1 if not found
 		Row r = null;
 		Object rowCell = null, givenRowCell = null;
+		boolean found = true;
 		int i=0, m = rows.size(), p = colNames.length;
 		for(; i < m; i++){
 			r = rows.get(i);
@@ -988,9 +992,11 @@ public class MyTable implements Table {
 						rowCell = r.getColumnValue(colNames[j]);								
 						givenRowCell = row.getColumnValue(colNames[j]);
 						if(rowCell == null && givenRowCell != null) {							
+							found = false;
 							break;
 						}
 						if(!rowCell.equals(givenRowCell)) {							
+							found = false;
 							break;
 						}
 					}
@@ -998,10 +1004,17 @@ public class MyTable implements Table {
 						throw new SchemaMismatchException();
 					}
 				}
-				return i;
+				if (found)
+					rowIDs.add(i);
 			}			
 		}	
-		return -1;
+		int n = rowIDs.size();
+		int[] result = new int[n];
+
+		for (i = 0; i < n; i++) {
+			result[i] = rowIDs.get(i);
+		}
+		return result;
 	}
 	
 	/** TENTATIVE -$END */
