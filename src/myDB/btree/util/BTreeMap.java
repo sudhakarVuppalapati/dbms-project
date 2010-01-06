@@ -1,116 +1,73 @@
 package myDB.btree.util;
 
 import operator.Operator;
+import systeminterface.Column;
 import systeminterface.Row;
 import systeminterface.Table;
 import exceptions.InvalidKeyException;
 import exceptions.InvalidRangeException;
+import exceptions.SchemaMismatchException;
+import myDB.MyTable;
 import myDB.TreeIndex;
-import myDB.btree.core.btree.BTree;
 
-public class BTreeMap implements TreeIndex {
+public abstract class BTreeMap implements TreeIndex {
 
-	private BTree btree;
-
-	public BTreeMap(int k, int k_star) {
-		btree = new BTree(k, k_star);
+	protected final MyTable table;
+	
+	private String des;
+	
+	public BTreeMap(String indexDes, Table tableObj, Column colObj) throws SchemaMismatchException {
+		des = indexDes;
+		table = (MyTable)tableObj;
 	}
 
-	public void delete(int key) {
-		btree.remove(key);
-	}
-
-	public void insert(int key, int value) {
-		btree.add(key, value);
-	}
-
-	public void pointQuery(int key, IntPushOperator results) {
-		btree.get(key, results);
-	}
-
-	public void rangeQuery(int lowKey, int highKey, IntPushOperator results) {
-		btree.queryRange(lowKey, highKey, results);
-	}
-
-	public long size() {
-		return btree.size();
-	}
+	public abstract long size();
 
 	@Override
-	public void delete(Object startingKey, Object endingKey)
-			throws InvalidKeyException, InvalidRangeException {
-		// TODO Auto-generated method stub
-		
-	}
+	public abstract void delete(Object startingKey, Object endingKey)
+			throws InvalidKeyException, InvalidRangeException;
 
 	@Override
-	public Operator<Row> rangeQuery(Object startingKey, Object endingKey)
-			throws InvalidKeyException, InvalidRangeException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	public abstract Operator<Row> rangeQuery(Object startingKey, Object endingKey)
+			throws InvalidKeyException, InvalidRangeException ;
 
 	@Override
-	public int[] rangeQueryRowIDs(Object startingKey, Object endingKey)
-			throws InvalidKeyException, InvalidRangeException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	public abstract int[] rangeQueryRowIDs(Object startingKey, Object endingKey)
+			throws InvalidKeyException, InvalidRangeException;
 
 	@Override
-	public Operator<Row> pointQuery(Object searchKey)
-			throws InvalidKeyException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	public abstract Operator<Row> pointQuery(Object searchKey)
+			throws InvalidKeyException;
 
 	@Override
-	public int[] pointQueryRowIDs(Object key) throws InvalidKeyException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	public abstract int[] pointQueryRowIDs(Object key) throws InvalidKeyException;
 
 	@Override
-	public void delete(Object key, int rowID) throws InvalidKeyException {
-		// TODO Auto-generated method stub
-		
-	}
+	public abstract void delete(Object key, int rowID) throws InvalidKeyException;
 
 	@Override
-	public void delete(Object key) throws InvalidKeyException {
-		// TODO Auto-generated method stub
-		
-	}
+	public abstract void delete(Object key) throws InvalidKeyException;
 
 	@Override
 	public String describeIndex() {
-		// TODO Auto-generated method stub
-		return null;
+		return des;
 	}
 
 	@Override
 	public Table getBaseTable() {
-		// TODO Auto-generated method stub
-		return null;
+		return table;
 	}
 
 	@Override
-	public void insert(Object key, int rowID) throws InvalidKeyException {
-		// TODO Auto-generated method stub
-		
-	}
+	public abstract void insert(Object key, int rowID) throws InvalidKeyException;
 
 	@Override
 	public boolean supportRangeQueries() {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
-	public void update(Object key, int oldRowID, int newRowID)
-			throws InvalidKeyException {
-		// TODO Auto-generated method stub
-		
-	}
+	public abstract void update(Object key, int oldRowID, int newRowID)
+			throws InvalidKeyException;
 
 }

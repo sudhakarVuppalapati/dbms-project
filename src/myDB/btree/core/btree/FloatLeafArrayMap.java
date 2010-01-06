@@ -75,7 +75,7 @@ public class FloatLeafArrayMap extends LeafArrayMap {
 	 * 
 	 * @return
 	 */
-	public LeafArrayMap split() {
+	public FloatLeafArrayMap split() {
 		FloatLeafArrayMap newMap = new FloatLeafArrayMap(keys.length);
 		final int mid = currentSize / 2;
 		int count = 0;

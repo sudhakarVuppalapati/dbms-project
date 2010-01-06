@@ -8,15 +8,5 @@ package myDB.btree.core.btree;
  * @author jens
  */
 public class SplitInfo {
-	BTreeNode leftNode;
-
-	int pivot;
-
-	BTreeNode rightNode;
-
-	public SplitInfo(BTreeNode leftNode, int pivot, BTreeNode rightNode) {
-		this.leftNode = leftNode;
-		this.pivot = pivot;
-		this.rightNode = rightNode;
-	}
+	
 }

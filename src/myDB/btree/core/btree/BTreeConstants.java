@@ -7,5 +7,9 @@ public interface BTreeConstants {
 	 * mappings and not only to a given specific value.
 	 */
 	public static final int ALL_MAPPINGS = Integer.MIN_VALUE;
+	
+	public static final int DEFAULT_K = 50;
+	
+	public static final int DEFAULT_K_STAR = 200;
 
 }
