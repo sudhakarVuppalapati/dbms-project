@@ -18,11 +18,6 @@ public interface IntPushOperator {
 	 * @param element
 	 */
 	public void pass(int element);
-
-	/**
-	 * Announces end of stream to the consumer.
-	 * (That's a great method name! ;-)  Jens)
-	 */
+	
 	public void thatsallfolks();
-
 }

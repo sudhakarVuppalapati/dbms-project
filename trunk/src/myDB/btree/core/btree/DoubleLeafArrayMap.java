@@ -75,7 +75,7 @@ public class DoubleLeafArrayMap extends LeafArrayMap {
 	 * 
 	 * @return
 	 */
-	public LeafArrayMap split() {
+	public DoubleLeafArrayMap split() {
 		DoubleLeafArrayMap newMap = new DoubleLeafArrayMap(keys.length);
 		final int mid = currentSize / 2;
 		int count = 0;

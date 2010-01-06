@@ -75,7 +75,7 @@ public class ObjectLeafArrayMap extends LeafArrayMap {
 	 * 
 	 * @return
 	 */
-	public LeafArrayMap split() {
+	public ObjectLeafArrayMap split() {
 		ObjectLeafArrayMap newMap = new ObjectLeafArrayMap(keys.length);
 		final int mid = currentSize / 2;
 		int count = 0;

@@ -1,9 +1,6 @@
 package myDB.btree.core.btree;
 
-import java.io.IOException;
 import java.io.OutputStream;
-
-import myDB.btree.util.IntPushOperator;
 
 /**
  * A simple btree implementation. (key equal or less than pivot -> go right) Has
@@ -26,13 +23,7 @@ import myDB.btree.util.IntPushOperator;
  * 
  * @author jens / marcos
  */
-public class BTree {
-
-	/** the root of the b-tree */
-	protected BTreeNode root = null;
-
-	/** the left-most leaf on the b-tree */
-	protected Leaf firstLeaf = null;
+public abstract class BTree {
 
 	/** the degree of the b-tree (internal nodes) */
 	protected int k;
@@ -40,13 +31,13 @@ public class BTree {
 	/** the degree of the leaves */
 	protected int k_star;
 
-	private double leafUtilization;
+	protected double leafUtilization;
 
-	private int leafCount;
+	protected int leafCount;
 
-	private int elemCount;
+	protected int elemCount;
 
-	private boolean refreshNeeded = true;
+	protected boolean refreshNeeded = true;
 
 	/**
 	 * Instantiates a new BTree.
@@ -60,113 +51,10 @@ public class BTree {
 	}
 
 	/**
-	 * Adds a mapping from key to value in the b-tree. Duplicate mappings are
-	 * allowed.
-	 * 
-	 * @param key
-	 * @param value
-	 * @return
-	 */
-	public void add(int key, int value, LeafCarrier leafCarrier) {
-		if (root == null) {
-			firstLeaf = new Leaf(k_star);
-			root = firstLeaf;
-		}
-		SplitInfo splitInfo = root.add(key, value, Integer.MIN_VALUE, Integer.MAX_VALUE, leafCarrier);
-		if (splitInfo != null) {
-			// root overflow!:
-			InternalNode newRoot = new InternalNode(splitInfo.leftNode, splitInfo.pivot, splitInfo.rightNode, k);
-			root = newRoot;
-		}
-		refreshNeeded = true;
-	}
-
-	public void add(int key, int value) {
-		add(key, value, null);
-	}
-
-	/**
-	 * Gets the value currently mapped to the given key.
-	 * 
-	 * @param key
-	 * @return
-	 */
-	public void get(int key, IntPushOperator results) {
-		root.get(key, results);
-	}
-
-	/**
-	 * Removes all mappings corresponding to the given key from the b-tree.
-	 * 
-	 * @param key
-	 * @return
-	 */
-	public void remove(int key) {
-		root.remove(key, BTreeConstants.ALL_MAPPINGS, Integer.MIN_VALUE, Integer.MAX_VALUE);
-		refreshNeeded = true;
-	}
-
-	/**
-	 * Removes one instance of the given key-value mapping from the b-tree. Note
-	 * that even if multiple instances of that mapping exist, only a single
-	 * instance will be removed.
-	 * 
-	 * @param key
-	 * @param value
-	 */
-	public void remove(int key, int value) {
-		root.remove(key, value, Integer.MIN_VALUE, Integer.MAX_VALUE);
-		refreshNeeded = true;
-	}
-
-	/**
-	 * Returns all the values mapped in the given key range through the provided
-	 * push operator. We include values that correspond to the lowKey and also
-	 * include values that correspond to the highKey.
-	 * 
-	 * @param lowKey
-	 * @param highKey
-	 * @return
-	 */
-	public void queryRange(int lowKey, int highKey, IntPushOperator results) {
-		root.queryRange(lowKey, highKey, results);
-	}
-
-	/**
-	 * Prints the root of the tree as a string.
-	 */
-	public String toString() {
-		return root.toString();
-	}
-
-	/**
 	 * generates a dotty representation of the tree in the given output stream.
 	 */
-	public void toDot(OutputStream dest) {
-		try {
-			// write header
-			dest.write("digraph g {\n".getBytes());
-			dest.write("node [shape=record,height=.1];\n".getBytes());
-
-			// write tree internal nodes
-			root.toDot(dest);
-
-			// write tree leaf nodes
-			Leaf currentLeaf = firstLeaf;
-			while (currentLeaf != null) {
-				currentLeaf.toDot(dest);
-				currentLeaf = currentLeaf.nextLeaf;
-			}
-
-			// write trailer, flush, and close
-			dest.write("}\n".getBytes());
-			dest.flush();
-			dest.close();
-		} catch (IOException e) {
-			System.out.println("could not write dotty");
-			e.printStackTrace();
-		}
-	}
+	public abstract void toDot(OutputStream dest);
+	
 
 	public void printStats() {
 		calculateStats();
@@ -179,22 +67,8 @@ public class BTree {
 		return elemCount;
 	}
 
-	private void calculateStats() {
-		if (refreshNeeded) {
-			Leaf currentLeaf = firstLeaf;
-			elemCount = 0;
-			leafCount = 0;
-			while (currentLeaf != null) {
-				leafCount++;
-				elemCount += currentLeaf.entries.size();
-
-				currentLeaf = currentLeaf.nextLeaf;
-			}
-
-			leafUtilization = (double) elemCount / (double) (leafCount * 2 * k_star);
-			refreshNeeded = false;
-		}
-	}
+	protected abstract void calculateStats();
+	
 
 	public double getLeafUtilization() {
 		calculateStats();

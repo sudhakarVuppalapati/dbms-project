@@ -1,8 +1,5 @@
 package myDB.btree.core.btree;
 
-import myDB.btree.util.IntPushOperator;
-
-
 /**
  * Helper for b-tree leaves. Has to be taylored to different key and value types
  * manually as Generics would use Complex type (inefficent) instead of native
@@ -10,7 +7,7 @@ import myDB.btree.util.IntPushOperator;
  * 
  * @author jens
  */
-public abstract class LeafArrayMap{
+public abstract class LeafArrayMap {
 
 	//protected int[] keys;
 

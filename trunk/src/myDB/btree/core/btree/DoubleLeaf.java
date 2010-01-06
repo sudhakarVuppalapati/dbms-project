@@ -10,26 +10,26 @@ import myDB.btree.util.IntPushOperator;
  * 
  * @author jens/marcos
  */
-public class LongLeaf extends Leaf implements LongBTreeNode {
+public class DoubleLeaf extends Leaf implements DoubleBTreeNode {
 	//my addition
 	//int type;	
-	protected LongLeafArrayMap entries;
+	protected DoubleLeafArrayMap entries;
 
 	protected int k_star;
 
-	protected LongLeaf nextLeaf;
+	protected DoubleLeaf nextLeaf;
 
-	public LongLeaf(int k_star, LongLeafArrayMap entries) {
+	public DoubleLeaf(int k_star, DoubleLeafArrayMap entries) {
 		this.k_star = k_star;
 		this.entries = entries;
 		this.nextLeaf = null;
 	}
 
-	public LongLeaf(int k_star) {
-		this(k_star, new LongLeafArrayMap(2 * k_star));
+	public DoubleLeaf(int k_star) {
+		this(k_star, new DoubleLeafArrayMap(2 * k_star));
 	}
 
-	public LongSplitInfo add(long key, int value, long lowKey, long highKey,
+	public DoubleSplitInfo add(double key, int value, double lowKey, double highKey,
 			LeafCarrier leafCarrier) {
 		// search for insertion point: last allowed node of a scan for that key
 		// a node is allowed as far as its first key is smaller than the highKey
@@ -42,7 +42,7 @@ public class LongLeaf extends Leaf implements LongBTreeNode {
 		// completely deleted. This is necessary because we know that nodes
 		// never get merged.
 		boolean continueSearch = entries.tryAdd(key, value);
-		LongLeaf currentLeaf = this;
+		DoubleLeaf currentLeaf = this;
 		while (continueSearch && currentLeaf.nextLeaf != null
 				&& currentLeaf.nextLeaf.entries.keys[0] < highKey) {
 			continueSearch = currentLeaf.nextLeaf.entries.tryAdd(key, value);
@@ -85,9 +85,9 @@ public class LongLeaf extends Leaf implements LongBTreeNode {
 	 * @param previousLeaf
 	 * @return
 	 */
-	private LongSplitInfo split() {
+	private DoubleSplitInfo split() {
 		// split leaf into two new nodes:
-		LongLeaf newLeaf = new LongLeaf(k_star, entries.split());
+		DoubleLeaf newLeaf = new DoubleLeaf(k_star, entries.split());
 
 		// make sure we point to this new sibling
 		newLeaf.nextLeaf = nextLeaf;
@@ -102,15 +102,15 @@ public class LongLeaf extends Leaf implements LongBTreeNode {
 		} else {
 			// propagate split: pivot differentiates the two leaves, so the new
 			// leaf does not have to be an overflow leaf
-			return new LongSplitInfo(this, newLeaf.entries.keys[0], newLeaf);
+			return new DoubleSplitInfo(this, newLeaf.entries.keys[0], newLeaf);
 		}
 	}
 
-	public void remove(long key, int value, long lowKey, long highKey) {
+	public void remove(double key, int value, double lowKey, double highKey) {
 		// continue search on the leaf level until all entries with the given
 		// key are guaranteed to be removed
 		boolean continueSearch = entries.remove(key, value);
-		LongLeaf currentLeaf = this;
+		DoubleLeaf currentLeaf = this;
 
 		// HACK: even if a node is empty, we know that its array still contains
 		// the key values it used to have when it was full. That allows us to
@@ -136,10 +136,10 @@ public class LongLeaf extends Leaf implements LongBTreeNode {
 	}
 
 
-	public void get(long key, IntPushOperator results) {
+	public void get(double key, IntPushOperator results) {
 		// search in entries
 		int continueSearch = entries.get(key, results);
-		LongLeaf currentLeaf = nextLeaf;
+		DoubleLeaf currentLeaf = nextLeaf;
 		while (continueSearch != LeafArrayMap.STOP && currentLeaf != null) {
 			if (continueSearch == LeafArrayMap.CONTINUE_WITH_BINSEARCH) {
 				continueSearch = currentLeaf.entries.get(key, results);
@@ -183,12 +183,12 @@ public class LongLeaf extends Leaf implements LongBTreeNode {
 		}
 	}
 
-	public void queryRange(final long lowKey, final long highKey,
+	public void queryRange(final double lowKey, final double highKey,
 			IntPushOperator results) {
 		// start with a query range on this leaf and proceed to next leaf if
 		// necessary
 		int continueSearch = entries.queryRange(lowKey, highKey, results);
-		LongLeaf currentLeaf = nextLeaf;
+		DoubleLeaf currentLeaf = nextLeaf;
 		while (continueSearch != LeafArrayMap.STOP && currentLeaf != null) {
 			if (continueSearch == LeafArrayMap.CONTINUE_WITH_SCAN)
 				continueSearch = currentLeaf.entries.continueScan(0, highKey,
@@ -205,7 +205,7 @@ public class LongLeaf extends Leaf implements LongBTreeNode {
 	public void removeValue(int value) {
 		// search for value
 		boolean foundValue = false;
-		LongLeaf currentLeaf = this;
+		DoubleLeaf currentLeaf = this;
 
 		while (!foundValue && currentLeaf != null) {
 			for (int i = 0; i < currentLeaf.entries.size(); i++) {
@@ -217,7 +217,6 @@ public class LongLeaf extends Leaf implements LongBTreeNode {
 			currentLeaf = currentLeaf.nextLeaf;
 		}
 	}
-	
 
 	public String toString() {
 		return "[" + entries.toString() + "]";
@@ -227,5 +226,4 @@ public class LongLeaf extends Leaf implements LongBTreeNode {
 	public boolean isEmpty() {
 		return entries.size() == 0;
 	}
-
 }
