@@ -33,7 +33,7 @@ public class IntBTreeMap extends BTreeMap {
 		for (int i = 0; i < colVals.length; i++) {
 			tmp = colVals[i];
 			
-			if (tmp == Double.MAX_VALUE || tmp == Double.MIN_VALUE) 
+			if (tmp == Integer.MAX_VALUE || tmp == Integer.MIN_VALUE) 
 				continue;
 			
 			btree.add(tmp, i);
