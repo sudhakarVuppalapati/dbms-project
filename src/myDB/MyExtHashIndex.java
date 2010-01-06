@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import exceptions.InvalidKeyException;
+import exceptions.SchemaMismatchException;
 
 import operator.Operator;
 import systeminterface.Column;
@@ -40,7 +41,7 @@ public class MyExtHashIndex implements HashIndex {
 	private int gDepth;
 	
 	/** Store the index description */
-	private final String des;
+	private String des;
 	
 	/** Since Java has no exponential operator, I store the value of
 	 * 2^gDepth here, to fast compute when needed */
@@ -103,34 +104,13 @@ public class MyExtHashIndex implements HashIndex {
 			lDepths[i] = DEPTH;
 		}
 	}
-
-	public void insert(Object objKey, int rowID) throws InvalidKeyException {
-		int[] entry;			
-		int key = 0;
-		
-		//This is really stupid
-		try {
-			if (type == Types.getDateType()) 
-				key = ((Date)objKey).hashCode();
-			else if (type == Types.getDoubleType())
-				key = ((Double)objKey).hashCode();
-			else if (type == Types.getFloatType())
-				key = ((Float)objKey).hashCode();
-			else if (type == Types.getLongType())
-				key = ((Long)objKey).hashCode();
-			else if (type == Types.getIntegerType())
-				key = ((Integer)objKey).hashCode();
-			else if (type == Types.getVarcharType())
-				key = ((String)objKey).hashCode();
-			else if (type.getLength() >= ((String)objKey).length())
-				key = objKey.hashCode();
-			else
-				throw new InvalidKeyException();
-		}
-		catch (ClassCastException cce) {
-			throw new InvalidKeyException();
-		}				
-		
+	
+	public void insert(Object objKey, int rowID) throws InvalidKeyException {					
+		insert(checkAndHashKey(objKey), rowID);
+	}
+	
+	private void insert(int key, int rowID) {
+		int[] entry;
 		int bucketNo = hash(key);
 		
 		Object tmp = buckets.get(bucketNo);
@@ -305,20 +285,26 @@ public class MyExtHashIndex implements HashIndex {
 			}
 			break;		
 		}
-	}
-
-
+	}	
+	
 	/** Construct the index in bulk loading-liked fashion. Column values are obtained
 	 * by calling MyColumn.getDataArrayAsObject() 
 	 */	
-	public MyExtHashIndex(String indexDes, Table tableObj, Column colObj) {
+	public MyExtHashIndex(String indexDes, Table tableObj, Column colObj) 
+	throws SchemaMismatchException {
 		//Initialize index as usual
 		des = indexDes;
 		
 		type = colObj.getColumnType();
 		Object colVals = colObj.getDataArrayAsObject();
 		
-		table = (MyTable)tableObj;
+		try {
+			table = (MyTable)tableObj;
+		}
+		catch (ClassCastException cce) {
+			throw new SchemaMismatchException();
+		}
+		
 		gDepth = DEPTH;
 		powerDepth = CARD;
 		buckets = new ArrayList(CARD);
@@ -331,12 +317,8 @@ public class MyExtHashIndex implements HashIndex {
 			lDepths[i] = DEPTH;
 		}
 		
-		int n, r, k, bucketNo;
-		int[] entry;
-		Object tmp;
-		Object[] bucket;
+		int n, r, k;
 		
-		boolean added;
 		if (type == Types.getIntegerType()) {
 			int[] keys = (int[])colVals;
 			n = keys.length;
@@ -347,168 +329,7 @@ public class MyExtHashIndex implements HashIndex {
 				if (k == Integer.MAX_VALUE || k == Integer.MIN_VALUE) 
 					continue;
 				
-				bucketNo = hash(k);
-				tmp = buckets.get(bucketNo);
-				i = freeSlot[bucketNo];
-				
-				added = false; 
-				
-				/** Step 1 */
-				if (tmp == null) {
-					entry = new int[INITIAL_CAPACITY];
-					entry[0] = k;
-					entry[1] = 3;
-					entry[2] = r;
-					bucket = new Object[BUCKET_SIZE];
-					bucket[i++] = entry;
-					freeSlot[bucketNo] = i;
-					buckets.set(bucketNo, bucket);
-					continue;
-		 		}
-				
-				/** Step 2 */
-				bucket = (Object[])tmp;
-				int low = 0, high = i - 1;
-				
-				for (; low <= high;) {
-					int mid = (low + high) >> 1;
-					entry = (int[])bucket[mid];
-					int tmpKey = entry[0];		//The beginning elements is key content
-					if (tmpKey < k) 
-						low = mid + 1;
-					else if (tmpKey > k)
-						high = mid - 1;
-					// Key found, just insert the value into the matching data entry.
-					else {				
-						int entrySize = entry[1]; 	//The second elements are data entry size
-						int low1 = 2, high1 = entrySize - 1;
-						boolean valFound = false;
-						for (; low1 <= high1;) {
-							int mid1 = (low1 + high1) >> 1;
-							int midVals = entry[mid1];
-							if (midVals < r)
-								low1 = mid1 + 1;
-							else if (midVals > r)
-								high1 = mid1 - 1;
-							else {
-								added = true;
-								break;		//value found, do nothing			
-							}
-						}
-						if (added)
-							break;
-						// Value not found, insert new value into current data entry.
-						// First check for free slots in the entry. Expand entry if full
-						if (entrySize == entry.length) {
-							int[] newEntry = new int[Math.round(entrySize * FACTOR)];
-							System.arraycopy(entry, 0, newEntry, 0, entrySize);
-							entry = newEntry;
-							bucket[mid] = entry;
-						}
-						// Then, insert value into current position
-						if (low1 < entrySize) {
-							System.arraycopy(entry, low1, entry, low1 + 1, entrySize - low1);
-							entry[low1] = r;
-						}
-						else entry[entrySize] = r;
-						entry[1]++;	
-						added = true;
-						break;
-					}
-				}
-				if (added)
-					continue;
-				
-				/** Step 3 */
-				entry = new int[INITIAL_CAPACITY];
-				entry[0] = k;
-				entry[1] = 3; 
-				entry[2] = r;
-				
-				if (i < BUCKET_SIZE) {	
-					if (low < i) {
-						System.arraycopy(bucket, low, bucket, low + 1, i - low);			
-						bucket[low] = entry;
-					}
-					else bucket[i] = entry;			
-					freeSlot[bucketNo]++;
-					continue;
-				}
-				
-				/** Step 4 */
-				Object[] oldBucket = bucket.clone();	
-				
-				int origin = lDepths.length;
-				
-				while (true) {	//Repeat do extending until every data entries fit within a bucket
-					freeSlot[bucketNo] = 0;
-
-					if (gDepth > lDepths[bucketNo]) {
-						lDepths[bucketNo] = gDepth;	
-						bucket[freeSlot[bucketNo]++] = entry;
-					}		
-					else {				
-						lDepths[bucketNo] = ++gDepth;
-						
-						//Double the directory
-						i = lDepths.length;
-						high = i * 2;
-						int[] newLDepths = new int[high];
-						System.arraycopy(lDepths, 0, newLDepths, 0, i);
-						lDepths = newLDepths;
-						
-						int[] newFreeSlot = new int[high];
-						System.arraycopy(freeSlot, 0, newFreeSlot, 0, i);
-						freeSlot = newFreeSlot;
-						
-						for (i = origin; i < high; i++) {
-							buckets.add(null);
-							freeSlot[i] = 0;
-						}				
-						
-						powerDepth = high - 1;
-						
-						//Rehash the key
-						bucketNo = hash(k);
-						tmp = buckets.get(bucketNo);
-						
-						if (tmp != null) {
-							bucket = (Object[])tmp;
-							if (freeSlot[bucketNo] < BUCKET_SIZE)
-								bucket[freeSlot[bucketNo]++] = entry;
-							else 
-								continue;
-						}					
-						else {
-							lDepths[bucketNo] = gDepth;
-							bucket = new Object[BUCKET_SIZE];
-							bucket[freeSlot[bucketNo]++] = entry;
-							buckets.set(bucketNo, bucket);
-						}			
-					}
-					
-					//Rehash other keys in the old bucket
-					for (i = 0; i < BUCKET_SIZE; i++) { 
-						bucketNo = hash(((int[])oldBucket[i])[0]);
-						tmp = buckets.get(bucketNo);
-						if (tmp != null) {
-							bucket = (Object[])tmp;
-							if (freeSlot[bucketNo] < BUCKET_SIZE)
-								bucket[freeSlot[bucketNo]++] = oldBucket[i];
-							else {
-								freeSlot[bucketNo] = 0;
-								continue;
-							}
-						}					
-						else {
-							lDepths[bucketNo] = gDepth;
-							bucket = new Object[BUCKET_SIZE];
-							bucket[freeSlot[bucketNo]++] = oldBucket[i];
-							buckets.set(bucketNo, bucket);
-						}
-					}
-					break;		
-				}
+				insert(k, r);
 			}
 			return;
 		}
@@ -525,169 +346,7 @@ public class MyExtHashIndex implements HashIndex {
 				l = Double.doubleToLongBits(d);
 				k =  (int)(l ^ (l >>> 32));
 				
-				
-				bucketNo = hash(k);
-				tmp = buckets.get(bucketNo);
-				i = freeSlot[bucketNo];
-
-				added = false; 
-				
-				/** Step 1 */
-				if (tmp == null) {
-					entry = new int[INITIAL_CAPACITY];
-					entry[0] = k;
-					entry[1] = 3;
-					entry[2] = r;
-					bucket = new Object[BUCKET_SIZE];
-					bucket[i++] = entry;
-					freeSlot[bucketNo] = i;
-					buckets.set(bucketNo, bucket);
-					continue;
-		 		}
-				
-				/** Step 2 */
-				bucket = (Object[])tmp;
-				int low = 0, high = i - 1;
-				
-				for (; low <= high;) {
-					int mid = (low + high) >> 1;
-					entry = (int[])bucket[mid];
-					int tmpKey = entry[0];		//The beginning elements is key content
-					if (tmpKey < k) 
-						low = mid + 1;
-					else if (tmpKey > k)
-						high = mid - 1;
-					// Key found, just insert the value into the matching data entry.
-					else {				
-						int entrySize = entry[1]; 	//The second elements are data entry size
-						int low1 = 2, high1 = entrySize - 1;
-						boolean valFound = false;
-						for (; low1 <= high1;) {
-							int mid1 = (low1 + high1) >> 1;
-							int midVals = entry[mid1];
-							if (midVals < r)
-								low1 = mid1 + 1;
-							else if (midVals > r)
-								high1 = mid1 - 1;
-							else {
-								added = true;
-								break;		//value found, do nothing			
-							}
-						}
-						if (added)
-							break;
-						// Value not found, insert new value into current data entry.
-						// First check for free slots in the entry. Expand entry if full
-						if (entrySize == entry.length) {
-							int[] newEntry = new int[Math.round(entrySize * FACTOR)];
-							System.arraycopy(entry, 0, newEntry, 0, entrySize);
-							entry = newEntry;
-							bucket[mid] = entry;
-						}
-						// Then, insert value into current position
-						if (low1 < entrySize) {
-							System.arraycopy(entry, low1, entry, low1 + 1, entrySize - low1);
-							entry[low1] = r;
-						}
-						else entry[entrySize] = r;
-						entry[1]++;	
-						added = true;
-						break;
-					}
-				}
-				if (added)
-					continue;
-				
-				/** Step 3 */
-				entry = new int[INITIAL_CAPACITY];
-				entry[0] = k;
-				entry[1] = 3; 
-				entry[2] = r;
-				
-				if (i < BUCKET_SIZE) {	
-					if (low < i) {
-						System.arraycopy(bucket, low, bucket, low + 1, i - low);			
-						bucket[low] = entry;
-					}
-					else bucket[i] = entry;			
-					freeSlot[bucketNo]++;
-					continue;
-				}
-				
-				/** Step 4 */
-Object[] oldBucket = bucket.clone();	
-				
-				int origin = lDepths.length;
-				
-				while (true) {	//Repeat do extending until every data entries fit within a bucket
-					freeSlot[bucketNo] = 0;
-
-					if (gDepth > lDepths[bucketNo]) {
-						lDepths[bucketNo] = gDepth;	
-						bucket[freeSlot[bucketNo]++] = entry;
-					}		
-					else {				
-						lDepths[bucketNo] = ++gDepth;
-						
-						//Double the directory
-						i = lDepths.length;
-						high = i * 2;
-						int[] newLDepths = new int[high];
-						System.arraycopy(lDepths, 0, newLDepths, 0, i);
-						lDepths = newLDepths;
-						
-						int[] newFreeSlot = new int[high];
-						System.arraycopy(freeSlot, 0, newFreeSlot, 0, i);
-						freeSlot = newFreeSlot;
-						
-						for (i = origin; i < high; i++) {
-							buckets.add(null);
-							freeSlot[i] = 0;
-						}				
-						
-						powerDepth = high - 1;
-						
-						//Rehash the key
-						bucketNo = hash(k);
-						tmp = buckets.get(bucketNo);
-						
-						if (tmp != null) {
-							bucket = (Object[])tmp;
-							if (freeSlot[bucketNo] < BUCKET_SIZE)
-								bucket[freeSlot[bucketNo]++] = entry;
-							else 
-								continue;
-						}					
-						else {
-							lDepths[bucketNo] = gDepth;
-							bucket = new Object[BUCKET_SIZE];
-							bucket[freeSlot[bucketNo]++] = entry;
-							buckets.set(bucketNo, bucket);
-						}			
-					}
-					
-					//Rehash other keys in the old bucket
-					for (i = 0; i < BUCKET_SIZE; i++) { 
-						bucketNo = hash(((int[])oldBucket[i])[0]);
-						tmp = buckets.get(bucketNo);
-						if (tmp != null) {
-							bucket = (Object[])tmp;
-							if (freeSlot[bucketNo] < BUCKET_SIZE)
-								bucket[freeSlot[bucketNo]++] = oldBucket[i];
-							else {
-								freeSlot[bucketNo] = 0;
-								continue;
-							}
-						}					
-						else {
-							lDepths[bucketNo] = gDepth;
-							bucket = new Object[BUCKET_SIZE];
-							bucket[freeSlot[bucketNo]++] = oldBucket[i];
-							buckets.set(bucketNo, bucket);
-						}
-					}
-					break;		
-				}
+				insert(k, r);
 			}
 			return;
 		}
@@ -704,168 +363,7 @@ Object[] oldBucket = bucket.clone();
 				
 				k = Float.floatToIntBits(f);
 				
-				bucketNo = hash(k);
-				tmp = buckets.get(bucketNo);
-				i = freeSlot[bucketNo];
-
-				added = false; 
-				
-				/** Step 1 */
-				if (tmp == null) {
-					entry = new int[INITIAL_CAPACITY];
-					entry[0] = k;
-					entry[1] = 3;
-					entry[2] = r;
-					bucket = new Object[BUCKET_SIZE];
-					bucket[i++] = entry;
-					freeSlot[bucketNo] = i;
-					buckets.set(bucketNo, bucket);
-					continue;
-		 		}
-				
-				/** Step 2 */
-				bucket = (Object[])tmp;
-				int low = 0, high = i - 1;
-				
-				for (; low <= high;) {
-					int mid = (low + high) >> 1;
-					entry = (int[])bucket[mid];
-					int tmpKey = entry[0];		//The beginning elements is key content
-					if (tmpKey < k) 
-						low = mid + 1;
-					else if (tmpKey > k)
-						high = mid - 1;
-					// Key found, just insert the value into the matching data entry.
-					else {				
-						int entrySize = entry[1]; 	//The second elements are data entry size
-						int low1 = 2, high1 = entrySize - 1;
-						boolean valFound = false;
-						for (; low1 <= high1;) {
-							int mid1 = (low1 + high1) >> 1;
-							int midVals = entry[mid1];
-							if (midVals < r)
-								low1 = mid1 + 1;
-							else if (midVals > r)
-								high1 = mid1 - 1;
-							else {
-								added = true;
-								break;		//value found, do nothing			
-							}
-						}
-						if (added)
-							break;
-						// Value not found, insert new value into current data entry.
-						// First check for free slots in the entry. Expand entry if full
-						if (entrySize == entry.length) {
-							int[] newEntry = new int[Math.round(entrySize * FACTOR)];
-							System.arraycopy(entry, 0, newEntry, 0, entrySize);
-							entry = newEntry;
-							bucket[mid] = entry;
-						}
-						// Then, insert value into current position
-						if (low1 < entrySize) {
-							System.arraycopy(entry, low1, entry, low1 + 1, entrySize - low1);
-							entry[low1] = r;
-						}
-						else entry[entrySize] = r;
-						entry[1]++;	
-						added = true;
-						break;
-					}
-				}
-				if (added)
-					continue;
-				
-				/** Step 3 */
-				entry = new int[INITIAL_CAPACITY];
-				entry[0] = k;
-				entry[1] = 3; 
-				entry[2] = r;
-				
-				if (i < BUCKET_SIZE) {	
-					if (low < i) {
-						System.arraycopy(bucket, low, bucket, low + 1, i - low);			
-						bucket[low] = entry;
-					}
-					else bucket[i] = entry;			
-					freeSlot[bucketNo]++;
-					continue;
-				}
-				
-				/** Step 4 */
-				Object[] oldBucket = bucket.clone();	
-				
-				int origin = lDepths.length;
-				
-				while (true) {	//Repeat do extending until every data entries fit within a bucket
-					freeSlot[bucketNo] = 0;
-
-					if (gDepth > lDepths[bucketNo]) {
-						lDepths[bucketNo] = gDepth;	
-						bucket[freeSlot[bucketNo]++] = entry;
-					}		
-					else {				
-						lDepths[bucketNo] = ++gDepth;
-						
-						//Double the directory
-						i = lDepths.length;
-						high = i * 2;
-						int[] newLDepths = new int[high];
-						System.arraycopy(lDepths, 0, newLDepths, 0, i);
-						lDepths = newLDepths;
-						
-						int[] newFreeSlot = new int[high];
-						System.arraycopy(freeSlot, 0, newFreeSlot, 0, i);
-						freeSlot = newFreeSlot;
-						
-						for (i = origin; i < high; i++) {
-							buckets.add(null);
-							freeSlot[i] = 0;
-						}				
-						
-						powerDepth = high - 1;
-						
-						//Rehash the key
-						bucketNo = hash(k);
-						tmp = buckets.get(bucketNo);
-						
-						if (tmp != null) {
-							bucket = (Object[])tmp;
-							if (freeSlot[bucketNo] < BUCKET_SIZE)
-								bucket[freeSlot[bucketNo]++] = entry;
-							else 
-								continue;
-						}					
-						else {
-							lDepths[bucketNo] = gDepth;
-							bucket = new Object[BUCKET_SIZE];
-							bucket[freeSlot[bucketNo]++] = entry;
-							buckets.set(bucketNo, bucket);
-						}			
-					}
-					
-					//Rehash other keys in the old bucket
-					for (i = 0; i < BUCKET_SIZE; i++) { 
-						bucketNo = hash(((int[])oldBucket[i])[0]);
-						tmp = buckets.get(bucketNo);
-						if (tmp != null) {
-							bucket = (Object[])tmp;
-							if (freeSlot[bucketNo] < BUCKET_SIZE)
-								bucket[freeSlot[bucketNo]++] = oldBucket[i];
-							else {
-								freeSlot[bucketNo] = 0;
-								continue;
-							}
-						}					
-						else {
-							lDepths[bucketNo] = gDepth;
-							bucket = new Object[BUCKET_SIZE];
-							bucket[freeSlot[bucketNo]++] = oldBucket[i];
-							buckets.set(bucketNo, bucket);
-						}
-					}
-					break;		
-				}	
+				insert(k, r);
 			}
 			return;
 		}
@@ -881,168 +379,7 @@ Object[] oldBucket = bucket.clone();
 				
 				k =  (int)(l ^ (l >>> 32));
 				
-				bucketNo = hash(k);
-				tmp = buckets.get(bucketNo);
-				i = freeSlot[bucketNo];
-
-				added = false; 
-				
-				/** Step 1 */
-				if (tmp == null) {
-					entry = new int[INITIAL_CAPACITY];
-					entry[0] = k;
-					entry[1] = 3;
-					entry[2] = r;
-					bucket = new Object[BUCKET_SIZE];
-					bucket[i++] = entry;
-					freeSlot[bucketNo] = i;
-					buckets.set(bucketNo, bucket);
-					continue;
-		 		}
-				
-				/** Step 2 */
-				bucket = (Object[])tmp;
-				int low = 0, high = i - 1;
-				
-				for (; low <= high;) {
-					int mid = (low + high) >> 1;
-					entry = (int[])bucket[mid];
-					int tmpKey = entry[0];		//The beginning elements is key content
-					if (tmpKey < k) 
-						low = mid + 1;
-					else if (tmpKey > k)
-						high = mid - 1;
-					// Key found, just insert the value into the matching data entry.
-					else {				
-						int entrySize = entry[1]; 	//The second elements are data entry size
-						int low1 = 2, high1 = entrySize - 1;
-						boolean valFound = false;
-						for (; low1 <= high1;) {
-							int mid1 = (low1 + high1) >> 1;
-							int midVals = entry[mid1];
-							if (midVals < r)
-								low1 = mid1 + 1;
-							else if (midVals > r)
-								high1 = mid1 - 1;
-							else {
-								added = true;
-								break;		//value found, do nothing			
-							}
-						}
-						if (added)
-							break;
-						// Value not found, insert new value into current data entry.
-						// First check for free slots in the entry. Expand entry if full
-						if (entrySize == entry.length) {
-							int[] newEntry = new int[Math.round(entrySize * FACTOR)];
-							System.arraycopy(entry, 0, newEntry, 0, entrySize);
-							entry = newEntry;
-							bucket[mid] = entry;
-						}
-						// Then, insert value into current position
-						if (low1 < entrySize) {
-							System.arraycopy(entry, low1, entry, low1 + 1, entrySize - low1);
-							entry[low1] = r;
-						}
-						else entry[entrySize] = r;
-						entry[1]++;	
-						added = true;
-						break;
-					}
-				}
-				if (added)
-					continue;
-				
-				/** Step 3 */
-				entry = new int[INITIAL_CAPACITY];
-				entry[0] = k;
-				entry[1] = 3; 
-				entry[2] = r;
-				
-				if (i < BUCKET_SIZE) {	
-					if (low < i) {
-						System.arraycopy(bucket, low, bucket, low + 1, i - low);			
-						bucket[low] = entry;
-					}
-					else bucket[i] = entry;			
-					freeSlot[bucketNo]++;
-					continue;
-				}
-				
-				/** Step 4 */
-Object[] oldBucket = bucket.clone();	
-				
-				int origin = lDepths.length;
-				
-				while (true) {	//Repeat do extending until every data entries fit within a bucket
-					freeSlot[bucketNo] = 0;
-
-					if (gDepth > lDepths[bucketNo]) {
-						lDepths[bucketNo] = gDepth;	
-						bucket[freeSlot[bucketNo]++] = entry;
-					}		
-					else {				
-						lDepths[bucketNo] = ++gDepth;
-						
-						//Double the directory
-						i = lDepths.length;
-						high = i * 2;
-						int[] newLDepths = new int[high];
-						System.arraycopy(lDepths, 0, newLDepths, 0, i);
-						lDepths = newLDepths;
-						
-						int[] newFreeSlot = new int[high];
-						System.arraycopy(freeSlot, 0, newFreeSlot, 0, i);
-						freeSlot = newFreeSlot;
-						
-						for (i = origin; i < high; i++) {
-							buckets.add(null);
-							freeSlot[i] = 0;
-						}				
-						
-						powerDepth = high - 1;
-						
-						//Rehash the key
-						bucketNo = hash(k);
-						tmp = buckets.get(bucketNo);
-						
-						if (tmp != null) {
-							bucket = (Object[])tmp;
-							if (freeSlot[bucketNo] < BUCKET_SIZE)
-								bucket[freeSlot[bucketNo]++] = entry;
-							else 
-								continue;
-						}					
-						else {
-							lDepths[bucketNo] = gDepth;
-							bucket = new Object[BUCKET_SIZE];
-							bucket[freeSlot[bucketNo]++] = entry;
-							buckets.set(bucketNo, bucket);
-						}			
-					}
-					
-					//Rehash other keys in the old bucket
-					for (i = 0; i < BUCKET_SIZE; i++) { 
-						bucketNo = hash(((int[])oldBucket[i])[0]);
-						tmp = buckets.get(bucketNo);
-						if (tmp != null) {
-							bucket = (Object[])tmp;
-							if (freeSlot[bucketNo] < BUCKET_SIZE)
-								bucket[freeSlot[bucketNo]++] = oldBucket[i];
-							else {
-								freeSlot[bucketNo] = 0;
-								continue;
-							}
-						}					
-						else {
-							lDepths[bucketNo] = gDepth;
-							bucket = new Object[BUCKET_SIZE];
-							bucket[freeSlot[bucketNo]++] = oldBucket[i];
-							buckets.set(bucketNo, bucket);
-						}
-					}
-					break;		
-				}	
+				insert(k, r);
 			}
 			return;
 		}
@@ -1057,199 +394,15 @@ Object[] oldBucket = bucket.clone();
 			
 			k = o.hashCode();
 			
-			bucketNo = hash(k);
-			tmp = buckets.get(bucketNo);
-			i = freeSlot[bucketNo];
-
-			added = false; 
-			
-			/** Step 1 */
-			if (tmp == null) {
-				entry = new int[INITIAL_CAPACITY];
-				entry[0] = k;
-				entry[1] = 3;
-				entry[2] = r;
-				bucket = new Object[BUCKET_SIZE];
-				bucket[i++] = entry;
-				freeSlot[bucketNo] = i;
-				buckets.set(bucketNo, bucket);
-				continue;
-	 		}
-			
-			/** Step 2 */
-			bucket = (Object[])tmp;
-			int low = 0, high = i - 1;
-			
-			for (; low <= high;) {
-				int mid = (low + high) >> 1;
-				entry = (int[])bucket[mid];
-				int tmpKey = entry[0];		//The beginning elements is key content
-				if (tmpKey < k) 
-					low = mid + 1;
-				else if (tmpKey > k)
-					high = mid - 1;
-				// Key found, just insert the value into the matching data entry.
-				else {				
-					int entrySize = entry[1]; 	//The second elements are data entry size
-					int low1 = 2, high1 = entrySize - 1;
-					boolean valFound = false;
-					for (; low1 <= high1;) {
-						int mid1 = (low1 + high1) >> 1;
-						int midVals = entry[mid1];
-						if (midVals < r)
-							low1 = mid1 + 1;
-						else if (midVals > r)
-							high1 = mid1 - 1;
-						else {
-							added = true;
-							break;		//value found, do nothing			
-						}
-					}
-					if (added)
-						break;
-					// Value not found, insert new value into current data entry.
-					// First check for free slots in the entry. Expand entry if full
-					if (entrySize == entry.length) {
-						int[] newEntry = new int[Math.round(entrySize * FACTOR)];
-						System.arraycopy(entry, 0, newEntry, 0, entrySize);
-						entry = newEntry;
-						bucket[mid] = entry;
-					}
-					// Then, insert value into current position
-					if (low1 < entrySize) {
-						System.arraycopy(entry, low1, entry, low1 + 1, entrySize - low1);
-						entry[low1] = r;
-					}
-					else entry[entrySize] = r;
-					entry[1]++;	
-					added = true;
-					break;
-				}
-			}
-			if (added)
-				continue;
-			
-			/** Step 3 */
-			entry = new int[INITIAL_CAPACITY];
-			entry[0] = k;
-			entry[1] = 3; 
-			entry[2] = r;
-			
-			if (i < BUCKET_SIZE) {	
-				if (low < i) {
-					System.arraycopy(bucket, low, bucket, low + 1, i - low);			
-					bucket[low] = entry;
-				}
-				else bucket[i] = entry;			
-				freeSlot[bucketNo]++;
-				continue;
-			}
-			
-			/** Step 4 */
-			Object[] oldBucket = bucket.clone();	
-			
-			int origin = lDepths.length;
-			
-			while (true) {	//Repeat do extending until every data entries fit within a bucket
-				freeSlot[bucketNo] = 0;
-
-				if (gDepth > lDepths[bucketNo]) {
-					lDepths[bucketNo] = gDepth;	
-					bucket[freeSlot[bucketNo]++] = entry;
-				}		
-				else {				
-					lDepths[bucketNo] = ++gDepth;
-					
-					//Double the directory
-					i = lDepths.length;
-					high = i * 2;
-					int[] newLDepths = new int[high];
-					System.arraycopy(lDepths, 0, newLDepths, 0, i);
-					lDepths = newLDepths;
-					
-					int[] newFreeSlot = new int[high];
-					System.arraycopy(freeSlot, 0, newFreeSlot, 0, i);
-					freeSlot = newFreeSlot;
-					
-					for (i = origin; i < high; i++) {
-						buckets.add(null);
-						freeSlot[i] = 0;
-					}				
-					
-					powerDepth = high - 1;
-					
-					//Rehash the key
-					bucketNo = hash(k);
-					tmp = buckets.get(bucketNo);
-					
-					if (tmp != null) {
-						bucket = (Object[])tmp;
-						if (freeSlot[bucketNo] < BUCKET_SIZE)
-							bucket[freeSlot[bucketNo]++] = entry;
-						else 
-							continue;
-					}					
-					else {
-						lDepths[bucketNo] = gDepth;
-						bucket = new Object[BUCKET_SIZE];
-						bucket[freeSlot[bucketNo]++] = entry;
-						buckets.set(bucketNo, bucket);
-					}			
-				}
-				
-				//Rehash other keys in the old bucket
-				for (i = 0; i < BUCKET_SIZE; i++) { 
-					bucketNo = hash(((int[])oldBucket[i])[0]);
-					tmp = buckets.get(bucketNo);
-					if (tmp != null) {
-						bucket = (Object[])tmp;
-						if (freeSlot[bucketNo] < BUCKET_SIZE)
-							bucket[freeSlot[bucketNo]++] = oldBucket[i];
-						else {
-							freeSlot[bucketNo] = 0;
-							continue;
-						}
-					}					
-					else {
-						lDepths[bucketNo] = gDepth;
-						bucket = new Object[BUCKET_SIZE];
-						bucket[freeSlot[bucketNo]++] = oldBucket[i];
-						buckets.set(bucketNo, bucket);
-					}
-				}
-				break;		
-			}	
+			insert(k, r);
 		}		
 	}
 	
 	@Override
 	public int[] pointQueryRowIDs(Object objKey) throws InvalidKeyException {
 		int[] entry = new int[0];			
-		int key = 0;
-		
-		//This is really stupid
-		try {
-			if (type == Types.getDateType()) 
-				key = ((Date)objKey).hashCode();
-			else if (type == Types.getDoubleType())
-				key = ((Double)objKey).hashCode();
-			else if (type == Types.getFloatType())
-				key = ((Float)objKey).hashCode();
-			else if (type == Types.getLongType())
-				key = ((Long)objKey).hashCode();
-			else if (type == Types.getIntegerType())
-				key = ((Integer)objKey).hashCode();
-			else if (type == Types.getVarcharType())
-				key = ((String)objKey).hashCode();
-			else if (type.getLength() >= ((String)objKey).length())
-				key = objKey.hashCode();
-			else
-				throw new InvalidKeyException();
-		}
-		catch (ClassCastException cce) {
-			throw new InvalidKeyException();
-		}						
-		
+		int key = checkAndHashKey(objKey);
+				
 		int bucketNo = hash(key);
 		
 		Object tmp = buckets.get(bucketNo);
@@ -1274,6 +427,7 @@ Object[] oldBucket = bucket.clone();
 					break;
 				}
 			}
+			tmpEntry = null; 	//enable garbage collection
 		}
 		return entry;
 	}
@@ -1281,30 +435,7 @@ Object[] oldBucket = bucket.clone();
 	@Override
 	public void delete(Object objKey, int rowID) throws InvalidKeyException {
 		int[] entry;			
-		int key = 0;
-		
-		//This is really stupid
-		try {
-			if (type == Types.getDateType()) 
-				key = ((Date)objKey).hashCode();
-			else if (type == Types.getDoubleType())
-				key = ((Double)objKey).hashCode();
-			else if (type == Types.getFloatType())
-				key = ((Float)objKey).hashCode();
-			else if (type == Types.getLongType())
-				key = ((Long)objKey).hashCode();
-			else if (type == Types.getIntegerType())
-				key = ((Integer)objKey).hashCode();
-			else if (type == Types.getVarcharType())
-				key = ((String)objKey).hashCode();
-			else if (type.getLength() >= ((String)objKey).length())
-				key = objKey.hashCode();
-			else
-				throw new InvalidKeyException();
-		}
-		catch (ClassCastException cce) {
-			throw new InvalidKeyException();
-		}						
+		int key = checkAndHashKey(objKey);	
 		
 		int bucketNo = hash(key);
 		
@@ -1346,6 +477,7 @@ Object[] oldBucket = bucket.clone();
 						entry[1]--;
 						if (entry[1] == 0) {							
 							System.arraycopy(bucket, mid + 1, bucket, mid, i - 1 - mid);
+							//TODO do something to inform garbage-collection here
 							freeSlot[bucketNo]--;
 						}
 					}
@@ -1358,30 +490,7 @@ Object[] oldBucket = bucket.clone();
 	@Override
 	public void update(Object objKey, int oldRowID, int newRowID) throws InvalidKeyException {
 		int[] entry;			
-		int key = 0;
-		
-		//This is really stupid
-		try {
-			if (type == Types.getDateType()) 
-				key = ((Date)objKey).hashCode();
-			else if (type == Types.getDoubleType())
-				key = ((Double)objKey).hashCode();
-			else if (type == Types.getFloatType())
-				key = ((Float)objKey).hashCode();
-			else if (type == Types.getLongType())
-				key = ((Long)objKey).hashCode();
-			else if (type == Types.getIntegerType())
-				key = ((Integer)objKey).hashCode();
-			else if (type == Types.getVarcharType())
-				key = ((String)objKey).hashCode();
-			else if (type.getLength() >= ((String)objKey).length())
-				key = objKey.hashCode();
-			else
-				throw new InvalidKeyException();
-		}
-		catch (ClassCastException cce) {
-			throw new InvalidKeyException();
-		}					
+		int key = checkAndHashKey(objKey);				
 		
 		int bucketNo = hash(key);
 		
@@ -1461,30 +570,7 @@ Object[] oldBucket = bucket.clone();
 	@Override
 	public Operator<Row> pointQuery(Object objKey) throws InvalidKeyException {
 		int[] entry = new int[0];			
-		int key = 0;
-		
-		//This is really stupid
-		try {
-			if (type == Types.getDateType()) 
-				key = ((Date)objKey).hashCode();
-			else if (type == Types.getDoubleType())
-				key = ((Double)objKey).hashCode();
-			else if (type == Types.getFloatType())
-				key = ((Float)objKey).hashCode();
-			else if (type == Types.getLongType())
-				key = ((Long)objKey).hashCode();
-			else if (type == Types.getIntegerType())
-				key = ((Integer)objKey).hashCode();
-			else if (type == Types.getVarcharType())
-				key = ((String)objKey).hashCode();
-			else if (type.getLength() >= ((String)objKey).length())
-				key = objKey.hashCode();
-			else
-				throw new InvalidKeyException();
-		}
-		catch (ClassCastException cce) {
-			throw new InvalidKeyException();
-		}					
+		int key = checkAndHashKey(objKey);			
 		
 		int bucketNo = hash(key);
 		
@@ -1517,30 +603,7 @@ Object[] oldBucket = bucket.clone();
 	@Override
 	public void delete(Object objKey) throws InvalidKeyException {
 		int[] entry;			
-		int key = 0;
-		
-		//This is really stupid
-		try {
-			if (type == Types.getDateType()) 
-				key = ((Date)objKey).hashCode();
-			else if (type == Types.getDoubleType())
-				key = ((Double)objKey).hashCode();
-			else if (type == Types.getFloatType())
-				key = ((Float)objKey).hashCode();
-			else if (type == Types.getLongType())
-				key = ((Long)objKey).hashCode();
-			else if (type == Types.getIntegerType())
-				key = ((Integer)objKey).hashCode();
-			else if (type == Types.getVarcharType())
-				key = ((String)objKey).hashCode();
-			else if (type.getLength() >= ((String)objKey).length())
-				key = objKey.hashCode();
-			else
-				throw new InvalidKeyException();
-		}
-		catch (ClassCastException cce) {
-			throw new InvalidKeyException();
-		}						
+		int key = checkAndHashKey(objKey);				
 		
 		int bucketNo = hash(key);
 		
@@ -1562,6 +625,7 @@ Object[] oldBucket = bucket.clone();
 				// Key found, further search for the matching row and delete if found.
 				else {				
 					System.arraycopy(bucket, mid + 1, bucket, mid, i - 1 - mid);
+					//TODO do something to inform garbage-collection here
 					freeSlot[bucketNo]--;
 					return;
 				}
@@ -1572,5 +636,30 @@ Object[] oldBucket = bucket.clone();
 	@Override
 	public Table getBaseTable() {
 		return table;
-	}	
+	}
+	
+	private final int checkAndHashKey(Object objKey) throws InvalidKeyException {		
+		//This is really stupid
+		try {
+			if (type == Types.getDateType()) 
+				return ((Date)objKey).hashCode();
+			if (type == Types.getDoubleType())
+				return ((Double)objKey).hashCode();
+			if (type == Types.getFloatType())
+				return ((Float)objKey).hashCode();
+			if (type == Types.getLongType())
+				return ((Long)objKey).hashCode();
+			if (type == Types.getIntegerType())
+				return ((Integer)objKey).hashCode();
+			if (type == Types.getVarcharType())
+				return ((String)objKey).hashCode();
+			if (type.getLength() >= ((String)objKey).length())
+				return objKey.hashCode();
+			else
+				throw new InvalidKeyException();
+		}
+		catch (ClassCastException cce) {
+			throw new InvalidKeyException();
+		}				
+	}
 }
