@@ -23,13 +23,18 @@ public class MyIntPushOperator implements IntPushOperator {
 	}
 	@Override
 	public void pass(int element) {
+		try {
 		if (pos >= data.length) {
-			int[] newData = new int[Math.round(INTIAL_CAPACITY * LOAD_FACTOR)];
+			int[] newData = new int[Math.round(data.length * LOAD_FACTOR)];
 			System.arraycopy(data, 0, newData, 0, pos);
 			data = newData;
 			newData = null;		//force garbage collection
 		}
 		data[pos++] = element;
+		}
+		catch(RuntimeException e) {
+			
+		}
 	}
 
 	@Override
@@ -37,6 +42,11 @@ public class MyIntPushOperator implements IntPushOperator {
 	}
 	
 	public int[] getData() {
+		if (pos < data.length) {
+			int[] newData = new int[pos];
+			System.arraycopy(data, 0, newData, 0, pos);
+			data = newData;
+		}
 		return data;
 	}
 

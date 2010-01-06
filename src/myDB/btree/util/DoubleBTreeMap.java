@@ -15,10 +15,10 @@ public class DoubleBTreeMap extends BTreeMap {
 	
 	private DoubleBTree btree;
 
-	public DoubleBTreeMap(String indexDes, Table tableObj, Column colObj)
+	public DoubleBTreeMap(String indexDes, Table tableObj, Column colObj, int k, int k_star)
 	throws SchemaMismatchException {
 		super(indexDes, tableObj, colObj);
-		btree = new DoubleBTree(BTreeConstants.DEFAULT_K, BTreeConstants.DEFAULT_K_STAR);
+		btree = new DoubleBTree(k, k_star);
 		
 		//bulk-loading
 		double[] colVals;
@@ -30,7 +30,8 @@ public class DoubleBTreeMap extends BTreeMap {
 		}
 		
 		double tmp;
-		for (int i = 0; i < colVals.length; i++) {
+		int n = colObj.getRowCount();
+		for (int i = 0; i < n; i++) {
 			tmp = colVals[i];
 			
 			if (tmp == Double.MAX_VALUE || tmp == Double.MIN_VALUE) 

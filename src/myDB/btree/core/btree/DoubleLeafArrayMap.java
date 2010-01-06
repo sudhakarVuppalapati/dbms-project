@@ -14,14 +14,6 @@ public class DoubleLeafArrayMap extends LeafArrayMap {
 
 	protected int[] values;
 
-	protected int currentSize = 0;
-
-	protected static final int STOP = 0;
-
-	protected static final int CONTINUE_WITH_BINSEARCH = 1;
-
-	protected static final int CONTINUE_WITH_SCAN = 2;
-
 	/**
 	 * This binary search method is modified to guarantee that, in the presence
 	 * of duplicate keys, we will always return the first occurrence of a found

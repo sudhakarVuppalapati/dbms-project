@@ -14,14 +14,6 @@ public class ObjectLeafArrayMap extends LeafArrayMap {
 
 	protected int[] values;
 
-	protected int currentSize = 0;
-
-	protected static final int STOP = 0;
-
-	protected static final int CONTINUE_WITH_BINSEARCH = 1;
-
-	protected static final int CONTINUE_WITH_SCAN = 2;
-
 	/**
 	 * This binary search method is modified to guarantee that, in the presence
 	 * of duplicate keys, we will always return the first occurrence of a found
@@ -177,7 +169,7 @@ public class ObjectLeafArrayMap extends LeafArrayMap {
 	}
 
 	public int continueGet(int pos, Comparable key, IntPushOperator results) {
-		while (pos < currentSize && keys[pos] == key) {
+		while (pos < currentSize && keys[pos].compareTo(key) == 0) {
 			results.pass(values[pos]);
 			pos++;
 		}
@@ -209,7 +201,7 @@ public class ObjectLeafArrayMap extends LeafArrayMap {
 			int firstOccurrence = -1; // pos
 			int lastOccurrence;
 
-			while (pos < currentSize && keys[pos] == key) {
+			while (pos < currentSize && keys[pos].compareTo(key) == 0) {
 
 				if (value == BTreeConstants.ALL_MAPPINGS) {
 					// mark first occurrence
@@ -237,6 +229,8 @@ public class ObjectLeafArrayMap extends LeafArrayMap {
 					|| (firstOccurrence == -1) ? (pos == currentSize) : false;
 
 			// now delete all occurrences in one move, if necessary
+			/** TENTATIVE -$BEGIN */
+					
 			if (firstOccurrence != -1) {
 				System.arraycopy(keys, lastOccurrence + 1, keys,
 						firstOccurrence, currentSize - (lastOccurrence + 1));
@@ -244,6 +238,22 @@ public class ObjectLeafArrayMap extends LeafArrayMap {
 						firstOccurrence, currentSize - (lastOccurrence + 1));
 				currentSize -= (lastOccurrence - firstOccurrence + 1);
 			}
+					
+			/*if (firstOccurrence != -1) {
+				if (lastOccurrence + 1 != currentSize) {
+					System.arraycopy(keys, lastOccurrence + 1, keys,
+							firstOccurrence, currentSize - (lastOccurrence + 1));
+					System.arraycopy(values, lastOccurrence + 1, values,
+							firstOccurrence, currentSize - (lastOccurrence + 1));
+					currentSize -= (lastOccurrence - firstOccurrence + 1);
+					
+				}
+				else {
+					currentSize = firstOccurrence;
+				}
+			}*/
+			
+			/** TENTATIVE -$END */
 
 			return continueSearch;
 		}

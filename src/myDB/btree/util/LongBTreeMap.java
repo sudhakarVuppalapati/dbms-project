@@ -1,6 +1,5 @@
 package myDB.btree.util;
 
-import myDB.btree.core.btree.BTreeConstants;
 import myDB.btree.core.btree.LongBTree;
 import operator.Operator;
 import systeminterface.Column;
@@ -15,10 +14,10 @@ public class LongBTreeMap extends BTreeMap {
 	
 	private LongBTree btree;
 
-	public LongBTreeMap(String indexDes, Table tableObj, Column colObj)
+	public LongBTreeMap(String indexDes, Table tableObj, Column colObj, int k, int k_star)
 	throws SchemaMismatchException {
 		super(indexDes, tableObj, colObj);
-		btree = new LongBTree(BTreeConstants.DEFAULT_K, BTreeConstants.DEFAULT_K_STAR);
+		btree = new LongBTree(k, k_star);
 		
 		long[] colVals;
 		try {
@@ -29,7 +28,8 @@ public class LongBTreeMap extends BTreeMap {
 		}
 		
 		long tmp;
-		for (int i = 0; i < colVals.length; i++) {
+		int n = colObj.getRowCount();
+		for (int i = 0; i < n; i++) {
 			tmp = colVals[i];
 			
 			if (tmp == Long.MAX_VALUE || tmp == Long.MIN_VALUE) 
