@@ -15,6 +15,7 @@ import operator.Operator;
 public class SampleOperator<OUTPUT> implements Operator<OUTPUT> {
 
 	Vector<OUTPUT> operatorContetnts = new Vector<OUTPUT>();
+
 	Iterator<OUTPUT> it;
 
 	/**

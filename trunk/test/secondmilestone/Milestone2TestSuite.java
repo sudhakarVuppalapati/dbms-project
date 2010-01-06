@@ -2,9 +2,13 @@ package secondmilestone;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import firstmilestone.StorageLayerTest;
-import firstmilestone.TableTest;
 
+/**
+ * Test Suite
+ * 
+ * @author Mohamed
+ * 
+ */
 public class Milestone2TestSuite {
 
 	/**
@@ -13,7 +17,8 @@ public class Milestone2TestSuite {
 	public static Test suite() {
 		TestSuite suite = new TestSuite("Test for test");
 		// $JUnit-BEGIN$
-		suite.addTestSuite(DummyIndexLayerTest.class);
+		suite.addTestSuite(IndexLayerTest.class);
+		suite.addTestSuite(QueryLayerTest.class);
 		// $JUnit-END$
 		return suite;
 	}
@@ -26,4 +31,5 @@ public class Milestone2TestSuite {
 
 		junit.textui.TestRunner.run(suite());
 	}
+
 }

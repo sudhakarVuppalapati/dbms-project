@@ -15,7 +15,9 @@ import exceptions.NotLeafNodeException;
 public class InnerPredicateTreeNode implements PredicateTreeNode {
 
 	private final PredicateTreeNode leftChild;
+
 	private final PredicateTreeNode rightChild;
+
 	private final LogicalOperator logicalOperator;
 
 	/**

@@ -15,6 +15,7 @@ import systeminterface.Column;
 import systeminterface.Database;
 import systeminterface.Row;
 import systeminterface.Table;
+import util.Consts;
 import util.Helpers;
 import util.RandomInputGenerator;
 import exceptions.NoSuchColumnException;
@@ -65,7 +66,7 @@ public class FirstPhaseTest {
 	private static final Database myDatabase = Database.getInstance();
 
 	/* Random number generator -- add seed when repeatable experiments wanted */
-	private static final Random rand = new Random();
+	private static final Random rand = new Random(Consts.seed);
 
 	/* own local rep of tables */
 	private static final ArrayList<TestTable> tableList = new ArrayList<TestTable>();
@@ -440,7 +441,7 @@ public class FirstPhaseTest {
 					backupColumn = RandomInputGenerator.getRandFloatList(rand,
 							tableCardinatlity);
 
-				}
+				} 
 
 				else if (tableList.get(i).schema.get(j).getType().equals(
 						Types.getIntegerType())) {

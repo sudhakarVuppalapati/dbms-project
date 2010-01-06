@@ -25,8 +25,6 @@ import exceptions.TableAlreadyExistsException;
  * can be tested without other layers. Indexes will be manipulated here without
  * the underlying tables. Please make sure that your dropIndex is working
  * correctly, tests assume that.
- * 
- * @version r216
  */
 public class IndexLayerTest extends TestCase {
 

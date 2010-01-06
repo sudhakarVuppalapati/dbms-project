@@ -172,7 +172,7 @@ public class RandomInputGenerator {
 
 		for (int i = 0; i < size; i++) {
 
-			java.lang.Integer I = new java.lang.Integer(rand.nextInt());
+			java.lang.Integer I = new java.lang.Integer(rand.nextInt(100000));
 			randList.add(I);
 			Helpers.print(I.toString(), Consts.printType.INFO);
 
@@ -192,15 +192,20 @@ public class RandomInputGenerator {
 		// For nulls, must ensure that Long.MIN_VALUE does not get generated
 
 		Long minLong = new Long(java.lang.Long.MIN_VALUE);
-
+		Long maxLong = new Long(java.lang.Long.MAX_VALUE);
 		ArrayList<Object> randList = new ArrayList<Object>();
 
 		for (int i = 0; i < size; i++) {
 
 			java.lang.Long L;
-			while ((L = new java.lang.Long(rand.nextLong())).equals(minLong)) {
-				;
-			}
+
+			do {
+
+				L = new java.lang.Long(rand.nextLong());
+
+			} while (Math.abs(L - minLong) < 1000
+					&& Math.abs(L - maxLong) < 1000);
+
 			randList.add(L);
 			Helpers.print(L.toString(), Consts.printType.INFO);
 
