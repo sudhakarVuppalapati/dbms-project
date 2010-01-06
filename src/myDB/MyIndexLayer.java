@@ -1,11 +1,21 @@
 package myDB;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import metadata.Type;
+import metadata.Types;
+import myDB.btree.core.btree.BTreeConstants;
+import myDB.btree.util.DoubleBTreeMap;
+import myDB.btree.util.FloatBTreeMap;
+import myDB.btree.util.IntBTreeMap;
+import myDB.btree.util.LongBTreeMap;
+import myDB.btree.util.ObjectBTreeMap;
 import operator.Operator;
 import systeminterface.Column;
 import systeminterface.IndexLayer;
@@ -27,6 +37,10 @@ import exceptions.SchemaMismatchException;
  * 
  */
 public class MyIndexLayer implements IndexLayer {
+	
+	private static final char EXTENDIBLE_HASH_INDEX = '0';
+	
+	private static final char B_TREE_INDEX = '1';
 
 	private final StorageLayer storageLayer;
 
@@ -66,12 +80,13 @@ public class MyIndexLayer implements IndexLayer {
 	NoSuchTableException {
 		// TODO Auto-generated method stub
 		/** Tentative -$BEGIN */
+				
 		/**
 		 * Tuan - This code fragment is only to check the functionality of 
 		 * MyExtHashIndex. Need to be replaced later
 		 */
 
-		if (supportRangeQueries) {
+		/*if (supportRangeQueries) {
 			return;
 		}
 		else {
@@ -105,6 +120,44 @@ public class MyIndexLayer implements IndexLayer {
 			catch (Exception e) {
 				throw new NoSuchTableException();
 			}
+		}*/
+		
+		
+		//Tuan, create index and perform bulk-loading at the same time
+		if (namedIndexes.containsKey(indexName))
+			throw new IndexAlreadyExistsException();
+
+		Table t; 
+		Column c;
+		StringBuffer indexDes = new StringBuffer();
+		
+		try {
+			t = storageLayer.getTableByName(tableName);
+			c = t.getColumnByName(keyAttributeName);
+		}
+		catch (NoSuchColumnException nsce) {
+			throw new SchemaMismatchException();
+		}
+		catch (NullPointerException npe) {
+			throw new SchemaMismatchException();
+		}			
+		catch (NoSuchTableException nse) {
+			throw new SchemaMismatchException();
+		}
+		
+		indexDes.append(indexName).append("-");
+		indexDes.append(tableName).append("-");
+		indexDes.append(keyAttributeName);
+		
+		if (!supportRangeQueries) {
+			indexDes.append("-0");
+			namedIndexes.put(indexName, newIndex(indexDes.toString(), t, c, EXTENDIBLE_HASH_INDEX));			
+		}
+		else {
+			indexDes.append("-1-");
+			indexDes.append(BTreeConstants.DEFAULT_K).append("-");
+			indexDes.append(BTreeConstants.DEFAULT_K_STAR);
+			namedIndexes.put(indexName, newIndex(indexDes.toString(), t, c, B_TREE_INDEX));
 		}
 		/** Tentative -$END */
 
@@ -363,85 +416,100 @@ public class MyIndexLayer implements IndexLayer {
 	 */
 	@Override
 	public void rebuildAllIndexes() throws IOException {
-//		FileInputStream fis = new FileInputStream(MyPersistentExtent.INDEXES_METADATA_FILE);
-//		int i = 0;
-//		int length = fis.available();
-//		final byte[] bytes = new byte[length];
-//
-//		fis.read(bytes);
-//		fis.close();
-//
-//		String str = new String(bytes);
-//		String[] des = str.split("$");		
-//		length = des.length;
-//
-//		int k, a, y, indexType;
-//		String tmp, indexName;
-//		Table t;
-//		Column c;
-//		Index index;
-//		List<String> list;
-//		
-//		try {
-//			for (i = 0; i < length; i++) {
-//				tmp = des[i];
-//				k = tmp.indexOf('-');
-//				a = tmp.indexOf('-', k);
-//				y = tmp.indexOf('-', a);
-//				indexName = tmp.substring(0, k);
-//
-//				t = storageLayer.getTableByName(tmp.substring(k + 1, a));
-//				c = t.getColumnByName(tmp.substring(a + 1, y));
-//
-//				indexType = tmp.charAt(y + 1);
-//
-//				index = newIndex(tmp, t, c, indexType);
-//			
-//				namedIndexes.put(indexName, index);
-//				
-//				if (colIndexes.containsKey(c)) {
-//					list = colIndexes.get(c);
-//					list.add(indexName);
-//				}
-//				else {
-//					list = new ArrayList<String>();
-//					list.add(indexName);
-//					colIndexes.put(c, list);
-//				}
-//			}
-//		}
-//		catch (NoSuchTableException nste) {
-//			throw new IOException();
-//		}
-//		catch (NoSuchColumnException nsce) {
-//			throw new IOException();
-//		}
-//		catch (IllegalArgumentException iae) {
-//			throw new IOException();
-//		}
-
+		FileInputStream fis = new FileInputStream(MyPersistentExtent.INDEXES_METADATA_FILE);
+		int i = 0;
+		int length = fis.available();
+		final byte[] bytes = new byte[length];
+		
+		fis.read(bytes);
+		fis.close();
+		
+		String str = new String(bytes);
+		String[] des = str.split("$");		
+		length = des.length;
+		
+		int k, a, y, indexType;
+		String tmp, indexName;
+		Table t;
+		Column c;
+		Index index;
+		List<String> list;
+		
+		try {
+			for (i = 0; i < length; i++) {
+				tmp = des[i];
+				k = tmp.indexOf('-');
+				a = tmp.indexOf('-', k);
+				y = tmp.indexOf('-', a);
+				indexName = tmp.substring(0, k);
+		
+				t = storageLayer.getTableByName(tmp.substring(k + 1, a));
+				c = t.getColumnByName(tmp.substring(a + 1, y));
+		
+				indexType = tmp.charAt(y + 1);
+		
+				index = newIndex(tmp, t, c, indexType);
+			
+				namedIndexes.put(indexName, index);
+				
+				if (colIndexes.containsKey(c)) {
+					list = colIndexes.get(c);
+					list.add(indexName);
+				}
+				else {
+					list = new ArrayList<String>();
+					list.add(indexName);
+					colIndexes.put(c, list);
+				}
+			}
+		}
+		catch (NoSuchTableException nste) {
+			throw new IOException();
+		}
+		catch (NoSuchColumnException nsce) {
+			throw new IOException();
+		}
+		catch (IllegalArgumentException iae) {
+			throw new IOException();
+		} catch (SchemaMismatchException e) {
+			throw new IOException();
+		}
 	}
 
 	@Override
 	public void storeIndexInformation() throws IOException {
-//		String str = describeAllIndexes();
-//		byte[] bytes = str.getBytes();
-//		FileOutputStream fos = new FileOutputStream(MyPersistentExtent.INDEXES_METADATA_FILE);
-//		fos.write(bytes);
-//		fos.close();
-	}
+		String str = describeAllIndexes();
+		byte[] bytes = str.getBytes();
+		FileOutputStream fos = new FileOutputStream(MyPersistentExtent.INDEXES_METADATA_FILE);
+		fos.write(bytes);
+		fos.close();
+}
 
 	/**
 	 *  '0' - MyExtHashIndex
 	 *  '1' - MyCSBTreeIndex
+	 * @throws SchemaMismatchException 
 	 *  
 	 */
-	private Index newIndex(String des, Table iTable, Column iCol, int indexType) {
+	private Index newIndex(String des, Table iTable, Column iCol, int indexType) throws SchemaMismatchException {
 
 		switch (indexType) {
 
 		case '0': return new MyExtHashIndex(des, iTable, iCol);
-
+		
+		case '1': 
+			Type type = iCol.getColumnType();
+			if (type == Types.getDoubleType())
+				return new DoubleBTreeMap(des, iTable, iCol);
+			if (type == Types.getFloatType())
+				return new FloatBTreeMap(des, iTable, iCol);
+			if (type == Types.getLongType())
+				return new LongBTreeMap(des, iTable, iCol);
+			if (type == Types.getIntegerType())
+				return new IntBTreeMap(des, iTable, iCol);
+			else
+				return new ObjectBTreeMap(des, iTable, iCol);
+		
 		default: return null;
 		}
 	}
