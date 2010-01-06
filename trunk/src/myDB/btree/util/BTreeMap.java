@@ -15,8 +15,9 @@ public abstract class BTreeMap implements TreeIndex {
 	protected final MyTable table;
 	
 	private String des;
-	
-	public BTreeMap(String indexDes, Table tableObj, Column colObj) throws SchemaMismatchException {
+		
+	public BTreeMap(String indexDes, Table tableObj, Column colObj) 
+	throws SchemaMismatchException {
 		des = indexDes;
 		table = (MyTable)tableObj;
 	}

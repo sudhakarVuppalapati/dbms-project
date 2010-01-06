@@ -1,6 +1,5 @@
 package myDB.btree.util;
 
-import myDB.btree.core.btree.BTreeConstants;
 import myDB.btree.core.btree.FloatBTree;
 import operator.Operator;
 import systeminterface.Column;
@@ -15,11 +14,11 @@ public class FloatBTreeMap extends BTreeMap {
 	
 	private FloatBTree btree;
 
-	public FloatBTreeMap(String indexDes, Table tableObj, Column colObj) 
+	public FloatBTreeMap(String indexDes, Table tableObj, Column colObj, int k, int k_star) 
 	throws SchemaMismatchException {
 		
 		super(indexDes, tableObj, colObj);
-		btree = new FloatBTree(BTreeConstants.DEFAULT_K, BTreeConstants.DEFAULT_K_STAR);
+		btree = new FloatBTree(k, k_star);
 		
 		//bulk-loading
 		float[] colVals;
@@ -31,7 +30,8 @@ public class FloatBTreeMap extends BTreeMap {
 		}
 		
 		float tmp;
-		for (int i = 0; i < colVals.length; i++) {
+		int n = colObj.getRowCount();
+		for (int i = 0; i < n; i++) {
 			tmp = colVals[i];
 			
 			if (tmp == Float.MAX_VALUE || tmp == Float.MIN_VALUE) 

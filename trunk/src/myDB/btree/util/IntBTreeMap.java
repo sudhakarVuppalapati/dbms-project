@@ -15,10 +15,10 @@ public class IntBTreeMap extends BTreeMap {
 	
 	private IntBTree btree;
 
-	public IntBTreeMap(String indexDes, Table tableObj, Column colObj) 
+	public IntBTreeMap(String indexDes, Table tableObj, Column colObj, int k, int k_star) 
 	throws SchemaMismatchException {
 		super(indexDes, tableObj, colObj);
-		btree = new IntBTree(BTreeConstants.DEFAULT_K, BTreeConstants.DEFAULT_K_STAR);
+		btree = new IntBTree(k, k_star);
 	
 		//bulk-loading
 		int[] colVals;
@@ -30,7 +30,8 @@ public class IntBTreeMap extends BTreeMap {
 		}
 		
 		int tmp;
-		for (int i = 0; i < colVals.length; i++) {
+		int n = colObj.getRowCount();
+		for (int i = 0; i < n; i++) {
 			tmp = colVals[i];
 			
 			if (tmp == Integer.MAX_VALUE || tmp == Integer.MIN_VALUE) 

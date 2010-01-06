@@ -49,6 +49,8 @@ public interface IntBTreeNode extends BTreeNode {
 	 * @param highKey
 	 */
 	public void remove(int key, int value, int lowKey, int highKey);
+	
+	public void removeRange(int lowKey, int pos, int highKey);
 
 	// do we need this method?
 	// public boolean update(int key, int value);

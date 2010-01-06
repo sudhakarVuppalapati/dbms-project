@@ -1,7 +1,6 @@
 package myDB.btree.util;
 
 import myDB.MyNull;
-import myDB.btree.core.btree.BTreeConstants;
 import myDB.btree.core.btree.ObjectBTree;
 import operator.Operator;
 import systeminterface.Column;
@@ -16,23 +15,26 @@ public class ObjectBTreeMap extends BTreeMap {
 	
 	private ObjectBTree btree;
 
-	public ObjectBTreeMap(String indexDes, Table tableObj, Column colObj) 
+	public ObjectBTreeMap(String indexDes, Table tableObj, Column colObj, int k, int k_star) 
 	throws SchemaMismatchException {
 		super(indexDes, tableObj, colObj);
-		btree = new ObjectBTree(BTreeConstants.DEFAULT_K, BTreeConstants.DEFAULT_K_STAR);
+		btree = new ObjectBTree(k, k_star);
 	
 		//bulk-loading
-		Comparable[] colVals;
+	
+		
+		Object[] colVals;
 		try {
-			colVals = (Comparable[])colObj.getDataArrayAsObject();
+			colVals = (Object[])colObj.getDataArrayAsObject();
 		}
 		catch (ClassCastException cce) {
 			throw new SchemaMismatchException();
 		}
 		
 		Comparable tmp;
-		for (int i = 0; i < colVals.length; i++) {
-			Comparable o = colVals[i];
+		int n = colObj.getRowCount();
+		for (int i = 0; i < n; i++) {
+			Comparable o = (Comparable)colVals[i];
 			
 			//Probably we need to implements 
 			if (o == null || o == MyNull.NULLOBJ) 

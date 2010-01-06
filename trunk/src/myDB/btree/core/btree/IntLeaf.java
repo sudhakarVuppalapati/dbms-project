@@ -132,6 +132,33 @@ public class IntLeaf extends Leaf implements IntBTreeNode {
 			}
 		}
 	}
+	
+	public void removeRange(int lowKey, int pos, int highKey) {
+		// continue search on the leaf level until all entries with the given
+		// key are guaranteed to be removed
+
+		boolean continueSearch = true;
+		IntLeaf currentLeaf = this;
+				
+		int k = (pos == 0) ? pos : pos - 1;
+						
+		while (continueSearch && currentLeaf != null) {
+			int i, tmp;
+			
+			for (i = k; i < currentLeaf.entries.currentSize; i++) {
+				tmp = currentLeaf.entries.keys[i];
+				if (tmp < highKey)
+					continueSearch = entries.remove(tmp, BTreeConstants.ALL_MAPPINGS);
+				else {
+					continueSearch = false;
+					break;
+				}
+			}
+			currentLeaf = currentLeaf.nextLeaf;	
+			
+			k = 0;
+		}
+	}
 
 
 	public void get(int key, IntPushOperator results) {
