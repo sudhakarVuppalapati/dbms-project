@@ -30,8 +30,6 @@ import exceptions.TableAlreadyExistsException;
 /**
  * This is testing that operations performed on tables are also reflected in
  * indexes.
- * 
- * @version r216
  */
 public class QueryLayerTest extends TestCase {
 
@@ -276,7 +274,6 @@ public class QueryLayerTest extends TestCase {
 		row2 = new SampleRow(schema, arr2);
 		row3 = new SampleRow(schema, arr3);
 
-
 		try {
 			myDatabase.getQueryInterface().insertRow(tName, row1);
 			myDatabase.getQueryInterface().insertRow(tName, row2);
@@ -291,7 +288,7 @@ public class QueryLayerTest extends TestCase {
 		/*
 		 * Check results in index
 		 */
-		Operator<Row> rowOp = null;
+		Operator<? extends Row> rowOp = null;
 		rowOp = null;
 		try {
 			rowOp = myDatabase.getIndexInterface().pointQuery(index1,
@@ -308,9 +305,7 @@ public class QueryLayerTest extends TestCase {
 		}
 		rowOp.close();
 		assertTrue(i == 2);
-		
-		
-		
+
 		rowOp = null;
 		try {
 			rowOp = myDatabase.getIndexInterface().pointQuery(index1,
@@ -321,7 +316,7 @@ public class QueryLayerTest extends TestCase {
 			fail("Unexpected InvalidKeyException");
 		}
 		rowOp.open();
-		
+
 		for (i = 0; rowOp.next() != null; i++) {
 
 		}
@@ -497,7 +492,7 @@ public class QueryLayerTest extends TestCase {
 		 * Check results in index for pre-update key (should be gone)
 		 */
 
-		Operator<Row> rowOp = null;
+		Operator<? extends Row> rowOp = null;
 		try {
 			rowOp = myDatabase.getIndexInterface().pointQuery(index1,
 					new Integer(5));
@@ -626,7 +621,7 @@ public class QueryLayerTest extends TestCase {
 		 * Check results for deleted key
 		 */
 
-		Operator<Row> rowOp = null;
+		Operator<? extends Row> rowOp = null;
 		try {
 			rowOp = myDatabase.getIndexInterface().pointQuery(index1,
 					new Integer(7));

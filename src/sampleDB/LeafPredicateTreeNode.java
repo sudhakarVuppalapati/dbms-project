@@ -15,7 +15,9 @@ import exceptions.NotLeafNodeException;
 public class LeafPredicateTreeNode implements PredicateTreeNode {
 
 	private final String columnName;
+
 	private final ComparisonOperator comparisonOperator;
+
 	private final Object value;
 
 	/**

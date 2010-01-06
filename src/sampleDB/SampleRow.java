@@ -15,7 +15,9 @@ import exceptions.NoSuchColumnException;
 public class SampleRow implements Row {
 
 	private final Object[] rowContents;
+
 	private final List<ColumnInfo> rowSchema;
+
 	private final Map<String, Integer> position;
 
 	/**

@@ -2,8 +2,10 @@ package secondmilestone;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class Experiment {
+
 	public static boolean f;
 	public static void main(String[] args) {
 		int bitmask = 0x000F;
@@ -14,7 +16,7 @@ public class Experiment {
 		
 		float fval = 2.3f;
 		System.out.println(new Float(fval).hashCode());
-		
+				
 		float fval1 = 2.3f;
 		System.out.println(new Float(fval1).hashCode() + " AND " + Float.floatToIntBits(fval1));
 		
@@ -50,20 +52,27 @@ public class Experiment {
 		for (int j = 0; j < arr1.length; j++) {
 			System.out.println(arr1[j]);
 		}
+	
+		System.out.println("@@@@@@@@@@@@@@");
 		
-		List arr = new ArrayList(6);
+		String hello = "index1$0$blahbalh";
+		byte[] bytes = hello.getBytes();
+		System.out.println(bytes.length);
 		
-		for (int j = 0; j < arr.size(); j++) {
-			Object e = arr.get(j);
-			if (e == null) {
-				System.out.println("Failed at " + j);
-			}
-			else
-				System.out.println(e.toString());
+		String ter = new String(bytes);
+		System.out.println(ter);
+		
+		System.out.println("----------------");
+		
+		Random rand1 = new Random();
+		
+		for (int i = 0; i < 3; i++) {
+			System.out.println(rand1.nextInt());
 		}
-			
 		
-		
+		for (int i = 0; i < 3; i++) {
+			System.out.println(rand1.nextInt());
+		}
 	}
 	
 	private static void print(int a) {

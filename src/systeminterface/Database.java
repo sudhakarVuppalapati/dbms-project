@@ -35,11 +35,12 @@ public final class Database {
 	 * 
 	 */
 	private Database() {
-		
-		  this.storageLayer = new myDB.MyStorageLayer(); this.indexLayer = new
-		  myDB.MyIndexLayer(this.storageLayer); this.queryLayer = new
-		  myDB.MyQueryLayer(this.storageLayer, this.indexLayer);
-		 
+
+		this.storageLayer = new myDB.MyStorageLayer();
+		this.indexLayer = new myDB.MyIndexLayer(this.storageLayer);
+		this.queryLayer = new myDB.MyQueryLayer(this.storageLayer,
+				this.indexLayer);
+
 	}
 
 	/***************************************************************************
@@ -57,7 +58,7 @@ public final class Database {
 		try {
 			storageLayer.writeTablesFromMainMemoryBackToExtent(this
 					.getStorageInterface().getTables());
-			indexLayer.storeIndexInformation();
+			//indexLayer.storeIndexInformation();
 		} catch (IOException ex) {
 		}
 	}
@@ -69,7 +70,7 @@ public final class Database {
 	public void startSystem() {
 		try {
 			storageLayer.loadTablesFromExtentIntoMainMemory();
-			indexLayer.rebuildAllIndexes();
+			//indexLayer.rebuildAllIndexes();
 		} catch (IOException ex) {
 		}
 	}

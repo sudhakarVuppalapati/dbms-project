@@ -78,7 +78,7 @@ public interface IndexLayer {
 	 * @throws InvalidKeyException
 	 *             Supplied search key is not valid for the index attribute.
 	 */
-	public Operator<Row> pointQuery(String indexName, Object searchKey)
+	public Operator<? extends Row> pointQuery(String indexName, Object searchKey)
 			throws NoSuchIndexException, InvalidKeyException;
 
 	/**
@@ -96,16 +96,17 @@ public interface IndexLayer {
 	 * @throws NoSuchIndexException
 	 *             Supplied index name does not exist.
 	 * @throws InvalidRangeException
-	 *             Supplied range is invalid.
+	 *             Supplied range is invalid. A range is invalid when the
+	 *             startSearchKey is greater than the endSearchKey.
 	 * @throws InvalidKeyException
 	 *             Supplied search keys are not valid for the index attribute.
 	 * @throws RangeQueryNotSupportedException
 	 *             The index does not support range queries (see createIndex).
 	 */
-	public Operator<Row> rangeQuery(String indexName, Object startSearchKey,
-			Object endSearchKey) throws NoSuchIndexException,
-			InvalidRangeException, InvalidKeyException,
-			RangeQueryNotSupportedException;
+	public Operator<? extends Row> rangeQuery(String indexName,
+			Object startSearchKey, Object endSearchKey)
+			throws NoSuchIndexException, InvalidRangeException,
+			InvalidKeyException, RangeQueryNotSupportedException;
 
 	/**
 	 * Retrieve all row IDs of rows in the indexed table with a search key
@@ -119,7 +120,9 @@ public interface IndexLayer {
 	 * @throws NoSuchIndexException
 	 *             Supplied index does not exist.
 	 * @throws InvalidKeyException
-	 *             Supplied search key is not valid for the index attributes.
+	 *             Supplied search key is not valid for the index attributes. A
+	 *             range is invalid when the startSearchKey is greater than the
+	 *             endSearchKey.
 	 */
 	public int[] pointQueryRowIDs(String indexName, Object searchKey)
 			throws NoSuchIndexException, InvalidKeyException;
@@ -138,7 +141,8 @@ public interface IndexLayer {
 	 * @throws NoSuchIndexException
 	 *             Supplied index does not exist
 	 * @throws InvalidRangeException
-	 *             Supplied range is invalid
+	 *             Supplied range is invalid. A range is invalid when the
+	 *             startSearchKey is greater than the endSearchKey.
 	 * @throws InvalidKeyException
 	 *             Supplied search keys are not valid for the index attribute.
 	 * @throws RangeQueryNotSupportedException
@@ -203,7 +207,7 @@ public interface IndexLayer {
 	/**
 	 * Delete all entries in the index with a matching key (all payloads)
 	 * 
-	 * @param indexName 
+	 * @param indexName
 	 * @param key
 	 *            Key to be deleted.
 	 * @throws NoSuchIndexException
@@ -228,7 +232,8 @@ public interface IndexLayer {
 	 * @throws InvalidKeyException
 	 *             Supplied key is not valid for the index attribute.
 	 * @throws InvalidRangeException
-	 *             Supplied range is invalid.
+	 *             Supplied range is invalid. A range is invalid when the
+	 *             startSearchKey is greater than the endSearchKey.
 	 * @throws RangeQueryNotSupportedException
 	 *             This index does not support range queries.
 	 * 
