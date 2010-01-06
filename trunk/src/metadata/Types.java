@@ -1,10 +1,5 @@
 package metadata;
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /**
  * Class to supply types
  * 
@@ -27,7 +22,9 @@ public class Types {
 		}
 
 		private final Class<?> clazz;
+
 		private final int length;
+
 		private final String name;
 
 		public Class<?> getCorrespondingJavaClass() {
@@ -106,6 +103,7 @@ public class Types {
 		}
 
 		private final int length;
+
 		private final String name;
 
 		public int getLength() {
