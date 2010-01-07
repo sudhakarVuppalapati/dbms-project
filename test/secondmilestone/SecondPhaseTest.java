@@ -10,14 +10,10 @@ import java.util.TreeSet;
 
 import metadata.Type;
 import metadata.Types;
-import myDB.Index;
-import myDB.MyIndexLayer;
 
 import org.apache.commons.collections.map.MultiValueMap;
 
 import systeminterface.Database;
-import systeminterface.Table;
-import util.Consts;
 import util.Helpers;
 import exceptions.IndexAlreadyExistsException;
 import exceptions.InvalidKeyException;
@@ -52,24 +48,19 @@ public class SecondPhaseTest {
 	private static final String tName = "myTable";
 
 	/** Table attributes */
-	/*private static final String tAttributes[] = { "char_att", "date_att",
-			"double_att", "float_att", "int_att", "long_att", "varchar_att" };*/
+	private static final String tAttributes[] = { "char_att", "date_att",
+			"double_att", "float_att", "int_att", "long_att", "varchar_att" };
 
-	private static final String tAttributes[] = { "int_att"};
-
-	
 	/** Indexes _r: supports range q, _nor: does not */
-	/*private static final String indexNames[] = { "char_att_index_r",
+	private static final String indexNames[] = { "char_att_index_r",
 			"char_att_index_nor", "date_att_index_r", "date_att_index_nor",
 			"double_att_index_r", "double_att_index_nor", "float_att_index_r",
 			"float_att_index_nor", "int_att_index_r", "int_att_index_nor",
 			"long_att_index_r", "long_att_index_nor", "varchar_att_index_r",
-			"varchar_att_index_nor" };*/
-	
-	private static final String indexNames[] = { "int_att_index_r", "int_att_index_nor"};
+			"varchar_att_index_nor" };
 
 	/** Random number generator -- add seed when repeatable experiments wanted */
-	private static final Random rand = new Random();
+	private static final Random rand = new Random(81);
 
 	/**
 	 * Represents a payload along with a flag indicating whether this particular
@@ -140,17 +131,15 @@ public class SecondPhaseTest {
 		 * Create underlying tables first
 		 */
 		HashMap<String, Type> tableSchema = new HashMap<String, Type>();
-		/*tableSchema.put(tAttributes[0], Types
+		tableSchema.put(tAttributes[0], Types
 				.getCharType(util.Consts.maxCharLength));
 		tableSchema.put(tAttributes[1], Types.getDateType());
 		tableSchema.put(tAttributes[2], Types.getDoubleType());
 		tableSchema.put(tAttributes[3], Types.getFloatType());
 		tableSchema.put(tAttributes[4], Types.getIntegerType());
 		tableSchema.put(tAttributes[5], Types.getLongType());
-		tableSchema.put(tAttributes[6], Types.getVarcharType());*/
-		
-		tableSchema.put(tAttributes[0], Types.getIntegerType());
-		
+		tableSchema.put(tAttributes[6], Types.getVarcharType());
+
 		try {
 			myDatabase.getQueryInterface().createTable(tName, tableSchema);
 		} catch (TableAlreadyExistsException e) {
@@ -171,13 +160,9 @@ public class SecondPhaseTest {
 
 				myDatabase.getIndexInterface().createIndex(indexNames[(2 * i)],
 						tName, tAttributes[i], true);
-				/*myDatabase.getIndexInterface().createIndex(
-						indexNames[(2 * i) + 1], tName, tAttributes[i], false);*/
-
 				myDatabase.getIndexInterface().createIndex(
-						indexNames[(2 * i) + 1], tName, tAttributes[i], true);
+						indexNames[(2 * i) + 1], tName, tAttributes[i], false);
 
-				
 				/*
 				 * Reflect in local info, note use of tree set to avoid
 				 * duplicates for same key
@@ -185,15 +170,11 @@ public class SecondPhaseTest {
 
 				indexes.put(indexNames[(2 * i)], MultiValueMap.decorate(
 						new HashMap<Object, Payload>(), (TreeSet.class)));
-				/*indexes.put(indexNames[(2 * i) + 1], MultiValueMap.decorate(
-						new HashMap<Object, Payload>(), (TreeSet.class)));*/
-				
 				indexes.put(indexNames[(2 * i) + 1], MultiValueMap.decorate(
 						new HashMap<Object, Payload>(), (TreeSet.class)));
 
 				supportsRangeQueries.put(indexNames[2 * i], true);
-				//supportsRangeQueries.put(indexNames[(2 * i) + 1], false);
-				supportsRangeQueries.put(indexNames[(2 * i) + 1], true);
+				supportsRangeQueries.put(indexNames[(2 * i) + 1], false);
 
 			}
 
@@ -362,7 +343,7 @@ public class SecondPhaseTest {
 		 */
 
 		insertEntries();
-				
+
 		/*
 		 * Delete entries
 		 */
@@ -435,17 +416,17 @@ public class SecondPhaseTest {
 			/*
 			 * Delete a single entry
 			 */
-			/*for (int pointDeletionNumber = 0; pointDeletionNumber < util.Consts.numIndexPointDeletes; pointDeletionNumber++) {
+			for (int pointDeletionNumber = 0; pointDeletionNumber < util.Consts.numIndexPointDeletes; pointDeletionNumber++) {
 
 				deleteSingleEntryFromIndex(indexNum);
-			}*/
+			}
 
 			/*
 			 * Delete all entries for a key
 			 */
-			/*for (int keyDeletionNumber = 0; keyDeletionNumber < util.Consts.numIndexKeyDeletes; keyDeletionNumber++) {
+			for (int keyDeletionNumber = 0; keyDeletionNumber < util.Consts.numIndexKeyDeletes; keyDeletionNumber++) {
 				deleteAllEntriesForKeyFromIndex(indexNum);
-			}*/
+			}
 			/*
 			 * Delete a range, only for index supporting range
 			 */
@@ -946,11 +927,14 @@ public class SecondPhaseTest {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-
+		
 		System.out.println("*************************************");
 		System.out.println("Testing Started");
+		long beginTime = System.currentTimeMillis();
 		test();
+		long endTime = System.currentTimeMillis();
 		System.out.println("Testing Finished");
+		System.out.println("Running time: " + (endTime - beginTime));
 		System.out.println("*************************************");
 
 	}
