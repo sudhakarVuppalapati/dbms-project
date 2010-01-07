@@ -135,6 +135,28 @@ public class ObjectLeaf extends Leaf implements ObjectBTreeNode {
 		}
 	}
 
+	public void removeRange(Comparable lowKey, Comparable highKey) {
+		int currentSize = entries.currentSize;
+		int pos = ObjectLeafArrayMap.binarySearch(entries.keys, lowKey, 0, currentSize - 1);
+		
+		Comparable tmp;
+		
+		if (pos < 0) {
+			pos = -(pos + 1);
+		} 
+		ObjectLeaf currentLeaf = this;
+		
+		while (currentLeaf != null) {
+			while (pos < currentLeaf.entries.currentSize) {
+				tmp = currentLeaf.entries.keys[pos];
+				if (tmp.compareTo(highKey) > 0)
+					return;
+				currentLeaf.entries.deleteAtPos(pos);
+			}
+			currentLeaf = currentLeaf.nextLeaf;
+			pos = 0;
+		}
+	}
 
 	public void get(Comparable key, IntPushOperator results) {
 		// search in entries

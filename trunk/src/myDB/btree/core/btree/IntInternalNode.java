@@ -109,16 +109,14 @@ public class IntInternalNode extends InternalNode implements IntBTreeNode {
 		}
 	}
 	
-	public void removeRange(int lowKey, int pos, int highKey) {
+	public void removeRange(int lowKey, int highKey) {
 		// get next node to recurse deletion
-		pos = entries.getIntervalPosition(lowKey);
+		int pos = entries.getIntervalPosition(lowKey);
 		IntBTreeNode next = entries.nodes[pos];
 
 		if (next != null) {
 			// calculate key interval for next node
-			int newLowKey = pos == 0 ? lowKey : entries.keys[pos - 1];
-			int newHighKey = pos == entries.size() ? highKey : entries.keys[pos];
-			next.removeRange(newLowKey, pos, newHighKey);
+			next.removeRange(lowKey, highKey);
 		}
 	}
 	

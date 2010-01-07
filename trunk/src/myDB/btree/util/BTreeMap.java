@@ -15,11 +15,14 @@ public abstract class BTreeMap implements TreeIndex {
 	protected final MyTable table;
 	
 	private String des;
-		
-	public BTreeMap(String indexDes, Table tableObj, Column colObj) 
+	
+	private final boolean range;
+	
+	public BTreeMap(String indexDes, Table tableObj, Column colObj, boolean isRange) 
 	throws SchemaMismatchException {
 		des = indexDes;
 		table = (MyTable)tableObj;
+		range = isRange;
 	}
 
 	public abstract long size();
@@ -64,7 +67,7 @@ public abstract class BTreeMap implements TreeIndex {
 
 	@Override
 	public boolean supportRangeQueries() {
-		return true;
+		return range;
 	}
 
 	@Override

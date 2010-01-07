@@ -135,6 +135,28 @@ public class DoubleLeaf extends Leaf implements DoubleBTreeNode {
 		}
 	}
 
+	public void removeRange(double lowKey, double highKey) {
+		int currentSize = entries.currentSize;
+		int pos = DoubleLeafArrayMap.binarySearch(entries.keys, lowKey, 0, currentSize - 1);
+		
+		double tmp;
+		
+		if (pos < 0) {
+			pos = -(pos + 1);
+		} 
+		DoubleLeaf currentLeaf = this;
+		
+		while (currentLeaf != null) {
+			while (pos < currentLeaf.entries.currentSize) {
+				tmp = currentLeaf.entries.keys[pos];
+				if (tmp > highKey)
+					return;
+				currentLeaf.entries.deleteAtPos(pos);
+			}
+			currentLeaf = currentLeaf.nextLeaf;
+			pos = 0;
+		}
+	}
 
 	public void get(double key, IntPushOperator results) {
 		// search in entries

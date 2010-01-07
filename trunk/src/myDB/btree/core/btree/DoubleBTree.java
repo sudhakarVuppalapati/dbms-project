@@ -105,7 +105,7 @@ public class DoubleBTree extends BTree {
 	}
 	
 	public void remove(double lowKey, double highKey) {
-		root.remove(lowKey, BTreeConstants.ALL_MAPPINGS, lowKey, highKey);
+		root.removeRange(lowKey, highKey);
 		refreshNeeded = true;
 	}
 

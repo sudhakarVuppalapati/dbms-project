@@ -258,7 +258,7 @@ public class IntLeafArrayMap extends LeafArrayMap {
 
 			return continueSearch;
 		}
-	}
+	}	
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();

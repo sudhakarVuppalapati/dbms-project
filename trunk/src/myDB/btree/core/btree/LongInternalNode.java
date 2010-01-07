@@ -121,6 +121,17 @@ public class LongInternalNode extends InternalNode implements LongBTreeNode {
 			entries.deleteAtPos(pos);
 		}
 	}
+	
+	public void removeRange(long lowKey, long highKey) {
+		// get next node to recurse deletion
+		int pos = entries.getIntervalPosition(lowKey);
+		LongBTreeNode next = entries.nodes[pos];
+
+		if (next != null) {
+			// calculate key interval for next node
+			next.removeRange(lowKey, highKey);
+		}
+	}
 
 	public String toString() {
 		return "[" + entries.toString() + "]";

@@ -109,6 +109,17 @@ public class FloatInternalNode extends InternalNode implements FloatBTreeNode {
 		}
 	}
 	
+	public void removeRange(float lowKey, float highKey) {
+		// get next node to recurse deletion
+		int pos = entries.getIntervalPosition(lowKey);
+		FloatBTreeNode next = entries.nodes[pos];
+
+		if (next != null) {
+			// calculate key interval for next node
+			next.removeRange(lowKey, highKey);
+		}
+	}
+	
 	/**
 	 * Delete child node entry from this node, with corresponding pivot (if any)
 	 * 

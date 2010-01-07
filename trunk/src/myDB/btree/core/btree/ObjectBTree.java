@@ -106,7 +106,7 @@ public class ObjectBTree extends BTree {
 	}
 	
 	public void remove(Comparable lowKey, Comparable highKey) {
-		root.remove(lowKey, BTreeConstants.ALL_MAPPINGS, Infinity.MIN_VALUE, Infinity.MAX_VALUE);
+		root.removeRange(lowKey, highKey);
 		refreshNeeded = true;
 	}
 

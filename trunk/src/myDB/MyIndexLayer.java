@@ -76,51 +76,7 @@ public class MyIndexLayer implements IndexLayer {
 	public void createIndex(String indexName, String tableName,
 			String keyAttributeName, boolean supportRangeQueries)
 	throws IndexAlreadyExistsException, SchemaMismatchException,
-	NoSuchTableException {
-		// TODO Auto-generated method stub
-		/** Tentative -$BEGIN */
-				
-		/**
-		 * Tuan - This code fragment is only to check the functionality of 
-		 * MyExtHashIndex. Need to be replaced later
-		 */
-
-		/*if (supportRangeQueries) {
-			return;
-		}
-		else {
-			try {
-				if (namedIndexes.containsKey(indexName))
-					throw new IndexAlreadyExistsException();
-
-				Table t = storageLayer.getTableByName(tableName);
-				Column c = t.getColumnByName(keyAttributeName);
-				Type type = c.getColumnType();
-				MyExtHashIndex mehi = new MyExtHashIndex(indexName, type, t);
-				namedIndexes.put(indexName, mehi);
-
-				//Add to column/index-names mapping
-				List<String> list = colIndexes.get(c);
-				if (list != null) {
-					list.add(indexName);
-				}
-				else {
-					list = new ArrayList<String>();
-					list.add(indexName);
-					colIndexes.put(c, list);
-				}			
-			}
-			catch (NoSuchColumnException nsce) {
-				throw new SchemaMismatchException();
-			}
-			catch (NullPointerException npe) {
-				throw new SchemaMismatchException();
-			}			
-			catch (Exception e) {
-				throw new NoSuchTableException();
-			}
-		}*/
-		
+	NoSuchTableException {		
 		
 		//Tuan, create index and perform bulk-loading at the same time
 		if (namedIndexes.containsKey(indexName))
@@ -148,15 +104,16 @@ public class MyIndexLayer implements IndexLayer {
 		indexDes.append(tableName).append("-");
 		indexDes.append(keyAttributeName);
 		
-		if (!supportRangeQueries) {
+		/*if (!supportRangeQueries) {
 			indexDes.append("-0");
-			namedIndexes.put(indexName, newIndex(indexDes.toString(), t, c, EXTENDIBLE_HASH_INDEX));			
+			namedIndexes.put(indexName, newIndex(indexDes.toString(), t, c, EXTENDIBLE_HASH_INDEX));
+			
 		}
-		else {
+		else*/ {
 			indexDes.append("-1-");
 			indexDes.append(BTreeConstants.DEFAULT_K).append("-");
 			indexDes.append(BTreeConstants.DEFAULT_K_STAR);
-			namedIndexes.put(indexName, newIndex(indexDes.toString(), t, c, B_TREE_INDEX));
+			namedIndexes.put(indexName, newIndex(indexDes.toString(), t, c, B_TREE_INDEX, supportRangeQueries));
 		}
 		
 		List<String> indexNames = colIndexes.get(c);
@@ -443,7 +400,7 @@ public class MyIndexLayer implements IndexLayer {
 		Column c;
 		Index index;
 		List<String> list;
-		
+				
 		try {
 			for (i = 0; i < length; i++) {
 				tmp = des[i];
@@ -451,13 +408,14 @@ public class MyIndexLayer implements IndexLayer {
 				a = tmp.indexOf('-', k);
 				y = tmp.indexOf('-', a);
 				indexName = tmp.substring(0, k);
-		
+				
+				
 				t = storageLayer.getTableByName(tmp.substring(k + 1, a));
 				c = t.getColumnByName(tmp.substring(a + 1, y));
 		
 				indexType = tmp.charAt(y + 1);
 		
-				index = newIndex(tmp, t, c, indexType);
+				index = newIndex(tmp, t, c, indexType, true);
 			
 				namedIndexes.put(indexName, index);
 				
@@ -500,7 +458,7 @@ public class MyIndexLayer implements IndexLayer {
 	 * @throws SchemaMismatchException 
 	 *  
 	 */
-	private Index newIndex(String des, Table iTable, Column iCol, int indexType) throws SchemaMismatchException {
+	private Index newIndex(String des, Table iTable, Column iCol, int indexType, boolean isRange) throws SchemaMismatchException {
 
 		switch (indexType) {
 
@@ -515,15 +473,15 @@ public class MyIndexLayer implements IndexLayer {
 			
 			int k_star = Integer.parseInt(des.substring(pos2 + 1));
 			if (type == Types.getDoubleType())
-				return new DoubleBTreeMap(des, iTable, iCol, k, k_star);
+				return new DoubleBTreeMap(des, iTable, iCol, isRange, k, k_star);
 			if (type == Types.getFloatType())
-				return new FloatBTreeMap(des, iTable, iCol, k, k_star);
+				return new FloatBTreeMap(des, iTable, iCol, isRange, k, k_star);
 			if (type == Types.getLongType())
-				return new LongBTreeMap(des, iTable, iCol, k, k_star);
+				return new LongBTreeMap(des, iTable, iCol, isRange, k, k_star);
 			if (type == Types.getIntegerType())
-				return new IntBTreeMap(des, iTable, iCol, k, k_star);
+				return new IntBTreeMap(des, iTable, iCol, isRange, k, k_star);
 			else
-				return new ObjectBTreeMap(des, iTable, iCol, k, k_star);
+				return new ObjectBTreeMap(des, iTable, iCol, isRange, k, k_star);
 		
 		default: return null;
 		}

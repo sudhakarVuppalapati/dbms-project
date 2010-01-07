@@ -50,6 +50,8 @@ public interface ObjectBTreeNode extends BTreeNode {
 	 */
 	public void remove(Comparable key, int value, Comparable lowKey, Comparable highKey);
 
+	public void removeRange(Comparable lowKey, Comparable highKey);
+	
 	// do we need this method?
 	// public boolean update(int key, int value);
 }
