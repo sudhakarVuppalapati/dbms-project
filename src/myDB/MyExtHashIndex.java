@@ -121,7 +121,7 @@ public class MyExtHashIndex implements HashIndex {
 		 * appropriate bucket
 		 */
 		if (tmp == null) {
-			System.out.println(" Key " + key + "is new");
+/*			System.out.println(" Key " + key + "is new");*/
 			entry = new int[INITIAL_CAPACITY];
 			entry[0] = key;
 			entry[1] = 3;
@@ -163,12 +163,12 @@ public class MyExtHashIndex implements HashIndex {
 					else if (midVals > rowID)
 						high1 = mid1 - 1;
 					else {
-						System.out.println(" Couple (" + key + "," + + rowID + ") is found");
-						return;		//value found, do nothing			
+/*						System.out.println(" Couple (" + key + "," + + rowID + ") is found");
+*/						return;		//value found, do nothing			
 					}
 				}
-				System.out.println(" Key" + key + " is found, but rowID " + + rowID + " is new");
-
+/*				System.out.println(" Key" + key + " is found, but rowID " + + rowID + " is new");
+*/
 				// Value not found, insert new value into current data entry.
 				// First check for free slots in the entry. Expand entry if full
 				if (entrySize == entry.length) {
@@ -190,8 +190,8 @@ public class MyExtHashIndex implements HashIndex {
 		/**
 		 * Step 3: Found the bucket, but key is new, then try to add it into the bucket.
 		 */
-		System.out.println(" Add key " + key + " to matching bucket");
-		// Create a data entry in format: [key,size,[list of rowID]]
+/*		System.out.println(" Add key " + key + " to matching bucket");
+*/		// Create a data entry in format: [key,size,[list of rowID]]
 		entry = new int[INITIAL_CAPACITY];
 		entry[0] = key;
 		entry[1] = 3; 
@@ -210,8 +210,8 @@ public class MyExtHashIndex implements HashIndex {
 		/** 
 		 * Step 4: Adding failed, do extendible hashing 
 		 */
-		System.out.println(" Add key " + key + " to matching bucket failed. Do extending");
-
+/*		System.out.println(" Add key " + key + " to matching bucket failed. Do extending");
+*/
 		Object[] oldBucket = bucket.clone();	
 		
 		int k = lDepths.length;

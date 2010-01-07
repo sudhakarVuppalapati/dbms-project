@@ -109,6 +109,17 @@ public class ObjectInternalNode extends InternalNode implements ObjectBTreeNode 
 		}
 	}
 	
+	public void removeRange(Comparable lowKey, Comparable highKey) {
+		// get next node to recurse deletion
+		int pos = entries.getIntervalPosition(lowKey);
+		ObjectBTreeNode next = entries.nodes[pos];
+
+		if (next != null) {
+			// calculate key interval for next node
+			next.removeRange(lowKey, highKey);
+		}
+	}
+	
 	/**
 	 * Delete child node entry from this node, with corresponding pivot (if any)
 	 * 

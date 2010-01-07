@@ -14,9 +14,9 @@ public class LongBTreeMap extends BTreeMap {
 	
 	private LongBTree btree;
 
-	public LongBTreeMap(String indexDes, Table tableObj, Column colObj, int k, int k_star)
+	public LongBTreeMap(String indexDes, Table tableObj, Column colObj, boolean isRange, int k, int k_star)
 	throws SchemaMismatchException {
-		super(indexDes, tableObj, colObj);
+		super(indexDes, tableObj, colObj, isRange);
 		btree = new LongBTree(k, k_star);
 		
 		long[] colVals;

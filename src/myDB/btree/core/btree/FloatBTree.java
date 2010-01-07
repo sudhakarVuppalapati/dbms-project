@@ -105,7 +105,7 @@ public class FloatBTree extends BTree {
 	}
 	
 	public void remove(float lowKey, float highKey) {
-		root.remove(lowKey, BTreeConstants.ALL_MAPPINGS, lowKey, highKey);
+		root.removeRange(lowKey, highKey);
 		refreshNeeded = true;
 	}
 

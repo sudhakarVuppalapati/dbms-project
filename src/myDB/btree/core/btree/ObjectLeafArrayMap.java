@@ -14,6 +14,24 @@ public class ObjectLeafArrayMap extends LeafArrayMap {
 
 	protected int[] values;
 
+	public int getIntervalPosition(Comparable key) {
+		if (currentSize == 0) {
+			return -1;
+		} else {
+			int pos = binarySearch(keys, key, 0, currentSize - 1);
+
+			// we are left-aligned, so we take equal to the right, non-equal at
+			// insertion point
+			if (pos < 0) {
+				// key not found: calculate insertion point
+				pos = -(pos + 1);
+			} else {
+				// key found: take right path
+				pos++;
+			}
+			return pos;
+		}
+	}
 	/**
 	 * This binary search method is modified to guarantee that, in the presence
 	 * of duplicate keys, we will always return the first occurrence of a found

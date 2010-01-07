@@ -141,19 +141,66 @@ public class IntLeaf extends Leaf implements IntBTreeNode {
 		
 		IntLeaf currentLeaf = this;
 				
-		int k = (pos == 0) ? pos : pos - 1;
-						
-		while (currentLeaf != null && k < currentLeaf.entries.currentSize) {
+		//int k = (pos == 0) ? pos : pos - 1;
+		int k = pos;			
+		int tmp, oldCurrentSize;
+		
+		/*while (currentLeaf != null && k < currentLeaf.entries.currentSize) {
 			int tmp = currentLeaf.entries.keys[k];
 			if (tmp <= highKey) {
 				currentLeaf.entries.remove(tmp, BTreeConstants.ALL_MAPPINGS);
-				while (currentLeaf.entries.currentSize == 0) {
-					currentLeaf = currentLeaf.nextLeaf;	
-					k = 0;
+				while (currentLeaf.nextLeaf != null && currentLeaf.nextLeaf.entries.currentSize == 0) {
+					currentLeaf = currentLeaf.nextLeaf;		
 				}
+				k = 0;
+				
 			}					
 			else break;
-		}			
+		}*/			
+		
+		while (currentLeaf != null) {
+			while (k < currentLeaf.entries.currentSize && currentLeaf.entries.currentSize > 0) {
+				tmp = currentLeaf.entries.keys[k];
+				if (tmp <= highKey) {
+					oldCurrentSize = currentLeaf.entries.currentSize;
+					currentLeaf.entries.remove(tmp, BTreeConstants.ALL_MAPPINGS);
+					if (oldCurrentSize != currentLeaf.entries.currentSize)
+					k = k - ((oldCurrentSize - currentLeaf.entries.currentSize) - 1);
+					if (k < 0) k = 0;
+					System.out.println("Current position:" + k + " Old size:" + oldCurrentSize + ", new size: " + currentLeaf.entries.currentSize);
+				}
+				else return;
+			}
+			/*if (currentLeaf.nextLeaf != null && currentLeaf.nextLeaf.entries.currentSize == 0) {
+				currentLeaf.nextLeaf = currentLeaf.nextLeaf.nextLeaf;
+			}
+			else */
+			currentLeaf = currentLeaf.nextLeaf;
+			k = 0;
+		}		
+	}
+	
+	public void removeRange(int lowKey, int highKey) {
+		int currentSize = entries.currentSize;
+		int pos = IntLeafArrayMap.binarySearch(entries.keys, lowKey, 0, currentSize - 1);
+		
+		int tmp;
+		
+		if (pos < 0) {
+			pos = -(pos + 1);
+		} 
+		IntLeaf currentLeaf = this;
+		
+		while (currentLeaf != null) {
+			while (pos < currentLeaf.entries.currentSize) {
+				tmp = currentLeaf.entries.keys[pos];
+				if (tmp > highKey)
+					return;
+				currentLeaf.entries.deleteAtPos(pos);
+			}
+			currentLeaf = currentLeaf.nextLeaf;
+			pos = 0;
+		}
 	}
 
 

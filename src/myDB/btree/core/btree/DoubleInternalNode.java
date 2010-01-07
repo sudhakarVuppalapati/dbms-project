@@ -109,6 +109,17 @@ public class DoubleInternalNode extends InternalNode implements DoubleBTreeNode 
 		}
 	}
 	
+	public void removeRange(double lowKey, double highKey) {
+		// get next node to recurse deletion
+		int pos = entries.getIntervalPosition(lowKey);
+		DoubleBTreeNode next = entries.nodes[pos];
+
+		if (next != null) {
+			// calculate key interval for next node
+			next.removeRange(lowKey, highKey);
+		}
+	}
+	
 	/**
 	 * Delete child node entry from this node, with corresponding pivot (if any)
 	 * 

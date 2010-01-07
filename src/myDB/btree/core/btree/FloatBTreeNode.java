@@ -50,6 +50,7 @@ public interface FloatBTreeNode extends BTreeNode {
 	 */
 	public void remove(float key, int value, float lowKey, float highKey);
 
+	public void removeRange(float lowKey, float highKey);
 	// do we need this method?
 	// public boolean update(int key, int value);
 }

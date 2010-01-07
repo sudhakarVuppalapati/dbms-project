@@ -105,7 +105,7 @@ public class IntBTree extends BTree {
 	}
 	
 	public void remove(int lowKey, int highKey, int value) {
-		root.removeRange(lowKey, 0, highKey);
+		root.removeRange(lowKey, highKey);
 		refreshNeeded = true;
 	}
 

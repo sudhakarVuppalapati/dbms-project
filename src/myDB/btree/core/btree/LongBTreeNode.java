@@ -50,6 +50,8 @@ public interface LongBTreeNode extends BTreeNode {
 	 */
 	public void remove(long key, int value, long lowKey, long highKey);
 
+	public void removeRange(long lowKey, long highKey);
+	
 	// do we need this method?
 	// public boolean update(int key, int value);
 }

@@ -48,6 +48,7 @@ public interface DoubleBTreeNode extends BTreeNode {
 	 */
 	public void remove(double key, int value, double lowKey, double highKey);
 
+	public void removeRange(double lowKey, double highKey);
 	// do we need this method?
 	// public boolean update(int key, int value);
 }
