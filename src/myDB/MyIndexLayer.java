@@ -84,7 +84,7 @@ public class MyIndexLayer implements IndexLayer {
 
 		Table t; 
 		Column c;
-		StringBuffer indexDes = new StringBuffer();
+		StringBuilder indexDes = new StringBuilder();
 		
 		try {
 			t = storageLayer.getTableByName(tableName);
@@ -159,7 +159,7 @@ public class MyIndexLayer implements IndexLayer {
 
 	@Override
 	public String describeAllIndexes() {
-		StringBuffer des = new StringBuffer();
+		StringBuilder des = new StringBuilder();
 
 		String[] indexes = (String[])namedIndexes.keySet().toArray(new String[0]);
 
