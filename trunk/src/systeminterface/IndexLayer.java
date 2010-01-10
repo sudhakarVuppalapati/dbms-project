@@ -120,9 +120,7 @@ public interface IndexLayer {
 	 * @throws NoSuchIndexException
 	 *             Supplied index does not exist.
 	 * @throws InvalidKeyException
-	 *             Supplied search key is not valid for the index attributes. A
-	 *             range is invalid when the startSearchKey is greater than the
-	 *             endSearchKey.
+	 *             Supplied search key is not valid for the index attributes.
 	 */
 	public int[] pointQueryRowIDs(String indexName, Object searchKey)
 			throws NoSuchIndexException, InvalidKeyException;
