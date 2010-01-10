@@ -36,11 +36,17 @@ public final class Database {
 	 */
 	private Database() {
 
-		this.storageLayer = new myDB.MyStorageLayer();
-		this.indexLayer = new myDB.MyIndexLayer(this.storageLayer);
-		this.queryLayer = new myDB.MyQueryLayer(this.storageLayer,
-				this.indexLayer);
+		/*this.storageLayer = new sampleDB.unreleased.SampleStorageLayer();
+		this.indexLayer = new sampleDB.unreleased.SampleIndexLayer(
+				this.storageLayer);
+		this.queryLayer = new sampleDB.unreleased.SampleQueryLayer(
+				this.storageLayer, this.indexLayer);*/
 
+		
+		 this.storageLayer = new myDB.MyStorageLayer(); 
+		 this.indexLayer = new myDB.MyIndexLayer(storageLayer); 
+		 this.queryLayer = new myDB.MyQueryLayer(storageLayer, indexLayer);
+		 
 	}
 
 	/***************************************************************************
