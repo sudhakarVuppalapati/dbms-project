@@ -1,6 +1,6 @@
 package exceptions;
 
-/**
+/** 
  * 
  */
 public class IsLeafException extends Exception {
