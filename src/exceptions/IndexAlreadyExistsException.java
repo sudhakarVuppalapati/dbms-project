@@ -2,7 +2,7 @@ package exceptions;
 
 /**
  * 
- * 
+ *
  */
 public class IndexAlreadyExistsException extends Exception {
 
