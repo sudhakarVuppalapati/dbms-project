@@ -3,6 +3,7 @@ package myDB;
 import java.util.Map;
 import operator.Operator;
 import metadata.Type;
+import relationalalgebra.RelationalAlgebraExpression;
 import systeminterface.Column;
 import systeminterface.IndexLayer;
 import systeminterface.QueryLayer;
@@ -64,8 +65,8 @@ public class MyQueryLayer implements QueryLayer {
 		storageLayer.createTable(tableName, schema);
 		
 		// TODO Some code in query layers are written here
-		
 	}
+	
 
 	@Override
 	public void deleteRow(String tableName, Row row)
@@ -292,4 +293,17 @@ public class MyQueryLayer implements QueryLayer {
 		
 		// TODO Some code in query layers are written here
 	}
+	
+	@Override
+	public Operator<? extends Row> query(RelationalAlgebraExpression query) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String explain(RelationalAlgebraExpression query) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
