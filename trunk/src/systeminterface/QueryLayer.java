@@ -3,7 +3,10 @@ package systeminterface;
 import java.util.Map;
 
 import metadata.Type;
+import operator.Operator;
+import relationalalgebra.RelationalAlgebraExpression;
 import exceptions.ColumnAlreadyExistsException;
+import exceptions.InvalidPredicateException;
 import exceptions.NoSuchColumnException;
 import exceptions.NoSuchRowException;
 import exceptions.NoSuchTableException;
@@ -179,4 +182,46 @@ public interface QueryLayer {
 	 */
 	public void dropColumn(String tableName, String columnName)
 			throws NoSuchTableException, NoSuchColumnException;
+
+	/**
+	 * 
+	 * Perform a query.
+	 * 
+	 * @param query
+	 *            The root operator of the logical operator tree.
+	 * @return An operator with the result of the query.
+	 * @throws NoSuchTableException
+	 *             A referenced table does not exist.
+	 * @throws SchemaMismatchException
+	 *             An issue dues to schema mismatch.
+	 * @throws NoSuchColumnException
+	 *             An attribute referenced in a table does not exist.
+	 * @throws InvalidPredicateException
+	 *             A predicate in a selection is not valid.
+	 */
+	public Operator<? extends Row> query(RelationalAlgebraExpression query)
+			throws NoSuchTableException, SchemaMismatchException,
+			NoSuchColumnException, InvalidPredicateException;
+
+	/**
+	 * Give the physical execution plan of the query and any estimates. The
+	 * format of the returned string and the exact information it contains is up
+	 * to you, we will not strictly test it, but it should be meaningful.
+	 * 
+	 * @param query
+	 *            The root operator of the logical operator tree.
+	 * @return An explanation
+	 * @throws NoSuchTableException
+	 *             A referenced table does not exist.
+	 * @throws SchemaMismatchException
+	 *             An issue dues to schema mismatch.
+	 * @throws NoSuchColumnException
+	 *             An attribute referenced in a table does not exist.
+	 * @throws InvalidPredicateException
+	 *             A predicate in a selection is not valid.
+	 * 
+	 */
+	public String explain(RelationalAlgebraExpression query)
+			throws NoSuchTableException, SchemaMismatchException,
+			NoSuchColumnException, InvalidPredicateException;
 }
