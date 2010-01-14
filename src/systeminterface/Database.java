@@ -65,7 +65,8 @@ public final class Database {
 			storageLayer.writeTablesFromMainMemoryBackToExtent(this
 					.getStorageInterface().getTables());
 			//indexLayer.storeIndexInformation();
-		} catch (IOException ex) {
+		} 
+		catch (IOException ex) {
 		}
 	}
 
