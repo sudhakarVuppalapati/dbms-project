@@ -89,7 +89,7 @@ public class ObjectInternalNode extends InternalNode implements ObjectBTreeNode 
 					// handle free at empty on leaf
 					// if possible, find next overflow leaf and point to it
 					if (leaf.nextLeaf != null
-							&& leaf.nextLeaf.entries.keys[0].compareTo(newHighKey) < 0) {
+							&& newHighKey.compareTo(leaf.nextLeaf.entries.keys[0]) > 0) {
 						// it is an overflow leaf
 						// entries.nodes[pos] = leaf.nextLeaf;
 						// TODO we should fix previous leaf - would be easy if

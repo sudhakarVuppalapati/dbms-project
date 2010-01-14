@@ -25,9 +25,9 @@ public class ObjectInternalNodeArrayMap extends InternalNodeArrayMap {
 			int mid = (low + high) >> 1;
 			Comparable midVal = a[mid];
 
-			if (midVal.compareTo(key) < 0)
+			if (key.compareTo(midVal) > 0)
 				low = mid + 1;
-			else if (midVal.compareTo(key) > 0)
+			else if (key.compareTo(midVal) < 0)
 				high = mid - 1;
 			else
 				return mid; // key found
