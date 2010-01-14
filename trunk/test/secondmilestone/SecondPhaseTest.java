@@ -60,7 +60,8 @@ public class SecondPhaseTest {
 			"varchar_att_index_nor" };
 
 	/** Random number generator -- add seed when repeatable experiments wanted */
-	private static final Random rand = new Random(81);
+	//private static final int seed = new Random().nextInt();
+	private static final Random rand = new Random(); //465546776
 
 	/**
 	 * Represents a payload along with a flag indicating whether this particular
@@ -384,12 +385,15 @@ public class SecondPhaseTest {
 							 */
 							String indexName = indexNames[indexNum];
 							try {
+								
 								myDatabase.getIndexInterface().insertIntoIndex(
 										indexName, randKey, payload.getRowID());
 								payload.markInserted();
 
 								Helpers.print("New Entry Inserted",
 										util.Consts.printType.INFO);
+								
+							
 							} catch (NoSuchIndexException e) {
 								e.printStackTrace();
 							} catch (InvalidKeyException e) {
@@ -462,7 +466,6 @@ public class SecondPhaseTest {
 
 				payload = getRandPayloadForKey(randKey, indexNum);
 				if (payload.isInserted()) {
-
 					/*
 					 * This payload is already in the index -> delete it
 					 */
@@ -909,7 +912,7 @@ public class SecondPhaseTest {
 		/*
 		 * print local indexs
 		 */
-		printLocalIndexData();
+		//printLocalIndexData();
 
 		/*
 		 * Perform insertions & deletions
@@ -920,7 +923,7 @@ public class SecondPhaseTest {
 		 * Perform queries, result of each query checked against local indexes
 		 */
 		performQueries();
-
+		System.out.println();
 	}
 
 	/**
