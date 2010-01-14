@@ -82,7 +82,7 @@ public class Consts {
 	/** Minimum # payloads per key */
 	public static final int minEntriesPerKey = 1;
 	/** Maximum # payloads per key */
-	public static final int maxEntriesPerKey = 3; //3
+	public static final int maxEntriesPerKey = 3; //3; //Doesn't make too much sense since it only insert new payloads
 
 	/** Min # unique keys in index */
 	public static final int minNumKeys = 100;
@@ -90,7 +90,7 @@ public class Consts {
 	public static final int maxNumKeys = 500;
 
 	/** Number of inserts in index at a time */
-	public static final int numIndexInserts = 100;
+	public static final int numIndexInserts = 1000;
 	/** Number of point deletes from index at a time */
 	public static final int numIndexPointDeletes = 1;
 	/** Number of Key deletes from index at a time */
