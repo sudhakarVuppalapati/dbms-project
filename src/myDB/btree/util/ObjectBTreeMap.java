@@ -87,6 +87,7 @@ public class ObjectBTreeMap extends BTreeMap {
 			btree.add((Comparable)key, rowID);
 		}
 		catch (ClassCastException cce) {
+			cce.printStackTrace();
 			throw new InvalidKeyException();
 		}		
 	}
