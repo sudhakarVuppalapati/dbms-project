@@ -51,9 +51,9 @@ public class ObjectLeafArrayMap extends LeafArrayMap {
 			int mid = (low + high) >> 1;
 			Comparable midVal = a[mid];
 
-			if (midVal.compareTo(key) < 0)
+			if (key.compareTo(midVal) > 0)
 				low = mid + 1;
-			else if (midVal.compareTo(key) >0)
+			else if (key.compareTo(midVal) < 0)
 				high = mid - 1;
 			else {
 				// key found: search for first occurrence linearly
@@ -126,7 +126,7 @@ public class ObjectLeafArrayMap extends LeafArrayMap {
 			}
 
 			// find insertion point
-			while (pos < currentSize && keys[pos].compareTo(key) <=0 ) {
+			while (pos < currentSize && key.compareTo(keys[pos]) >= 0 ) {
 				pos++;
 			}
 			if (pos == currentSize) {
@@ -187,7 +187,7 @@ public class ObjectLeafArrayMap extends LeafArrayMap {
 	}
 
 	public int continueGet(int pos, Comparable key, IntPushOperator results) {
-		while (pos < currentSize && keys[pos].compareTo(key) == 0) {
+		while (pos < currentSize && key.compareTo(keys[pos]) == 0) {
 			results.pass(values[pos]);
 			pos++;
 		}
@@ -219,7 +219,7 @@ public class ObjectLeafArrayMap extends LeafArrayMap {
 			int firstOccurrence = -1; // pos
 			int lastOccurrence;
 
-			while (pos < currentSize && keys[pos].compareTo(key) == 0) {
+			while (pos < currentSize && key.compareTo(keys[pos]) == 0) {
 
 				if (value == BTreeConstants.ALL_MAPPINGS) {
 					// mark first occurrence
@@ -319,7 +319,7 @@ public class ObjectLeafArrayMap extends LeafArrayMap {
 
 	public int continueScan(int pos, Comparable highKey, IntPushOperator results) {
 		boolean returnedSomething = false;
-		while (pos < currentSize && keys[pos].compareTo(highKey) <=0) {
+		while (pos < currentSize && highKey.compareTo(keys[pos]) >= 0) {
 			results.pass(values[pos]);
 			pos++;
 			returnedSomething = true;

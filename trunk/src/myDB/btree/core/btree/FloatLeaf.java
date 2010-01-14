@@ -52,7 +52,7 @@ public class FloatLeaf extends Leaf implements FloatBTreeNode {
 			// key was not added anywhere, so add it to this leaf anyway (no
 			// more next leaves are available)
 			currentLeaf.entries
-					.addAtPos(key, value, currentLeaf.entries.size());
+			.addAtPos(key, value, currentLeaf.entries.size());
 		}
 
 		// set leaf carrier, as appropriate
@@ -136,17 +136,17 @@ public class FloatLeaf extends Leaf implements FloatBTreeNode {
 	}
 
 
-	public void removeRange(float lowKey, float highKey) {
+	public void removeRange1(float lowKey, float highKey) {
 		int currentSize = entries.currentSize;
 		int pos = FloatLeafArrayMap.binarySearch(entries.keys, lowKey, 0, currentSize - 1);
-		
+
 		float tmp;
-		
+
 		if (pos < 0) {
 			pos = -(pos + 1);
 		} 
 		FloatLeaf currentLeaf = this;
-		
+
 		while (currentLeaf != null) {
 			while (pos < currentLeaf.entries.currentSize) {
 				tmp = currentLeaf.entries.keys[pos];
@@ -158,7 +158,93 @@ public class FloatLeaf extends Leaf implements FloatBTreeNode {
 			pos = 0;
 		}
 	}
-	
+
+	public void removeRange2(float lowKey, float highKey) {
+
+		FloatLeaf currentLeaf = this;
+		int pos = 0;
+		float tmp;
+		boolean continueSearch = true;
+
+		while (currentLeaf != null) {
+			if (continueSearch)
+				pos = FloatLeafArrayMap.binarySearch(currentLeaf.entries.keys, lowKey, 0,
+						currentLeaf.entries.currentSize - 1);
+
+			if (pos < 0) {
+				pos = -(pos + 1);
+			} 
+
+			if (pos == currentLeaf.entries.currentSize) {
+				currentLeaf = currentLeaf.nextLeaf;
+				continue;
+			}
+			else while (pos < currentLeaf.entries.currentSize) {
+				tmp = currentLeaf.entries.keys[pos];
+				if (tmp > highKey)
+					return;
+				currentLeaf.entries.deleteAtPos(pos);
+			}
+			currentLeaf = currentLeaf.nextLeaf;
+			pos = 0;		
+			continueSearch = false;
+		}
+	}
+
+	public void removeRange(float lowKey, float highKey) {
+		int currentSize = entries.currentSize;
+		int pos = FloatLeafArrayMap.binarySearch(entries.keys, lowKey, 0, currentSize - 1);
+
+		float tmp;
+
+		if (pos < 0) {
+			pos = -(pos + 1);
+		} 
+
+		FloatLeaf currentLeaf = this;
+
+		//if a value greater than the lowKey was not found , go to the next leaf 
+		if(pos == this.entries.currentSize){
+			currentLeaf=this.nextLeaf;
+		}
+
+
+		//while the consequent leaf contains only values smaller than the lowKey, ignore
+		//them and go further
+		while(currentLeaf!=null && currentLeaf.entries.keys[currentLeaf.entries.currentSize-1]< lowKey){
+			currentLeaf=currentLeaf.nextLeaf;
+		}
+
+		//if we didn't reach the end 
+		if(currentLeaf!=null){
+			//in the leaf that contains the first value greater than the lowKey 
+			//do a binary search to locate the position of that key 
+			pos = FloatLeafArrayMap.binarySearch(currentLeaf.entries.keys, lowKey, 0, currentLeaf.entries.currentSize - 1);
+		}
+		else{
+			//get out of the method;
+			return;
+		}
+
+
+		//adapt the pos again
+		if (pos < 0) {
+			pos = -(pos + 1);
+		} 
+
+
+		while (currentLeaf != null) {
+			while (pos < currentLeaf.entries.currentSize) {
+				tmp = currentLeaf.entries.keys[pos];
+				if (tmp > highKey)
+					return;
+				currentLeaf.entries.deleteAtPos(pos);
+			}
+			currentLeaf = currentLeaf.nextLeaf;
+			pos = 0;
+		}
+	}
+
 	public void get(float key, IntPushOperator results) {
 		// search in entries
 		int continueSearch = entries.get(key, results);
@@ -240,7 +326,7 @@ public class FloatLeaf extends Leaf implements FloatBTreeNode {
 			currentLeaf = currentLeaf.nextLeaf;
 		}
 	}
-	
+
 
 	public String toString() {
 		return "[" + entries.toString() + "]";
