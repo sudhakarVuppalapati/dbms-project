@@ -1,6 +1,5 @@
 package myDB.btree.util;
 
-import myDB.btree.core.btree.BTreeConstants;
 import myDB.btree.core.btree.DoubleBTree;
 import operator.Operator;
 import systeminterface.Column;

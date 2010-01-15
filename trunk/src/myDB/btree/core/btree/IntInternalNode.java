@@ -82,30 +82,6 @@ public class IntInternalNode extends InternalNode implements IntBTreeNode {
 					: entries.keys[pos];
 			next.remove(key, value, newLowKey, newHighKey);
 
-			// TODO free at empty on lower level
-			if (false && next.isEmpty()) {
-				if (next.isLeaf()) {
-					IntLeaf leaf = (IntLeaf) next;
-					// handle free at empty on leaf
-					// if possible, find next overflow leaf and point to it
-					if (leaf.nextLeaf != null
-							&& leaf.nextLeaf.entries.keys[0] < newHighKey) {
-						// it is an overflow leaf
-						// entries.nodes[pos] = leaf.nextLeaf;
-						// TODO we should fix previous leaf - would be easy if
-						// leaf level was doubly-linked
-						// Leaf previousLeaf = (pos > 0)?
-					} else {
-						// delete child node entry from this node, with
-						// corresponding pivot (if any)
-						removeChildAtPos(pos);
-
-						// TODO fix previous leaf to point to next
-					}
-				} else {
-					removeChildAtPos(pos);
-				}
-			}
 		}
 	}
 	
@@ -117,19 +93,6 @@ public class IntInternalNode extends InternalNode implements IntBTreeNode {
 		if (next != null) {
 			// calculate key interval for next node
 			next.removeRange(lowKey, highKey);
-		}
-	}
-	
-	/**
-	 * Delete child node entry from this node, with corresponding pivot (if any)
-	 * 
-	 * @param pos
-	 */
-	private void removeChildAtPos(int pos) {
-		if (pos == 0) {
-			entries.nodes[pos] = null;
-		} else {
-			entries.deleteAtPos(pos);
 		}
 	}
 
