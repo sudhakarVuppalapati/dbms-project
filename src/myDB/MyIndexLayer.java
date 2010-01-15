@@ -332,7 +332,7 @@ public class MyIndexLayer implements IndexLayer {
 		/** Tentative -$END */
 		//return false;
 	}
-
+	
 
 	@Override
 	public void updateIndex(String indexName, Object key, int oldRowID,
