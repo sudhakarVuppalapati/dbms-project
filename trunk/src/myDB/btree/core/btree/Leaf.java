@@ -11,7 +11,6 @@ public abstract class Leaf implements BTreeNode {
 
 	protected int k_star;
 
-
 	public boolean isLeaf() {
 		return true;
 	}

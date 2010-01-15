@@ -12,7 +12,7 @@ import exceptions.SchemaMismatchException;
 
 
 public class IntBTreeMap extends BTreeMap {
-	
+		
 	private IntBTree btree;
 
 	public IntBTreeMap(String indexDes, Table tableObj, Column colObj, boolean isRange, int k, int k_star) 

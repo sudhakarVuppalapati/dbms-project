@@ -15,7 +15,7 @@ public class LongLeaf extends Leaf implements LongBTreeNode {
 	//int type;	
 	protected LongLeafArrayMap entries;
 
-	protected int k_star;
+	//protected int k_star;
 
 	protected LongLeaf nextLeaf;
 

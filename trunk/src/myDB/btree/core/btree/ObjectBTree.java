@@ -28,7 +28,7 @@ import myDB.btree.util.IntPushOperator;
  * @author jens / marcos
  */
 public class ObjectBTree extends BTree {
-
+		
 	/** the root of the b-tree */
 	protected ObjectBTreeNode root = null;
 
@@ -60,8 +60,14 @@ public class ObjectBTree extends BTree {
 		}
 		ObjectSplitInfo splitInfo = root.add(key, value, Infinity.MIN_VALUE, Infinity.MAX_VALUE, leafCarrier);
 		if (splitInfo != null) {
+			ObjectInternalNode newRoot;
 			// root overflow!:
-			ObjectInternalNode newRoot = new ObjectInternalNode(splitInfo.leftNode, splitInfo.pivot, splitInfo.rightNode, k);
+			if (firstTime) {
+				newRoot = new ObjectInternalNode(root, splitInfo.pivot, splitInfo.rightNode, k);
+				firstTime = false;
+			}
+			else
+				newRoot = new ObjectInternalNode(splitInfo.leftNode, splitInfo.pivot, splitInfo.rightNode, k);
 			root = newRoot;
 		}
 		refreshNeeded = true;

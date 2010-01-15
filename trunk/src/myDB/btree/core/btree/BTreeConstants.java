@@ -8,8 +8,8 @@ public interface BTreeConstants {
 	 */
 	public static final int ALL_MAPPINGS = Integer.MIN_VALUE;
 	
-	public static final int DEFAULT_K = 50;
+	public static final int DEFAULT_K = 5;
 	
-	public static final int DEFAULT_K_STAR = 200;
+	public static final int DEFAULT_K_STAR = 10;
 
 }

@@ -15,7 +15,7 @@ public class DoubleLeaf extends Leaf implements DoubleBTreeNode {
 	//int type;	
 	protected DoubleLeafArrayMap entries;
 
-	protected int k_star;
+	//protected int k_star;
 
 	protected DoubleLeaf nextLeaf;
 

@@ -15,7 +15,7 @@ public abstract class BTreeMap implements TreeIndex {
 	protected final MyTable table;
 	
 	private String des;
-	
+		
 	private final boolean range;
 	
 	public BTreeMap(String indexDes, Table tableObj, Column colObj, boolean isRange) 

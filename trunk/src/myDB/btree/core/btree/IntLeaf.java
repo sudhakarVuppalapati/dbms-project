@@ -167,7 +167,7 @@ public class IntLeaf extends Leaf implements IntBTreeNode {
 					if (oldCurrentSize != currentLeaf.entries.currentSize)
 					k = k - ((oldCurrentSize - currentLeaf.entries.currentSize) - 1);
 					if (k < 0) k = 0;
-					System.out.println("Current position:" + k + " Old size:" + oldCurrentSize + ", new size: " + currentLeaf.entries.currentSize);
+					//System.out.println("Current position:" + k + " Old size:" + oldCurrentSize + ", new size: " + currentLeaf.entries.currentSize);
 				}
 				else return;
 			}

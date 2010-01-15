@@ -15,7 +15,7 @@ public class ObjectLeaf extends Leaf implements ObjectBTreeNode {
 	//int type;	
 	protected ObjectLeafArrayMap entries;
 
-	protected int k_star;
+	//protected int k_star;
 
 	protected ObjectLeaf nextLeaf;
 
@@ -30,13 +30,13 @@ public class ObjectLeaf extends Leaf implements ObjectBTreeNode {
 	}
 
 	public ObjectSplitInfo add(Comparable key, int value, Comparable lowKey, Comparable highKey,
-			LeafCarrier leafCarrier) {
+			LeafCarrier leafCarrier) {		
 		// search for insertion point: last allowed node of a scan for that key
 		// a node is allowed as far as its first key is smaller than the highKey
 		// this keeps the strict tree invariant that a leaf pointed to by
 		// a given node only contains keys in the interval [lowKey, highKey).
 
-		// HACK: even if a node is empty, we know that its array stil contains
+		// HACK: even if a node is empty, we know that its array still contains
 		// the key values it used to have when it was full. That allows us to
 		// obtain the key range for a next leaf even if its entries are
 		// completely deleted. This is necessary because we know that nodes
@@ -94,7 +94,7 @@ public class ObjectLeaf extends Leaf implements ObjectBTreeNode {
 		nextLeaf = newLeaf;
 
 		// pivot is first entry in newLeaf keys
-		if (newLeaf.entries.keys[0] == entries.keys[entries.size() - 1]) {
+		if (newLeaf.entries.keys[0].compareTo(entries.keys[entries.size() - 1]) == 0) {
 			// do not propagate split: pivot does not differentiate leaves
 			// this means that the new leaf is an overflow leaf and has no
 			// parent node
