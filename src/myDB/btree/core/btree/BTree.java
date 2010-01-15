@@ -25,6 +25,11 @@ import java.io.OutputStream;
  */
 public abstract class BTree {
 
+
+	/** The first time constructing internal node from leaf node. Need to
+	 * be careful to avoid losing overflow leaves */
+	protected static boolean firstTime = true;
+	
 	/** the degree of the b-tree (internal nodes) */
 	protected int k;
 

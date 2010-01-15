@@ -15,7 +15,7 @@ public class FloatLeaf extends Leaf implements FloatBTreeNode {
 	//int type;	
 	protected FloatLeafArrayMap entries;
 
-	protected int k_star;
+	//protected int k_star;
 
 	protected FloatLeaf nextLeaf;
 

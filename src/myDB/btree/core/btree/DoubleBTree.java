@@ -59,8 +59,15 @@ public class DoubleBTree extends BTree {
 		}
 		DoubleSplitInfo splitInfo = root.add(key, value, Double.MIN_VALUE, Double.MAX_VALUE, leafCarrier);
 		if (splitInfo != null) {
+			DoubleInternalNode newRoot;
 			// root overflow!:
-			DoubleInternalNode newRoot = new DoubleInternalNode(splitInfo.leftNode, splitInfo.pivot, splitInfo.rightNode, k);
+			if (firstTime) {
+				newRoot = new DoubleInternalNode(root, splitInfo.pivot, splitInfo.rightNode, k);
+				firstTime = false;
+			}
+			else
+				newRoot = new DoubleInternalNode(splitInfo.leftNode, splitInfo.pivot, splitInfo.rightNode, k);
+
 			root = newRoot;
 		}
 		refreshNeeded = true;

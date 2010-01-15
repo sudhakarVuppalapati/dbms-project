@@ -59,8 +59,15 @@ public class LongBTree extends BTree {
 		}
 		LongSplitInfo splitInfo = root.add(key, value, Long.MIN_VALUE, Long.MAX_VALUE, leafCarrier);
 		if (splitInfo != null) {
+			LongInternalNode newRoot;
 			// root overflow!:
-			LongInternalNode newRoot = new LongInternalNode(splitInfo.leftNode, splitInfo.pivot, splitInfo.rightNode, k);
+			if (firstTime) {
+				newRoot = new LongInternalNode(root, splitInfo.pivot, splitInfo.rightNode, k);
+				firstTime = false;
+			}
+			else {
+				newRoot = new LongInternalNode(splitInfo.leftNode, splitInfo.pivot, splitInfo.rightNode, k);
+			}
 			root = newRoot;
 		}
 		refreshNeeded = true;

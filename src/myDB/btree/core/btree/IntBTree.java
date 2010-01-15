@@ -27,7 +27,7 @@ import myDB.btree.util.IntPushOperator;
  * @author jens / marcos
  */
 public class IntBTree extends BTree {
-
+	
 	/** the root of the b-tree */
 	protected IntBTreeNode root = null;
 
@@ -59,11 +59,19 @@ public class IntBTree extends BTree {
 		}
 		IntSplitInfo splitInfo = root.add(key, value, Integer.MIN_VALUE, Integer.MAX_VALUE, leafCarrier);
 		if (splitInfo != null) {
+			IntInternalNode newRoot;
 			// root overflow!:
-			IntInternalNode newRoot = new IntInternalNode(splitInfo.leftNode, splitInfo.pivot, splitInfo.rightNode, k);
+			if (firstTime) {
+				newRoot = new IntInternalNode(root, splitInfo.pivot, splitInfo.rightNode, k);
+				firstTime = false;
+			}
+			else
+				newRoot = new IntInternalNode(splitInfo.leftNode, splitInfo.pivot, splitInfo.rightNode, k);
+
 			root = newRoot;
 		}
 		refreshNeeded = true;
+		
 	}
 
 	public void add(int key, int value) {

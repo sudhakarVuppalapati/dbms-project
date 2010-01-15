@@ -60,7 +60,14 @@ public class FloatBTree extends BTree {
 		FloatSplitInfo splitInfo = root.add(key, value, Float.MIN_VALUE, Float.MAX_VALUE, leafCarrier);
 		if (splitInfo != null) {
 			// root overflow!:
-			FloatInternalNode newRoot = new FloatInternalNode(splitInfo.leftNode, splitInfo.pivot, splitInfo.rightNode, k);
+			FloatInternalNode newRoot;
+			if (firstTime) {
+				newRoot = new FloatInternalNode(root, splitInfo.pivot, splitInfo.rightNode, k);
+				firstTime = false;
+			}				
+			else
+				newRoot = new FloatInternalNode(splitInfo.leftNode, splitInfo.pivot, splitInfo.rightNode, k);
+
 			root = newRoot;
 		}
 		refreshNeeded = true;
