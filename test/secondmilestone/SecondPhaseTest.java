@@ -14,6 +14,7 @@ import metadata.Types;
 import org.apache.commons.collections.map.MultiValueMap;
 
 import systeminterface.Database;
+import util.Consts;
 import util.Helpers;
 import exceptions.IndexAlreadyExistsException;
 import exceptions.InvalidKeyException;
@@ -60,10 +61,10 @@ public class SecondPhaseTest {
 			"varchar_att_index_nor" };
 
 	/** Random number generator -- add seed when repeatable experiments wanted */
-	//private static final int seed = new Random().nextInt();
-	private static final Random rand = new Random(); //465546776
+	private static final int seed = new Random().nextInt();
+	private static final Random rand = new Random(seed); //1816168385 //973864199
 
-	/**
+	/** 
 	 * Represents a payload along with a flag indicating whether this particular
 	 * payload is in the index
 	 * 
@@ -286,7 +287,6 @@ public class SecondPhaseTest {
 				}
 
 			}
-
 		}
 	}
 
@@ -345,6 +345,7 @@ public class SecondPhaseTest {
 
 		insertEntries();
 
+		
 		/*
 		 * Delete entries
 		 */
@@ -356,11 +357,11 @@ public class SecondPhaseTest {
 	 * 
 	 */
 	private static void insertEntries() {
-
+		
 		for (int indexNum = 0; indexNum < indexNames.length; indexNum++) {
 
 			for (int insertionNumber = 0; insertionNumber < util.Consts.numIndexInserts; insertionNumber++) {
-
+	
 				/*
 				 * Get a random key for this index
 				 */
@@ -368,7 +369,7 @@ public class SecondPhaseTest {
 				Object randKey = getRandKey(indexNum);
 
 				if (randKey != null) {
-
+				
 					/*
 					 * try maxEntriesPerKey times to get a payload that was not
 					 * inserted before for randKey
@@ -378,7 +379,6 @@ public class SecondPhaseTest {
 
 						payload = getRandPayloadForKey(randKey, indexNum);
 						if (!payload.isInserted()) {
-
 							/*
 							 * This payload is not already in the index -> add
 							 * it
@@ -407,9 +407,9 @@ public class SecondPhaseTest {
 					}
 
 				}
+				
 			}
-
-		}
+		}		 
 
 	}
 
@@ -884,9 +884,24 @@ public class SecondPhaseTest {
 						+ indexNum, util.Consts.printType.INFO);
 
 			} else {
-
+				
 				Helpers.print("Incorrect point query result from index #"
-						+ indexNum, util.Consts.printType.ERROR);
+						+ indexNum + " with key : " + randKey, util.Consts.printType.ERROR);
+				
+				
+				payloadIT = payloadSet.iterator();
+
+				while (payloadIT.hasNext()) {
+					Payload p = payloadIT.next();
+					if (p.isInserted()) {
+						System.out.print(p.getRowID() + ",");
+					}
+				}
+				System.out.println("The retrieved result:");
+				for (Integer e : resultSet) {
+					System.out.print(e.intValue() + ",");
+				}
+				
 				System.exit(-1);
 			}
 
@@ -932,7 +947,7 @@ public class SecondPhaseTest {
 	public static void main(String[] args) {
 		
 		System.out.println("*************************************");
-		System.out.println("Testing Started");
+		System.out.println("Testing Started with seed = " + seed + " and maxIndexInsert = " + Consts.numIndexInserts + " and max attempts no = " + Consts.maxEntriesPerKey);
 		long beginTime = System.currentTimeMillis();
 		test();
 		long endTime = System.currentTimeMillis();
