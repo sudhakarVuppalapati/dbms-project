@@ -31,7 +31,6 @@ public class ObjectBTreeMap extends BTreeMap {
 			throw new SchemaMismatchException();
 		}
 		
-		Comparable tmp;
 		int n = colObj.getRowCount();
 		for (int i = 0; i < n; i++) {
 			Comparable o = (Comparable)colVals[i];

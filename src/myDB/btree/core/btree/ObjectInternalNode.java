@@ -81,31 +81,6 @@ public class ObjectInternalNode extends InternalNode implements ObjectBTreeNode 
 			Comparable newHighKey = pos == entries.size() ? highKey
 					: entries.keys[pos];
 			next.remove(key, value, newLowKey, newHighKey);
-
-			// TODO free at empty on lower level
-			if (false && next.isEmpty()) {
-				if (next.isLeaf()) {
-					ObjectLeaf leaf = (ObjectLeaf) next;
-					// handle free at empty on leaf
-					// if possible, find next overflow leaf and point to it
-					if (leaf.nextLeaf != null
-							&& newHighKey.compareTo(leaf.nextLeaf.entries.keys[0]) > 0) {
-						// it is an overflow leaf
-						// entries.nodes[pos] = leaf.nextLeaf;
-						// TODO we should fix previous leaf - would be easy if
-						// leaf level was doubly-linked
-						// Leaf previousLeaf = (pos > 0)?
-					} else {
-						// delete child node entry from this node, with
-						// corresponding pivot (if any)
-						removeChildAtPos(pos);
-
-						// TODO fix previous leaf to point to next
-					}
-				} else {
-					removeChildAtPos(pos);
-				}
-			}
 		}
 	}
 	
@@ -117,19 +92,6 @@ public class ObjectInternalNode extends InternalNode implements ObjectBTreeNode 
 		if (next != null) {
 			// calculate key interval for next node
 			next.removeRange(lowKey, highKey);
-		}
-	}
-	
-	/**
-	 * Delete child node entry from this node, with corresponding pivot (if any)
-	 * 
-	 * @param pos
-	 */
-	private void removeChildAtPos(int pos) {
-		if (pos == 0) {
-			entries.nodes[pos] = null;
-		} else {
-			entries.deleteAtPos(pos);
 		}
 	}
 
