@@ -937,7 +937,8 @@ public class MyTable implements Table {
 	 * MyTable and Index classes. But in terms of performance, this could be the
 	 * best solution
 	 * 
-	 * Currently I'm using public modifier, but it needs to be set to protected later
+	 * Currently I'm using public modifier, but it needs to be set to protected later, when
+	 * we re-code the tree indexes.
 	 * 
 	 * @param rowIDs list of row IDs
 	 * @return Operator of row types. Note that elements in the operator can be NULL,
