@@ -13,16 +13,16 @@ import exceptions.SchemaMismatchException;
 public class Evaluator {
 	
 	/** Reference to single evaluators */
-	private final JoinProcessor join;
+	/*private final JoinProcessor join;
 	private final ProjectionProcessor projection;
 	private final SelectionProcessor selection;
-	private final CrossProductProcessor crossProduct;
+	private final CrossProductProcessor crossProduct;*/
 	
 	public Evaluator(IndexLayer iLayer, StorageLayer sLayer) {
-		join = new JoinProcessor(iLayer, sLayer);
+		/*join = new JoinProcessor(iLayer, sLayer);
 		projection = new ProjectionProcessor(iLayer, sLayer);
 		selection = new SelectionProcessor(iLayer, sLayer);
-		crossProduct = new CrossProductProcessor(iLayer, sLayer);
+		crossProduct = new CrossProductProcessor(iLayer, sLayer);*/
 	}
 	
 	public Operator<? extends Row> eval(RelationalAlgebraExpression query)

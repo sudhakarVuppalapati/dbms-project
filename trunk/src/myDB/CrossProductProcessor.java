@@ -7,18 +7,14 @@ import systeminterface.Row;
 import systeminterface.StorageLayer;
 import exceptions.SchemaMismatchException;
 
-public class CrossProductProcessor extends Processor {
-	public CrossProductProcessor(IndexLayer iLayer, StorageLayer sLayer) {
-		super(iLayer, sLayer);
-		// TODO Auto-generated constructor stub
-	}
-
-	public Operator<? extends Row> query(CrossProduct query)
+public class CrossProductProcessor {
+	
+	public static Operator<? extends Row> query(CrossProduct query, IndexLayer iLayer, StorageLayer sLayer)
 	throws SchemaMismatchException {
 		return null;
 	}
 	
-	public String explain(CrossProduct query)
+	public String explain(CrossProduct query, IndexLayer iLayer, StorageLayer sLayer)
 	throws SchemaMismatchException {
 		return null;
 	}
