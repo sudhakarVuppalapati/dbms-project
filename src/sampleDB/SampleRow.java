@@ -81,4 +81,24 @@ public class SampleRow implements Row {
 		return columnNames;
 	}
 
+	public String toString() {
+
+		StringBuffer sb = new StringBuffer();
+		String[] columns = getColumnNames();
+
+		for (int i = 0; i < columns.length; i++) {
+
+			try {
+				sb.append(getColumnValue(columns[i]).toString());
+			} catch (NoSuchColumnException e) {
+				e.printStackTrace();
+			}
+
+			sb.append("\t");
+		}
+
+		return sb.toString();
+
+	}
+
 }
