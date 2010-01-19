@@ -104,17 +104,18 @@ public class MyIndexLayer implements IndexLayer {
 		indexDes.append(tableName).append("-");
 		indexDes.append(keyAttributeName);
 		
+		//TODO create HashIndexes
 		/*if (!supportRangeQueries) {
 			indexDes.append("-0");
 			namedIndexes.put(indexName, newIndex(indexDes.toString(), t, c, EXTENDIBLE_HASH_INDEX));
 			
 		}
-		else*/ {
+		else {*/
 			indexDes.append("-1-");
 			indexDes.append(BTreeConstants.DEFAULT_K).append("-");
 			indexDes.append(BTreeConstants.DEFAULT_K_STAR);
 			namedIndexes.put(indexName, newIndex(indexDes.toString(), t, c, B_TREE_INDEX, supportRangeQueries));
-		}
+		/*}*/
 		
 		List<String> indexNames = colIndexes.get(c);
 		if (indexNames == null) {
@@ -233,6 +234,7 @@ public class MyIndexLayer implements IndexLayer {
 			namedIndexes.get(indexName).insert(key, rowID);
 		}
 		catch (NullPointerException npe) {
+			npe.printStackTrace();
 			throw new NoSuchIndexException();
 		}
 	}
