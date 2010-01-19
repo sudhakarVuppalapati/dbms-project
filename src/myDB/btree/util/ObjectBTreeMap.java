@@ -15,9 +15,9 @@ public class ObjectBTreeMap extends BTreeMap {
 	
 	private ObjectBTree btree;
 
-	public ObjectBTreeMap(String indexDes, Table tableObj, Column colObj, boolean isRange, int k, int k_star) 
+	public ObjectBTreeMap(String indexDes, Table tableObj, Column colObj, /*boolean isRange,*/ int k, int k_star) 
 	throws SchemaMismatchException {
-		super(indexDes, tableObj, colObj, isRange);
+		super(indexDes, tableObj, colObj/*, isRange*/);
 		btree = new ObjectBTree(k, k_star);
 	
 		//bulk-loading
@@ -122,8 +122,8 @@ public class ObjectBTreeMap extends BTreeMap {
 		
 		Comparable lowKey, highKey;
 		try {
-			lowKey = (Comparable)startingKey;
-			highKey = (Comparable)endingKey;
+			lowKey = (startingKey != null) ? (Comparable)startingKey : Infinity.MIN_VALUE;
+			highKey = (endingKey != null) ? (Comparable)endingKey : Infinity.MIN_VALUE;
 			if (lowKey.compareTo(highKey) > 0)
 				throw new InvalidRangeException();
 		}

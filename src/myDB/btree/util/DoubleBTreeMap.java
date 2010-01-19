@@ -14,9 +14,9 @@ public class DoubleBTreeMap extends BTreeMap {
 	
 	private DoubleBTree btree;
 
-	public DoubleBTreeMap(String indexDes, Table tableObj, Column colObj, boolean isRange, int k, int k_star)
+	public DoubleBTreeMap(String indexDes, Table tableObj, Column colObj, /*boolean isRange,*/ int k, int k_star)
 	throws SchemaMismatchException {
-		super(indexDes, tableObj, colObj, isRange);
+		super(indexDes, tableObj, colObj/*, isRange*/);
 		btree = new DoubleBTree(k, k_star);
 		
 		//bulk-loading
@@ -119,8 +119,8 @@ public class DoubleBTreeMap extends BTreeMap {
 		
 		double lowKey, highKey;
 		try {
-			lowKey = ((Double)startingKey).doubleValue();
-			highKey = ((Double)endingKey).doubleValue();
+			lowKey = (startingKey != null) ? ((Double)startingKey).doubleValue() : Double.MIN_VALUE;
+			highKey = (endingKey != null) ? ((Double)endingKey).doubleValue() : Double.MAX_VALUE;
 			if (lowKey > highKey)
 				throw new InvalidRangeException();
 		}
