@@ -41,8 +41,8 @@ public class SelectionProcessor {
 	}
 
 	public static Operator<? extends Row> query(Selection query, IndexLayer iLayer, 
-			StorageLayer sLayer) throws SchemaMismatchException, NotLeafNodeException, 
-			NoSuchTableException, InvalidPredicateException {
+			StorageLayer sLayer) throws SchemaMismatchException, NoSuchTableException, 
+			InvalidPredicateException {
 		
 		RelationalAlgebraExpression input = query.getInput();
 		PredicateTreeNode predicate = query.getPredicate();
@@ -53,7 +53,7 @@ public class SelectionProcessor {
 	private static Operator<? extends Row> query(PredicateTreeNode predicate, 
 			RelationalAlgebraExpression input, IndexLayer indexLayer, 
 			StorageLayer storageLayer) 
-			throws NotLeafNodeException, NoSuchTableException, SchemaMismatchException, 
+			throws NoSuchTableException, SchemaMismatchException, 
 			InvalidPredicateException {
 		if (predicate.isLeaf())
 			return queryConjunct(predicate, input, indexLayer, storageLayer);
@@ -115,15 +115,24 @@ public class SelectionProcessor {
 	 * @throws NoSuchTableException
 	 * @throws SchemaMismatchException
 	 */
-	private static Operator<? extends Row>queryConjunct(PredicateTreeNode node, 
+	private static Operator<? extends Row> queryConjunct(PredicateTreeNode node, 
 			RelationalAlgebraExpression input, IndexLayer indexLayer, StorageLayer storageLayer)
-			throws NotLeafNodeException, NoSuchTableException, SchemaMismatchException, 
+			throws NoSuchTableException, SchemaMismatchException, 
 			InvalidPredicateException {
 					
 		/** First, get the conjunct */
-		String colName = node.getColumnName();
-		ComparisonOperator op = node.getComparisonOperator();
-		Object value = node.getValue();
+		String colName;
+		ComparisonOperator op;
+		Object value;
+		
+		try {
+			colName = node.getColumnName();
+			op = node.getComparisonOperator();
+			value = node.getValue();
+		}
+		catch (NotLeafNodeException e) {
+			throw new InvalidPredicateException();
+		}
 		
 		/** Second, try to get the Row-liked data, depending on the input type */
 		RelationalOperatorType type = input.getType();
