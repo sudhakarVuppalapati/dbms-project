@@ -14,9 +14,9 @@ public class LongBTreeMap extends BTreeMap {
 	
 	private LongBTree btree;
 
-	public LongBTreeMap(String indexDes, Table tableObj, Column colObj, boolean isRange, int k, int k_star)
+	public LongBTreeMap(String indexDes, Table tableObj, Column colObj, /*boolean isRange,*/ int k, int k_star)
 	throws SchemaMismatchException {
-		super(indexDes, tableObj, colObj, isRange);
+		super(indexDes, tableObj, colObj/*, isRange*/);
 		btree = new LongBTree(k, k_star);
 		
 		long[] colVals;
@@ -117,8 +117,8 @@ public class LongBTreeMap extends BTreeMap {
 		
 		long lowKey, highKey;
 		try {
-			lowKey = ((Long)startingKey).longValue();
-			highKey = ((Long)endingKey).longValue();
+			lowKey = (startingKey != null) ? ((Long)startingKey).longValue() : Long.MIN_VALUE;
+			highKey = (endingKey != null) ? ((Long)endingKey).longValue() : Long.MAX_VALUE;
 			if (lowKey > highKey)
 				throw new InvalidRangeException();
 		}

@@ -14,10 +14,10 @@ public class FloatBTreeMap extends BTreeMap {
 	
 	private FloatBTree btree;
 
-	public FloatBTreeMap(String indexDes, Table tableObj, Column colObj, boolean isRange, int k, int k_star) 
+	public FloatBTreeMap(String indexDes, Table tableObj, Column colObj, /*boolean isRange,*/ int k, int k_star) 
 	throws SchemaMismatchException {
 		
-		super(indexDes, tableObj, colObj, isRange);
+		super(indexDes, tableObj, colObj/*, isRange*/);
 		btree = new FloatBTree(k, k_star);
 		
 		//bulk-loading
@@ -119,8 +119,8 @@ public class FloatBTreeMap extends BTreeMap {
 		
 		float lowKey, highKey;
 		try {
-			lowKey = ((Float)startingKey).floatValue();
-			highKey = ((Float)endingKey).floatValue();
+			lowKey =  (startingKey != null) ? ((Float)startingKey).floatValue() : Float.MIN_VALUE;
+			highKey = (endingKey != null) ? ((Float)endingKey).floatValue() : Float.MAX_VALUE;
 			if (lowKey > highKey)
 				throw new InvalidRangeException();
 		}
