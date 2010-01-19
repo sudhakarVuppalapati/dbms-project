@@ -212,11 +212,15 @@ public class ObjectLeaf extends Leaf implements ObjectBTreeNode {
 
 		//while the consequent leaf contains only values smaller than the lowKey, ignore
 		//them and go further
-		while(currentLeaf!=null && currentLeaf.entries.currentSize > 0 && 
-				lowKey.compareTo(currentLeaf.entries.keys[currentLeaf.entries.currentSize-1]) > 0){
-			currentLeaf=currentLeaf.nextLeaf;
+		while(currentLeaf!=null)
+		{
+			if (currentLeaf.entries.currentSize == 0) {
+				currentLeaf = currentLeaf.nextLeaf;
+			}				
+			else if (lowKey.compareTo(currentLeaf.entries.keys[currentLeaf.entries.currentSize-1]) > 0)
+				currentLeaf=currentLeaf.nextLeaf;
+			else break;
 		}
-
 		//if we didn't reach the end 
 		if(currentLeaf!=null){
 			//in the leaf that contains the first value greater than the lowKey 

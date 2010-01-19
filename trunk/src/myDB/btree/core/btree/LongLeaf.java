@@ -212,9 +212,12 @@ public class LongLeaf extends Leaf implements LongBTreeNode {
 
 		//while the consequent leaf contains only values smaller than the lowKey, ignore
 		//them and go further
-		while(currentLeaf!=null &&  currentLeaf.entries.currentSize > 0 && 
-				currentLeaf.entries.keys[currentLeaf.entries.currentSize-1]< lowKey){
-			currentLeaf=currentLeaf.nextLeaf;
+		while(currentLeaf!=null) {
+			if (currentLeaf.entries.currentSize == 0)
+				currentLeaf = currentLeaf.nextLeaf;
+			else if (currentLeaf.entries.keys[currentLeaf.entries.currentSize-1]< lowKey)
+				currentLeaf=currentLeaf.nextLeaf;
+			else break;
 		}
 
 		//if we didn't reach the end 
