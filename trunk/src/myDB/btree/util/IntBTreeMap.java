@@ -15,9 +15,9 @@ public class IntBTreeMap extends BTreeMap {
 		
 	private IntBTree btree;
 
-	public IntBTreeMap(String indexDes, Table tableObj, Column colObj, /*boolean isRange,*/ int k, int k_star) 
+	public IntBTreeMap(String indexDes, Table tableObj, Column colObj, boolean isRange, int k, int k_star) 
 	throws SchemaMismatchException {
-		super(indexDes, tableObj, colObj/*, isRange*/);
+		super(indexDes, tableObj, colObj, isRange);
 		btree = new IntBTree(k, k_star);
 	
 		//bulk-loading

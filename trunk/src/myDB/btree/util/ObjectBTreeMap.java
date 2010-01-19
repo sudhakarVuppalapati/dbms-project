@@ -15,9 +15,9 @@ public class ObjectBTreeMap extends BTreeMap {
 	
 	private ObjectBTree btree;
 
-	public ObjectBTreeMap(String indexDes, Table tableObj, Column colObj, /*boolean isRange,*/ int k, int k_star) 
+	public ObjectBTreeMap(String indexDes, Table tableObj, Column colObj, boolean isRange, int k, int k_star) 
 	throws SchemaMismatchException {
-		super(indexDes, tableObj, colObj/*, isRange*/);
+		super(indexDes, tableObj, colObj, isRange);
 		btree = new ObjectBTree(k, k_star);
 	
 		//bulk-loading

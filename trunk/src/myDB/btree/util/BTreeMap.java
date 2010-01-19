@@ -16,13 +16,13 @@ public abstract class BTreeMap implements TreeIndex {
 	
 	private String des;
 		
-	/*private final boolean range;*/
+	private final boolean range;
 	
-	public BTreeMap(String indexDes, Table tableObj, Column colObj/*, boolean isRange*/) 
+	public BTreeMap(String indexDes, Table tableObj, Column colObj, boolean isRange) 
 	throws SchemaMismatchException {
 		des = indexDes;
 		table = (MyTable)tableObj;
-		/*range = isRange;*/
+		range = isRange;
 	}
 
 	public abstract long size();
