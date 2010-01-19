@@ -1,5 +1,6 @@
 package myDB;
 
+import java.util.HashMap;
 import java.util.Map;
 import operator.Operator;
 import metadata.Type;
@@ -12,6 +13,7 @@ import systeminterface.QueryLayer;
 import systeminterface.Row;
 import systeminterface.StorageLayer;
 import systeminterface.Table;
+import util.RelationalOperatorType;
 import exceptions.ColumnAlreadyExistsException;
 import exceptions.InvalidKeyException;
 import exceptions.InvalidPredicateException;
@@ -307,6 +309,42 @@ public class MyQueryLayer implements QueryLayer {
 		else if (query instanceof Input) 
 			return InputProcessor.query((Input)query, storageLayer);
 		return null;
+	}
+	
+	private Map<String,? extends Column> adaptedQuery(RelationalAlgebraExpression query){
+		
+		RelationalOperatorType qType=query.getType();
+		Map<String,Column> processingResult=new HashMap<String,Column>();
+		
+		
+		if(qType==RelationalOperatorType.INPUT){ 
+			Operator<Column> tableAsCols=(Operator<Column>)storageLayer.getTableByName(((Input)query).getRelationName()).getAllColumns();
+			tableAsCols.open();
+			Column c;
+			while((c=tableAsCols.next())!=null){
+				processingResult.put(c.getColumnName(), c);
+			}
+			
+			tableAsCols.close();
+			return processingResult;
+		}
+		
+		else if(qType==RelationalOperatorType.PROJECTION){
+			
+		}
+		else if(qType==RelationalOperatorType.SELECTION){
+					
+			Selection curNode=(Selection)query;
+			SelectionOperator.select(curNode.getInput(),curNode.getPredicate(),Index);
+		
+		}
+		else if(qType==RelationalOperatorType.JOIN){
+			
+		}
+		else{ // for cros
+			
+		}
+		
 	}
 
 	@Override
