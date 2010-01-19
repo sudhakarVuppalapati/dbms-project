@@ -102,16 +102,16 @@ public class MyQueryLayer implements QueryLayer {
 		 * The following code is too costly. Think about it
 		 */
 		String[] indexes, colNames = row.getColumnNames();
-		int j, i,  n = colNames.length, m = 0;
 		int[] k = ((MyTable)t).getRowID(row);
 				
 		try {
-			for (m = 0; m < k.length; m++) {
-				for (i = 0 ; i < n; i++) {
+			for (int m = 0, p = k.length; m < p; m++) {
+				for (int i = 0, n = colNames.length ; i < n; i++) {
 					indexes = indexLayer.findIndex(tableName, colNames[i]);
-					for (j = 0; j < indexes.length; j++) {
-						indexLayer.deleteFromIndex(indexes[j], row.getColumnValue(colNames[i]), k[m]);
-					}
+					if (indexes != null)
+						for (int j = 0, q = indexes.length; j < q; j++) {
+							indexLayer.deleteFromIndex(indexes[j], row.getColumnValue(colNames[i]), k[m]);
+						}
 				}	
 			}			
 			
@@ -140,15 +140,14 @@ public class MyQueryLayer implements QueryLayer {
 		Operator<Column> cols = (Operator<Column>) t.getAllColumns();
 		Column col;
 		String[] indexNames;
-		int i, n;
 		
 		try {
 			while ((col = cols.next()) != null) {
 				indexNames = indexLayer.findIndex(tableName, col.getColumnName());
-				n = indexNames.length;
-				for (i = 0; i < n; i++)
-					indexLayer.dropIndex(indexNames[i]);				
-			}
+				if (indexNames != null)
+					for (int i = 0, n = indexNames.length; i < n; i++)
+						indexLayer.dropIndex(indexNames[i]);				
+				}
 		} catch (SchemaMismatchException e) {
 			e.printStackTrace();		
 			//make nonsense to throw NoSuchTableException here
@@ -178,12 +177,12 @@ public class MyQueryLayer implements QueryLayer {
 			e1.printStackTrace();
 			throw new NoSuchColumnException();
 		}
-		int i, n = indexNames.length;
-		
+				
 		try {
-			for (i = 0; i < n; i++)
-				indexLayer.dropIndex(indexNames[i]);
-		} catch (NoSuchIndexException e) {
+			if (indexNames != null)
+				for (int i = 0, n = indexNames.length; i < n; i++)
+					indexLayer.dropIndex(indexNames[i]);
+			} catch (NoSuchIndexException e) {
 			e.printStackTrace();
 			throw new NoSuchColumnException();
 		}	
@@ -203,18 +202,17 @@ public class MyQueryLayer implements QueryLayer {
 		
 		try {
 			String[] colNames = row.getColumnNames();
-			int i =0, n = colNames.length, j = 0;
-			Column col;
 			String[] indexes;
 			
-			//Might need a better solution
+			//TODO Might need a better solution
 			
 			try {
-				for (; i < n; i++) {
+				for (int i = 0, n = colNames.length; i < n; i++) {
 					indexes = indexLayer.findIndex(tableName, colNames[i]);
-					for (; j < indexes.length; j++) {
-						indexLayer.insertIntoIndex(indexes[j], row.getColumnValue(colNames[i]), size);
-					}
+					if (indexes != null)
+						for (int j = 0, m = indexes.length; j < m; j++) {
+							indexLayer.insertIntoIndex(indexes[j], row.getColumnValue(colNames[i]), size);
+						}
 				}
 			} catch (NoSuchIndexException e) {	
 				e.printStackTrace();
@@ -267,17 +265,17 @@ public class MyQueryLayer implements QueryLayer {
 		 * The following code is too costly. Think about it
 		 */
 		String[] indexes, colNames = oldRow.getColumnNames();
-		int j, i,  n = colNames.length, m = 0;
 		int[] k = ((MyTable)t).getRowID(oldRow);
 				
 		try {
-			for (m = 0; m < k.length; m++) {
-				for (i = 0 ; i < n; i++) {
+			for (int m = 0, p = k.length; m < p; m++) {
+				for (int i = 0, n = colNames.length ; i < n; i++) {
 					indexes = indexLayer.findIndex(tableName, colNames[i]);
-					for (j = 0; j < indexes.length; j++) {
-						indexLayer.deleteFromIndex(indexes[j], oldRow.getColumnValue(colNames[i]), k[m]);
-						indexLayer.insertIntoIndex(indexes[j], newRow.getColumnValue(colNames[i]), k[m]);
-					}
+					if (indexes != null)
+						for (int j = 0, q = indexes.length; j < q; j++) {
+							indexLayer.deleteFromIndex(indexes[j], oldRow.getColumnValue(colNames[i]), k[m]);
+							indexLayer.insertIntoIndex(indexes[j], newRow.getColumnValue(colNames[i]), k[m]);
+						}
 				}	
 			}			
 			
@@ -304,9 +302,9 @@ public class MyQueryLayer implements QueryLayer {
 	InvalidPredicateException {
 		
 		//TODO implement optimization here. This is naive and incomplete
-		if (query instanceof Selection)
+		if (query.getType() == RelationalOperatorType.SELECTION)
 			return SelectionProcessor.query((Selection)query, indexLayer, storageLayer);
-		else if (query instanceof Input) 
+		else if (query.getType() == RelationalOperatorType.INPUT) 
 			return InputProcessor.query((Input)query, storageLayer);
 		return null;
 	}
@@ -335,7 +333,7 @@ public class MyQueryLayer implements QueryLayer {
 		else if(qType==RelationalOperatorType.SELECTION){
 					
 			Selection curNode=(Selection)query;
-			SelectionOperator.select(curNode.getInput(),curNode.getPredicate(),Index);
+			SelectionOperator.select(adaptedQuery(curNode.getInput()), curNode.getPredicate(), Index);
 		
 		}
 		else if(qType==RelationalOperatorType.JOIN){
