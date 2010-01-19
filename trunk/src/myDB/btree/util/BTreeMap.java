@@ -67,7 +67,7 @@ public abstract class BTreeMap implements TreeIndex {
 
 	@Override
 	public boolean supportRangeQueries() {
-		return /*range;*/true;
+		return range;
 	}
 
 	@Override
