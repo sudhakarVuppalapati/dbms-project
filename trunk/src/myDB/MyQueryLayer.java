@@ -3,7 +3,9 @@ package myDB;
 import java.util.Map;
 import operator.Operator;
 import metadata.Type;
+import relationalalgebra.Input;
 import relationalalgebra.RelationalAlgebraExpression;
+import relationalalgebra.Selection;
 import systeminterface.Column;
 import systeminterface.IndexLayer;
 import systeminterface.QueryLayer;
@@ -12,6 +14,7 @@ import systeminterface.StorageLayer;
 import systeminterface.Table;
 import exceptions.ColumnAlreadyExistsException;
 import exceptions.InvalidKeyException;
+import exceptions.InvalidPredicateException;
 import exceptions.NoSuchColumnException;
 import exceptions.NoSuchIndexException;
 import exceptions.NoSuchRowException;
@@ -28,7 +31,7 @@ public class MyQueryLayer implements QueryLayer {
 	private final StorageLayer storageLayer;
 
 	private final IndexLayer indexLayer;
-
+	
 	/**
 	 * 
 	 * Constructor, can only know about lower layers. Please do not modify this
@@ -43,8 +46,7 @@ public class MyQueryLayer implements QueryLayer {
 	public MyQueryLayer(StorageLayer storageLayer, IndexLayer indexLayer) {
 
 		this.storageLayer = storageLayer;
-		this.indexLayer = indexLayer;
-
+		this.indexLayer = indexLayer;		
 	}
 
 	@Override
@@ -295,13 +297,22 @@ public class MyQueryLayer implements QueryLayer {
 	}
 	
 	@Override
-	public Operator<? extends Row> query(RelationalAlgebraExpression query) {
-		// TODO Auto-generated method stub
+	public Operator<? extends Row> query(RelationalAlgebraExpression query) 
+	throws NoSuchTableException, SchemaMismatchException, NoSuchColumnException, 
+	InvalidPredicateException {
+		
+		//TODO implement optimization here. This is naive and incomplete
+		if (query instanceof Selection)
+			return SelectionProcessor.query((Selection)query, indexLayer, storageLayer);
+		else if (query instanceof Input) 
+			return InputProcessor.query((Input)query, storageLayer);
 		return null;
 	}
 
 	@Override
-	public String explain(RelationalAlgebraExpression query) {
+	public String explain(RelationalAlgebraExpression query)
+	throws NoSuchTableException, SchemaMismatchException, NoSuchColumnException, 
+	InvalidPredicateException{
 		// TODO Auto-generated method stub
 		return null;
 	}
