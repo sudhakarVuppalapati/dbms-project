@@ -192,6 +192,8 @@ public class ObjectLeaf extends Leaf implements ObjectBTreeNode {
 
 	public void removeRange(Comparable lowKey, Comparable highKey) {
 		int currentSize = entries.currentSize;
+		if (currentSize == 0)
+			return;
 		int pos = ObjectLeafArrayMap.binarySearch(entries.keys, lowKey, 0, currentSize - 1);
 
 		Comparable tmp;
@@ -206,11 +208,12 @@ public class ObjectLeaf extends Leaf implements ObjectBTreeNode {
 		if(pos == this.entries.currentSize){
 			currentLeaf=this.nextLeaf;
 		}
-
+		
 
 		//while the consequent leaf contains only values smaller than the lowKey, ignore
 		//them and go further
-		while(currentLeaf!=null && lowKey.compareTo(currentLeaf.entries.keys[currentLeaf.entries.currentSize-1]) > 0){
+		while(currentLeaf!=null && currentLeaf.entries.currentSize > 0 && 
+				lowKey.compareTo(currentLeaf.entries.keys[currentLeaf.entries.currentSize-1]) > 0){
 			currentLeaf=currentLeaf.nextLeaf;
 		}
 

@@ -193,6 +193,8 @@ public class FloatLeaf extends Leaf implements FloatBTreeNode {
 
 	public void removeRange(float lowKey, float highKey) {
 		int currentSize = entries.currentSize;
+		if (currentSize == 0)
+			return;
 		int pos = FloatLeafArrayMap.binarySearch(entries.keys, lowKey, 0, currentSize - 1);
 
 		float tmp;
@@ -211,7 +213,8 @@ public class FloatLeaf extends Leaf implements FloatBTreeNode {
 
 		//while the consequent leaf contains only values smaller than the lowKey, ignore
 		//them and go further
-		while(currentLeaf!=null && currentLeaf.entries.keys[currentLeaf.entries.currentSize-1]< lowKey){
+		while(currentLeaf!=null &&  currentLeaf.entries.currentSize > 0 && 
+				currentLeaf.entries.keys[currentLeaf.entries.currentSize-1]< lowKey){
 			currentLeaf=currentLeaf.nextLeaf;
 		}
 
