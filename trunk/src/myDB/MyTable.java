@@ -514,7 +514,10 @@ public class MyTable implements Table {
 					colValue=r.getColumnValue(attr);
 					columnType=r.getColumnType(attr);
 					
-					if(co==ComparisonOperator.EQ){
+					if (MyColumn.check(colValue, value, columnType, co))
+						filteredRows.add(r);
+					
+					/*if(co==ComparisonOperator.EQ){
 						if(colValue==null && value==null) filteredRows.add(r);
 						else if(colValue.equals(value)) filteredRows.add(r);
 					}
@@ -711,7 +714,7 @@ public class MyTable implements Table {
 							}
 							
 						}
-					}
+					}*/
 					
 				}
 			}
