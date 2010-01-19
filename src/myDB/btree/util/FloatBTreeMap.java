@@ -14,10 +14,10 @@ public class FloatBTreeMap extends BTreeMap {
 	
 	private FloatBTree btree;
 
-	public FloatBTreeMap(String indexDes, Table tableObj, Column colObj, /*boolean isRange,*/ int k, int k_star) 
+	public FloatBTreeMap(String indexDes, Table tableObj, Column colObj, boolean isRange, int k, int k_star) 
 	throws SchemaMismatchException {
 		
-		super(indexDes, tableObj, colObj/*, isRange*/);
+		super(indexDes, tableObj, colObj, isRange);
 		btree = new FloatBTree(k, k_star);
 		
 		//bulk-loading
