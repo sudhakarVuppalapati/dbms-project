@@ -236,10 +236,7 @@ public class IntLeaf extends Leaf implements IntBTreeNode {
 	}
 	
 	public void removeRange(int lowKey, int highKey) {
-		int currentSize = entries.currentSize;
-		if (currentSize == 0)
-			return;
-		int pos = IntLeafArrayMap.binarySearch(entries.keys, lowKey, 0, currentSize - 1);
+		int pos = IntLeafArrayMap.binarySearch(entries.keys, lowKey, 0, entries.currentSize - 1);
 
 		int tmp;
 
