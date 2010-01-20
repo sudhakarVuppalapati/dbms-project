@@ -191,10 +191,7 @@ public class LongLeaf extends Leaf implements LongBTreeNode {
 	}
 
 	public void removeRange(long lowKey, long highKey) {
-		int currentSize = entries.currentSize;
-		if (currentSize == 0)
-			return;
-		int pos = LongLeafArrayMap.binarySearch(entries.keys, lowKey, 0, currentSize - 1);
+		int pos = LongLeafArrayMap.binarySearch(entries.keys, lowKey, 0, entries.currentSize - 1);
 
 		long tmp;
 

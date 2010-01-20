@@ -59,7 +59,7 @@ public class ObjectLeafArrayMap extends LeafArrayMap {
 				// key found: search for first occurrence linearly
 				// this search is necessary in the presence of duplicates
 				int pos = mid - 1;
-				while (pos >= from && a[pos] == key) {
+				while (pos >= from && a[pos].equals(key)) {
 					pos--;
 				}
 				// return last valid position
