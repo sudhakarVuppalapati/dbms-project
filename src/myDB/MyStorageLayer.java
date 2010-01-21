@@ -38,7 +38,7 @@ import exceptions.TableAlreadyExistsException;
  */
 public class MyStorageLayer implements StorageLayer,Serializable {
 
-	private HashMap<String,Table> tables;
+	private Map<String,Table> tables;
 
 	private static final String DELIM = "/";
 
@@ -47,7 +47,7 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 	 * Constructor,
 	 */
 	public MyStorageLayer() {
-		tables=new HashMap<String,Table>();
+		tables = new HashMap<String,Table>();
 	}
 
 	@Override
@@ -57,8 +57,6 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 			throw new TableAlreadyExistsException();
 
 		Table tab=new MyTable(tableName,schema);
-
-
 
 		tables.put(tableName,tab);
 
@@ -82,7 +80,7 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 	}
 
 	@Override
-	public Operator<Table> getTables() {
+	public Operator<Table> getTables() { 
 		// TODO Auto-generated method stub
 		return new MyOperator<Table>(tables.values());
 	}
@@ -378,14 +376,16 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 		BufferedOutputStream bos = null;
 		ObjectOutputStream oos = null; 
 		DataOutputStream dos = null;
-
-		DataOutputStream metaOutput = new DataOutputStream (
-				new BufferedOutputStream (new FileOutputStream (
-						MyPersistentExtent.TABLES_METADATA_FILE)));
-
-		table.open();
-
+		
+		DataOutputStream metaOutput;
+		 
 		try {
+			metaOutput = new DataOutputStream (
+					new BufferedOutputStream (new FileOutputStream (
+							MyPersistentExtent.TABLES_METADATA_FILE)));
+
+			table.open();
+
 			while ((t = table.next()) != null) {
 				tmpCol = tmpRow = 0;
 				empty = false;
@@ -591,24 +591,29 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 				metaOutput.writeUTF(DELIM);
 				metaOutput.close();
 			}
+			table.close();
+			
+			if (empty) {
+				new File(MyPersistentExtent.TABLES_METADATA_FILE).delete();
+
+				file = new File(MyPersistentExtent.DISK).listFiles(
+						new FilenameFilter() {
+							public boolean accept(File dir, String name) {
+								return name.endsWith(MyPersistentExtent.TABLE_EXT);
+							}
+						});
+				for (File fileItem : file)
+					fileItem.delete();
+			}
 		}
 		catch (SchemaMismatchException sme) {
 			throw new IOException();
 		}
-		table.close();
-
-		if (empty) {
-			new File(MyPersistentExtent.TABLES_METADATA_FILE).delete();
-
-			file = new File(MyPersistentExtent.DISK).listFiles(
-					new FilenameFilter() {
-						public boolean accept(File dir, String name) {
-							return name.endsWith(MyPersistentExtent.TABLE_EXT);
-						}
-					});
-			for (File fileItem : file)
-				fileItem.delete();
+		catch (FileNotFoundException fnfe) {
+			return;
 		}
+
+		
 	}
 
 	private static String buildFileName(String input) {
@@ -647,7 +652,7 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 			catch (ClassCastException cce) {
 				return Const.DEFAULT_TABLE_SIZE;
 			}
-		}
+		} 
 		else return Const.DEFAULT_TABLE_SIZE;
 	}
 
