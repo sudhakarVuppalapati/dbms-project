@@ -1,6 +1,7 @@
 package myDB;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -383,65 +384,72 @@ public class MyIndexLayer implements IndexLayer {
 	 */
 	@Override
 	public void rebuildAllIndexes() throws IOException {
-		FileInputStream fis = new FileInputStream(MyPersistentExtent.INDEXES_METADATA_FILE);
+		FileInputStream fis;	
+		try {
+			fis = new FileInputStream(MyPersistentExtent.INDEXES_METADATA_FILE);
+		}
+		catch (FileNotFoundException ex) {
+			return;
+		}
 		int i = 0;
 		int length = fis.available();
-		final byte[] bytes = new byte[length];
 		
-		fis.read(bytes);
-		fis.close();
-		
-		String str = new String(bytes);
-		String[] des = str.split("$");		
-		length = des.length;
-		
-		int k, a, y;
-		char indexType;
-		String tmp, indexName;
-		Table t;
-		Column c;
-		Index index;
-		List<String> list;
-				
-		try {
-			for (i = 0; i < length; i++) {
-				tmp = des[i];
-				k = tmp.indexOf('-');
-				a = tmp.indexOf('-', k);
-				y = tmp.indexOf('-', a);
-				indexName = tmp.substring(0, k);
-				
-				
-				t = storageLayer.getTableByName(tmp.substring(k + 1, a));
-				c = t.getColumnByName(tmp.substring(a + 1, y));
-		
-				indexType = tmp.charAt(y + 1);
-		
-				index = newIndex(tmp, t, c, indexType, true);
+		if (length > 0) {
+			final byte[] bytes = new byte[length];	
+			fis.read(bytes);
+			fis.close();				
+			String str = new String(bytes);
+			String[] des = str.split("$");		
+			length = des.length;
 			
-				namedIndexes.put(indexName, index);
+			int k, a, y;
+			char indexType;
+			String tmp, indexName;
+			Table t;
+			Column c;
+			Index index;
+			List<String> list;
+					
+			try {
+				for (i = 0; i < length; i++) {
+					tmp = des[i];
+					k = tmp.indexOf('-');
+					a = tmp.indexOf('-', k);
+					y = tmp.indexOf('-', a);
+					indexName = tmp.substring(0, k);
+					
+					
+					t = storageLayer.getTableByName(tmp.substring(k + 1, a));
+					c = t.getColumnByName(tmp.substring(a + 1, y));
+			
+					indexType = tmp.charAt(y + 1);
+			
+					index = newIndex(tmp, t, c, indexType, true);
 				
-				if (colIndexes.containsKey(c)) {
-					list = colIndexes.get(c);
-					list.add(indexName);
-				}
-				else {
-					list = new ArrayList<String>();
-					list.add(indexName);
-					colIndexes.put(c, list);
+					namedIndexes.put(indexName, index);
+					
+					if (colIndexes.containsKey(c)) {
+						list = colIndexes.get(c);
+						list.add(indexName);
+					}
+					else {
+						list = new ArrayList<String>();
+						list.add(indexName);
+						colIndexes.put(c, list);
+					}
 				}
 			}
-		}
-		catch (NoSuchTableException nste) {
-			throw new IOException();
-		}
-		catch (NoSuchColumnException nsce) {
-			throw new IOException();
-		}
-		catch (IllegalArgumentException iae) {
-			throw new IOException();
-		} catch (SchemaMismatchException e) {
-			throw new IOException();
+			catch (NoSuchTableException nste) {
+				throw new IOException();
+			}
+			catch (NoSuchColumnException nsce) {
+				throw new IOException();
+			}
+			catch (IllegalArgumentException iae) {
+				throw new IOException();
+			} catch (SchemaMismatchException e) {
+				throw new IOException();
+			}
 		}
 	}
 
@@ -449,7 +457,15 @@ public class MyIndexLayer implements IndexLayer {
 	public void storeIndexInformation() throws IOException {
 		String str = describeAllIndexes();
 		byte[] bytes = str.getBytes();
-		FileOutputStream fos = new FileOutputStream(MyPersistentExtent.INDEXES_METADATA_FILE);
+		
+		FileOutputStream fos;
+		
+		try {
+			fos = new FileOutputStream(MyPersistentExtent.INDEXES_METADATA_FILE);
+		}
+		catch (FileNotFoundException ex) {
+			return;
+		}
 		fos.write(bytes);
 		fos.close();
 }
