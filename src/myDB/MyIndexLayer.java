@@ -457,17 +457,21 @@ public class MyIndexLayer implements IndexLayer {
 	public void storeIndexInformation() throws IOException {
 		String str = describeAllIndexes();
 		byte[] bytes = str.getBytes();
+		boolean empty = (str != null && str.length() > 0) ? false : true;
 		
 		FileOutputStream fos;
 		
 		try {
-			fos = new FileOutputStream(MyPersistentExtent.INDEXES_METADATA_FILE);
+			if(!empty){
+				fos = new FileOutputStream(MyPersistentExtent.INDEXES_METADATA_FILE);
+				fos.write(bytes);
+				fos.close();
+			}
 		}
 		catch (FileNotFoundException ex) {
 			return;
 		}
-		fos.write(bytes);
-		fos.close();
+		
 }
 
 	/**
