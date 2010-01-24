@@ -30,5 +30,4 @@ public abstract class RelationalAlgebraExpression {
 		return this.operatorType;
 	}
 
-
 }
