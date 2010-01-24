@@ -14,7 +14,7 @@ public class Projection extends RelationalAlgebraExpression {
 	private String[] projectionAttributes;
 
 	/**
-	 * @param input 
+	 * @param input
 	 * @param projectionAttributes
 	 *            An array of the names of the attributes that will be
 	 *            projected.
@@ -34,14 +34,14 @@ public class Projection extends RelationalAlgebraExpression {
 		this.projectionAttributes = projectionAttributes;
 
 	}
-	
+
 	/**
 	 * @return The input relation.
 	 */
-	public RelationalAlgebraExpression getInput(){
+	public RelationalAlgebraExpression getInput() {
 
 		return this.input;
-	
+
 	}
 
 	/**
