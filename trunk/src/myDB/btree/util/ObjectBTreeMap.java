@@ -146,8 +146,8 @@ public class ObjectBTreeMap extends BTreeMap {
 			throws InvalidKeyException, InvalidRangeException {
 		Comparable lowKey, highKey;
 		try {
-			lowKey = (Comparable)startingKey;
-			highKey = (Comparable)endingKey;
+			lowKey = (startingKey != null) ? (Comparable)startingKey : Infinity.MIN_VALUE;
+			highKey = (endingKey != null) ? (Comparable)endingKey : Infinity.MIN_VALUE;
 			if (lowKey.compareTo(highKey) > 0)
 				throw new InvalidRangeException();
 		}

@@ -143,8 +143,8 @@ public class FloatBTreeMap extends BTreeMap {
 			throws InvalidKeyException, InvalidRangeException {
 		float lowKey, highKey;
 		try {
-			lowKey = ((Float)startingKey).floatValue();
-			highKey = ((Float)endingKey).floatValue();
+			lowKey =  (startingKey != null) ? ((Float)startingKey).floatValue() : Float.MIN_VALUE;
+			highKey = (endingKey != null) ? ((Float)endingKey).floatValue() : Float.MAX_VALUE;
 			if (lowKey > highKey)
 				throw new InvalidRangeException();
 		}

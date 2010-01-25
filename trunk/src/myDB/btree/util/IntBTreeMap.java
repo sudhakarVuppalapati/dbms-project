@@ -143,9 +143,8 @@ public class IntBTreeMap extends BTreeMap {
 			throws InvalidKeyException, InvalidRangeException {
 		int lowKey, highKey;
 		try {
-			lowKey = ((Integer)startingKey).intValue();
-			highKey = ((Integer)endingKey).intValue();
-			if (lowKey > highKey)
+			lowKey = (startingKey != null) ? ((Integer)startingKey).intValue() : Integer.MIN_VALUE;
+			highKey = (endingKey != null) ? ((Integer)endingKey).intValue() : Integer.MAX_VALUE;	if (lowKey > highKey)
 				throw new InvalidRangeException();
 		}
 		catch (ClassCastException cce) {
