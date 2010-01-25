@@ -309,7 +309,7 @@ public class MyQueryLayer implements QueryLayer {
 		return null;
 	}
 	
-	private Map<String,? extends Column> adaptedQuery(RelationalAlgebraExpression query){
+	/*private Map<String,? extends Column> adaptedQuery(RelationalAlgebraExpression query){
 		
 		RelationalOperatorType qType=query.getType();
 		Map<String,Column> processingResult=new HashMap<String,Column>();
@@ -343,7 +343,7 @@ public class MyQueryLayer implements QueryLayer {
 			
 		}
 		
-	}
+	}*/
 
 	@Override
 	public String explain(RelationalAlgebraExpression query)
