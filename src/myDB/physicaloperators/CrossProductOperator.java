@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import metadata.Type;
 import metadata.Types;
+import myDB.MyColumn;
 import myDB.MyDoubleColumn;
 import myDB.MyFloatColumn;
 import myDB.MyIntColumn;
@@ -114,7 +115,7 @@ public class CrossProductOperator {
 		}
 		else throw new NoSuchTableException();
 		
-		List<Column> colList = new ArrayList<Column>();
+		/*List<Column> colList = new ArrayList<Column>();*/
 		
 		/** IMPORTANT NOTE: data1 is duplicated rows by rows. Data2 is duplicated blocks by blocks.
 		 * Then data1 is modified and output */
@@ -133,7 +134,8 @@ public class CrossProductOperator {
 						for (int j = 0; j < size2; j++)
 							data[k++] = cells1[i];
 				}
-				tmpCol = new MyIntColumn(col.getColumnName(), type, data);
+				/*tmpCol = new MyIntColumn(col.getColumnName(), type, data);*/
+				((MyColumn)col).setData(data, k);
 			}
 			else if (type == Types.getFloatType()) {
 				float[] data = new float[size1 * size2];
@@ -144,7 +146,8 @@ public class CrossProductOperator {
 						for (int j = 0; j < size2; j++)
 							data[k++] = cells1[i];
 				}
-				tmpCol = new MyFloatColumn(col.getColumnName(), type, data);
+				/*tmpCol = new MyFloatColumn(col.getColumnName(), type, data);*/
+				((MyColumn)col).setData(data, k);
 			}
 			else if (type == Types.getDoubleType()) {
 				double[] data = new double[size1 * size2];
@@ -155,7 +158,8 @@ public class CrossProductOperator {
 						for (int j = 0; j < size2; j++)
 							data[k++] = cells1[i];
 				}
-				tmpCol = new MyDoubleColumn(col.getColumnName(), type, data);
+				/*tmpCol = new MyDoubleColumn(col.getColumnName(), type, data);*/
+				((MyColumn)col).setData(data, k);
 			}
 			else if (type == Types.getLongType()) {
 				long[] data = new long[size1 * size2];
@@ -166,7 +170,8 @@ public class CrossProductOperator {
 						for (int j = 0; j < size2; j++)
 							data[k++] = cells1[i];
 				}
-				tmpCol = new MyLongColumn(col.getColumnName(), type, data);
+				/*tmpCol = new MyLongColumn(col.getColumnName(), type, data);*/
+				((MyColumn)col).setData(data, k);
 			}
 			else {
 				List data = new ArrayList();
@@ -178,9 +183,10 @@ public class CrossProductOperator {
 							//Reference, not copying
 							data.add(cells1[i]);
 				}
-				tmpCol = new MyObjectColumn(col.getColumnName(), type, data);
+				/*tmpCol = new MyObjectColumn(col.getColumnName(), type, data);*/
+				((MyColumn)col).setData(data, k);
 			}
-			colList.add(tmpCol);
+			/*colList.add(tmpCol);*/
 		}
 		
 		//Step 2: Duplicating data2
@@ -196,7 +202,8 @@ public class CrossProductOperator {
 						if (cells2[j] != Integer.MAX_VALUE)
 							data[k++] = cells2[j];
 					}
-				tmpCol = new MyIntColumn(col.getColumnName(), type, data);
+				/*tmpCol = new MyIntColumn(col.getColumnName(), type, data);*/
+				((MyColumn)col).setData(data, k);
 			}
 			else if (type == Types.getFloatType()) {
 				float[] data = new float[size1 * size2];
@@ -207,7 +214,8 @@ public class CrossProductOperator {
 						if (cells2[j] != Float.MAX_VALUE)
 							data[k++] = cells2[j];
 					}
-				tmpCol = new MyFloatColumn(col.getColumnName(), type, data);
+				/*tmpCol = new MyFloatColumn(col.getColumnName(), type, data);*/
+				((MyColumn)col).setData(data, k);
 			}
 			else if (type == Types.getDoubleType()) {
 				double[] data = new double[size1 * size2];
@@ -218,7 +226,8 @@ public class CrossProductOperator {
 						if (cells2[j] != Double.MAX_VALUE)
 							data[k++] = cells2[j];
 					}
-				tmpCol = new MyDoubleColumn(col.getColumnName(), type, data);
+				/*tmpCol = new MyDoubleColumn(col.getColumnName(), type, data);*/
+				((MyColumn)col).setData(data, k);
 			}
 			else if (type == Types.getLongType()) {
 				long[] data = new long[size1 * size2];
@@ -229,7 +238,8 @@ public class CrossProductOperator {
 						if (cells2[j] != Long.MAX_VALUE)
 							data[k++] = cells2[j];
 					}
-				tmpCol = new MyLongColumn(col.getColumnName(), type, data);
+				/*tmpCol = new MyLongColumn(col.getColumnName(), type, data);*/
+				((MyColumn)col).setData(data, k);
 			}
 			else {
 				List data = new ArrayList();
@@ -240,17 +250,19 @@ public class CrossProductOperator {
 						if (cells2[j] != MyNull.NULLOBJ)
 							data.add(cells2[j]);
 					}
-				tmpCol = new MyObjectColumn(col.getColumnName(), type, data);
+				/*tmpCol = new MyObjectColumn(col.getColumnName(), type, data);*/
+				((MyColumn)col).setData(data, k);
 			}
-			colList.add(tmpCol);
+			/*colList.add(tmpCol);*/
+			data1.put(col.getColumnName(), col);
 		}
 		
 		//Possible optmization: Creating NewHashMap is faster than clearing the existing one
-		data1.clear();
+		//data1.clear();
 		
-		for (Column col : colList) {
+		/*for (Column col : colList) {
 			data1.put(col.getColumnName(), col);
-		}
+		}*/
 		return data1;
 	}
 }
