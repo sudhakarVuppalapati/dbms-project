@@ -37,5 +37,21 @@ public class TempRow implements Row {
 			throws NoSuchColumnException {
 		return data.get(columnName);
 	}
+	
+	public String toString() {
+		StringBuilder str = new StringBuilder();
+		String names[] = schema.keySet().toArray(new String[0]);
+		
+		for (int i = 0; i < names.length; i++) {
+			try {
+				str.append(getColumnValue(names[i].toString()));
+			}
+			catch (NoSuchColumnException ex) {
+				ex.printStackTrace();
+			}
+			str.append("/t");
+		}
+		return str.toString();
+	}
 
 }
