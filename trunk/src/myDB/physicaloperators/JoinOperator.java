@@ -245,7 +245,7 @@ public class JoinOperator {
 				
 				//set the new array as the new data of the column
 				((MyColumn)c).setData(newColData,k);
-				input1.put("i."+c.getColumnName(),c); //"i." means inner table
+				input1.put(c.getColumnName(),c); //"i." means inner table
 			}
 			else if(colType==Types.getLongType()){
 				long[] newColData=new long[k]; // k is the cardinality of the join
@@ -255,7 +255,7 @@ public class JoinOperator {
 					newColData[i]=longArrLeft[leftRows[i]];
 				}
 				((MyColumn)c).setData(newColData,k);
-				input1.put("i."+c.getColumnName(),c);
+				input1.put(c.getColumnName(),c);
 			}
 			else if(colType==Types.getFloatType()){
 				float[] newColData=new float[k]; // k is the cardinality of the join
@@ -265,7 +265,7 @@ public class JoinOperator {
 					newColData[i]=floatArrLeft[leftRows[i]];
 				}
 				((MyColumn)c).setData(newColData,k);
-				input1.put("i."+c.getColumnName(),c);
+				input1.put(c.getColumnName(),c);
 			}
 			else if(colType==Types.getDoubleType()){
 				double[] newColData=new double[k]; // k is the cardinality of the join
@@ -275,7 +275,7 @@ public class JoinOperator {
 					newColData[i]=floatArrLeft[leftRows[i]];
 				}
 				((MyColumn)c).setData(newColData,k);
-				input1.put("i."+c.getColumnName(),c);
+				input1.put(c.getColumnName(),c);
 			}
 			else { // if Object type
 				List newColData=new ArrayList(k); // k is the cardinality of the join
@@ -285,7 +285,7 @@ public class JoinOperator {
 					newColData.add(i,dateArrLeft[leftRows[i]]);
 				}
 				((MyColumn)c).setData(newColData,k);
-				input1.put("i."+c.getColumnName(),c);
+				input1.put(c.getColumnName(),c);
 			}
 			
 		}
