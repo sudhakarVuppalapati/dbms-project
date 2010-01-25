@@ -243,7 +243,7 @@ public class JoinOperator {
 				//copy from the old array of the column
 				intArrLeft=(int[])c.getDataArrayAsObject();
 				for(i=0;i<k;i++){
-					newColData[i]=intArrLeft[leftRows[i]];
+					newColData[i]=intArrLeft[rightRows[i]];
 				}
 				
 				//set the new array as the new data of the column
@@ -255,7 +255,7 @@ public class JoinOperator {
 				
 				longArrLeft=(long[])c.getDataArrayAsObject();
 				for(i=0;i<k;i++){
-					newColData[i]=longArrLeft[leftRows[i]];
+					newColData[i]=longArrLeft[rightRows[i]];
 				}
 				((MyColumn)c).setData(newColData,k);
 				input1.put(c.getColumnName(),c);
@@ -265,7 +265,7 @@ public class JoinOperator {
 				
 				floatArrLeft=(float[])c.getDataArrayAsObject();
 				for(i=0;i<k;i++){
-					newColData[i]=floatArrLeft[leftRows[i]];
+					newColData[i]=floatArrLeft[rightRows[i]];
 				}
 				((MyColumn)c).setData(newColData,k);
 				input1.put(c.getColumnName(),c);
@@ -275,7 +275,7 @@ public class JoinOperator {
 				
 				doubleArrLeft=(double[])c.getDataArrayAsObject();
 				for(i=0;i<k;i++){
-					newColData[i]=floatArrLeft[leftRows[i]];
+					newColData[i]=floatArrLeft[rightRows[i]];
 				}
 				((MyColumn)c).setData(newColData,k);
 				input1.put(c.getColumnName(),c);
@@ -285,7 +285,9 @@ public class JoinOperator {
 				
 				dateArrLeft=(Object[])c.getDataArrayAsObject();
 				for(i=0;i<k;i++){
-					newColData.add(i,dateArrLeft[leftRows[i]]);
+					//System.out.println("LeftRows: "+leftRows[i]);
+					//System.out.println("ArrLeft: "+dateArrLeft[leftRows[i]]);
+					newColData.add(i,dateArrLeft[rightRows[i]]);
 				}
 				((MyColumn)c).setData(newColData,k);
 				input1.put(c.getColumnName(),c);
