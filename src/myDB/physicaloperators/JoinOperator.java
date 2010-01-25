@@ -61,7 +61,10 @@ public class JoinOperator {
 		String str1,str2;
 		
 		//aux arrays to maintain the rowIds from the two tables
-		int crossProdSize=leftCol.getRowCount() * rightCol.getRowCount();
+		
+		int leftColSize=leftCol.getRowCount();
+		int rightColSize=rightCol.getRowCount();
+		int crossProdSize=leftColSize * rightColSize;
 		int leftRows[]=new int[crossProdSize]; // the size is bigger than needed
 		int rightRows[]=new int[crossProdSize];// but this is the only way
 		
@@ -76,11 +79,11 @@ public class JoinOperator {
 		
 		colType=leftCol.getColumnType();
 		
-		if(colType==Types.getIntegerType()){
-			intArrLeft=(int[])(leftCol.getDataArrayAsObject());
-			intArrRight=(int[])(rightCol.getDataArrayAsObject());
-			for(i=0;i<intArrLeft.length;i++)
-				for(j=0;j<intArrRight.length;j++){
+		if(colType == Types.getIntegerType()){
+			intArrLeft = (int[])(leftCol.getDataArrayAsObject());
+			intArrRight = (int[])(rightCol.getDataArrayAsObject());
+			for(i = 0;i < leftColSize;i++)
+				for(j = 0;j < rightColSize;j++){
 					if(intArrLeft[i]!=Integer.MAX_VALUE &&
 							intArrRight[j]!=Integer.MAX_VALUE &&
 							intArrLeft[i]==intArrRight[j]){ 
@@ -92,8 +95,8 @@ public class JoinOperator {
 		else if(colType== Types.getLongType()){
 			longArrLeft=(long[])(leftCol.getDataArrayAsObject());
 			longArrRight=(long[])(rightCol.getDataArrayAsObject());
-			for(i=0;i<longArrLeft.length;i++)
-				for(j=0;j<longArrRight.length;j++){
+			for(i=0;i<leftColSize;i++)
+				for(j=0;j<rightColSize;j++){
 					if(longArrLeft[i]!=Long.MAX_VALUE &&
 							longArrRight[j]!=Long.MAX_VALUE &&
 							longArrLeft[i]==longArrRight[j]){ 
@@ -105,8 +108,8 @@ public class JoinOperator {
 		else if(colType== Types.getFloatType()){
 			floatArrLeft=(float[])(leftCol.getDataArrayAsObject());
 			floatArrRight=(float[])(rightCol.getDataArrayAsObject());
-			for(i=0;i<floatArrLeft.length;i++)
-				for(j=0;j<floatArrRight.length;j++){
+			for(i=0;i<leftColSize;i++)
+				for(j=0;j<rightColSize;j++){
 					if(floatArrLeft[i]!=Float.MAX_VALUE &&
 							floatArrRight[j]!=Float.MAX_VALUE &&
 							floatArrLeft[i]==floatArrRight[j]){ 
@@ -118,8 +121,8 @@ public class JoinOperator {
 		else if(colType== Types.getDoubleType()){
 			doubleArrLeft=(double[])(leftCol.getDataArrayAsObject());
 			doubleArrRight=(double[])(rightCol.getDataArrayAsObject());
-			for(i=0;i<doubleArrLeft.length;i++)
-				for(j=0;j<doubleArrRight.length;j++){
+			for(i=0;i<leftColSize;i++)
+				for(j=0;j<rightColSize;j++){
 					if(doubleArrLeft[i]!=Double.MAX_VALUE &&
 							doubleArrRight[j]!=Double.MAX_VALUE &&
 							doubleArrLeft[i]==doubleArrRight[j]){ 
@@ -131,8 +134,8 @@ public class JoinOperator {
 		else if(colType== Types.getDateType()){
 			dateArrLeft=(Object[])(leftCol.getDataArrayAsObject());
 			dateArrRight=(Object[])(rightCol.getDataArrayAsObject());
-			for(i=0;i<dateArrLeft.length;i++)
-				for(j=0;j<dateArrRight.length;j++){
+			for(i=0;i<leftColSize;i++)
+				for(j=0;j<rightColSize;j++){
 					if(dateArrLeft[i]!=MyNull.NULLOBJ &&
 							dateArrRight[j]!=MyNull.NULLOBJ &&
 							((Date)dateArrLeft[i]).equals((Date)dateArrRight[j])){ 
@@ -144,8 +147,8 @@ public class JoinOperator {
 		else{ // for the cases of Varchar and Char
 			stringArrLeft=(Object[])(leftCol.getDataArrayAsObject());
 			stringArrRight=(Object[])(rightCol.getDataArrayAsObject());
-			for(i=0;i<stringArrLeft.length;i++)
-				for(j=0;j<stringArrRight.length;j++){
+			for(i=0;i<leftColSize;i++)
+				for(j=0;j<rightColSize;j++){
 					str1=(String)stringArrLeft[i];
 					str2=(String)stringArrRight[j];
 					if(stringArrLeft[i]!=MyNull.NULLOBJ &&
