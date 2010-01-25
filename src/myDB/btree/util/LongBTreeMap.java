@@ -141,8 +141,8 @@ public class LongBTreeMap extends BTreeMap {
 			throws InvalidKeyException, InvalidRangeException {
 		long lowKey, highKey;
 		try {
-			lowKey = ((Long)startingKey).longValue();
-			highKey = ((Long)endingKey).longValue();
+			lowKey = (startingKey != null) ? ((Long)startingKey).longValue() : Long.MIN_VALUE;
+			highKey = (endingKey != null) ? ((Long)endingKey).longValue() : Long.MAX_VALUE;
 			if (lowKey > highKey)
 				throw new InvalidRangeException();
 		}
