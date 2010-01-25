@@ -33,7 +33,7 @@ public class JoinOperator {
 	 * make sense since we're not dealing with I/O) 
 	 */
 	
-	public Map<String,Column> joinSimple(Map<String,Column> input1,
+	public static Map<String,Column> joinSimple(Map<String,Column> input1,
 										 Map<String,Column> input2,
 										 String leftAttr,String rightAttr) 
 										 throws NoSuchColumnException{
