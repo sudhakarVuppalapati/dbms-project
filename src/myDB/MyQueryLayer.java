@@ -1,10 +1,20 @@
 package myDB;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
 import operator.Operator;
 import metadata.Type;
+import metadata.Types;
+import myDB.physicaloperators.CrossProductOperator;
+import myDB.physicaloperators.ProjectionOperator;
+import myDB.physicaloperators.SelectionOperator;
+import myDB.physicaloperators.TempRow;
+import relationalalgebra.CrossProduct;
 import relationalalgebra.Input;
+import relationalalgebra.Projection;
 import relationalalgebra.RelationalAlgebraExpression;
 import relationalalgebra.Selection;
 import systeminterface.Column;
@@ -302,48 +312,131 @@ public class MyQueryLayer implements QueryLayer {
 	InvalidPredicateException {
 		
 		//TODO implement optimization here. This is naive and incomplete
-		if (query.getType() == RelationalOperatorType.SELECTION)
-			return SelectionProcessor.query((Selection)query, indexLayer, storageLayer);
-		else if (query.getType() == RelationalOperatorType.INPUT) 
-			return InputProcessor.query((Input)query, storageLayer);
-		return null;
+		Map<String, Column> mapResult = (Map<String, Column>) adaptedQuery(query);
+		
+		if (mapResult == null) throw new SchemaMismatchException();
+		
+		//Retrieve the first column, counting the number of row;
+		int n = mapResult.values().iterator().next().getRowCount();
+		List<Row> rowResult = new ArrayList<Row>();
+		//Object[] content;
+		Map<String, Object> content;
+		/*ColumnInfo colInfo;*/
+		Map<String, Type> schema = new HashMap<String, Type>();
+		
+		//Create Column Info
+		for (Column col : mapResult.values()) {
+			schema.put(col.getColumnName(), col.getColumnType());
+		}
+		
+		Type type;
+		for (int i = 0; i < n; i++) {
+			int j = 0;
+			/*content = new Object[mapResult.size()];*/
+			content = new HashMap<String, Object>();
+			
+			for (Column col : mapResult.values()) {
+				type = col.getColumnType();
+				
+				if (type == Types.getIntegerType()) {
+					int[] data = (int[])col.getDataArrayAsObject();
+					//boxing
+					if (data[i] != Integer.MAX_VALUE)
+						/*content[j++] = new Integer(data[i]);*/
+						content.put(col.getColumnName(), new Integer(data[i]));
+				}
+				
+				else if (type == Types.getFloatType()) {
+					float[] data = (float[])col.getDataArrayAsObject();
+					//boxing
+					if (data[i] != Float.MAX_VALUE)
+						/*content[j++] = new Float(data[i]);*/
+						content.put(col.getColumnName(), new Float(data[i]));	
+				}
+				
+				else if (type == Types.getDoubleType()) {
+					double[] data = (double[])col.getDataArrayAsObject();
+					//boxing
+					if (data[i] != Double.MAX_VALUE)
+					/*content[j++] = new Double(data[i]);*/
+						content.put(col.getColumnName(), new Double(data[i]));
+				}
+				else if (type == Types.getLongType()) {
+					long[] data = (long[])col.getDataArrayAsObject();
+					//boxing
+					if (data[i] != Long.MAX_VALUE)
+						/*content[j++] = new Long(data[i]);*/
+						content.put(col.getColumnName(), new Long(data[i]));
+				}
+				else {
+					Object[] data = (Object[])col.getDataArrayAsObject();
+					//reference, not copy
+					if (data[i] != MyNull.NULLOBJ)
+						/*content[j++] = data[i];*/
+						content.put(col.getColumnName(), data[i]);
+				}
+			}
+			rowResult.add(new TempRow(schema, content));
+		}
+		return new MyOperator(rowResult);
 	}
-	
-	/*private Map<String,? extends Column> adaptedQuery(RelationalAlgebraExpression query){
+
+	private Map<String,Column> adaptedQuery(RelationalAlgebraExpression query) throws SchemaMismatchException, InvalidPredicateException, NoSuchTableException{
+
 		
 		RelationalOperatorType qType=query.getType();
 		Map<String,Column> processingResult=new HashMap<String,Column>();
 		
 		
 		if(qType==RelationalOperatorType.INPUT){ 
-			Operator<Column> tableAsCols=(Operator<Column>)storageLayer.getTableByName(((Input)query).getRelationName()).getAllColumns();
-			tableAsCols.open();
-			Column c;
-			while((c=tableAsCols.next())!=null){
-				processingResult.put(c.getColumnName(), c);
-			}
+			try {
+				Operator<Column> tableAsCols = (Operator<Column>) storageLayer.getTableByName(((Input)query).getRelationName()).getAllColumns();
 			
-			tableAsCols.close();
-			return processingResult;
+				tableAsCols.open();
+				Column c;
+				while((c=tableAsCols.next())!=null){
+					processingResult.put(c.getColumnName(), c);
+				}
+				
+				tableAsCols.close();
+				return processingResult;
+			}
+			catch (NoSuchTableException ex) {
+				throw new SchemaMismatchException();
+			}
 		}
 		
 		else if(qType==RelationalOperatorType.PROJECTION){
-			
+			Projection curNode = (Projection)query;	
+			RelationalAlgebraExpression input = curNode.getInput();
+			try {
+				return ProjectionOperator.projectWithDuplicates(adaptedQuery(curNode.getInput()), curNode.getProjectionAttributes());
+			} catch (NoSuchColumnException e) {
+				throw new SchemaMismatchException();
+			}
 		}
 		else if(qType==RelationalOperatorType.SELECTION){
 					
 			Selection curNode=(Selection)query;
-			SelectionOperator.select(adaptedQuery(curNode.getInput()), curNode.getPredicate(), Index);
+			RelationalAlgebraExpression input = curNode.getInput();
+	
+			String relation = (input.getType() == RelationalOperatorType.INPUT) ? ((Input)input).getRelationName() : null;
+			
+			return SelectionOperator.select(adaptedQuery(input), curNode.getPredicate(), relation, indexLayer);
 		
 		}
-		else if(qType==RelationalOperatorType.JOIN){
+	/*	else if(qType==RelationalOperatorType.JOIN){
 			
-		}
-		else{ // for cros
+		} */
+		else{ // for cross product
+			CrossProduct curNode = (CrossProduct)query;
+			RelationalAlgebraExpression leftInput = curNode.getLeftInput();
+			RelationalAlgebraExpression rightInput = curNode.getRightInput();
 			
+			return CrossProductOperator.product(adaptedQuery(leftInput), adaptedQuery(rightInput));
 		}
-		
-	}*/
+	
+	}
 
 	@Override
 	public String explain(RelationalAlgebraExpression query)
@@ -352,5 +445,4 @@ public class MyQueryLayer implements QueryLayer {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 }
