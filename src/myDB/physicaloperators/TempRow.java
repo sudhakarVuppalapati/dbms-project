@@ -1,34 +1,41 @@
 package myDB.physicaloperators;
 
+import java.util.Map;
+
 import metadata.Type;
 import exceptions.NoSuchColumnException;
 import systeminterface.Row;
 
 public class TempRow implements Row {
 
+	private Map<String, Type> schema;
+	
+	private Map<String, Object> data;
+	
+	public TempRow(Map<String, Type> schema, Map<String, Object> data) {
+		this.schema = schema;
+		this.data = data;
+	}
+	
 	@Override
 	public int getColumnCount() {
-		// TODO Auto-generated method stub
-		return 0;
+		return data.values().size();
 	}
 
 	@Override
 	public String[] getColumnNames() {
-		// TODO Auto-generated method stub
-		return null;
+		return schema.keySet().toArray(new String[0]);
 	}
 
 	@Override
 	public Type getColumnType(String columnName) throws NoSuchColumnException {
-		// TODO Auto-generated method stub
-		return null;
+		return schema.get(columnName);
 	}
 
 	@Override
 	public Object getColumnValue(String columnName)
 			throws NoSuchColumnException {
-		// TODO Auto-generated method stub
-		return null;
+		return data.get(columnName);
 	}
 
 }
