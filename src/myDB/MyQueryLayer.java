@@ -1,6 +1,7 @@
 package myDB;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -316,10 +317,12 @@ public class MyQueryLayer implements QueryLayer {
 		//TODO implement optimization here. This is naive and incomplete
 		Map<String, Column> mapResult = (Map<String, Column>) adaptedQuery(query);
 		
-		if (mapResult == null) throw new SchemaMismatchException();
+		if (mapResult == null) throw new SchemaMismatchException(); // check this verification - it doesn't make sense
 		
 		//Retrieve the first column, counting the number of row;
-		int n = mapResult.values().iterator().next().getRowCount();
+		Collection<Column> cols=mapResult.values();
+		
+		int n = cols.iterator().next().getRowCount();
 		List<Row> rowResult = new ArrayList<Row>();
 		//Object[] content;
 		Map<String, Object> content;
@@ -327,7 +330,7 @@ public class MyQueryLayer implements QueryLayer {
 		Map<String, Type> schema = new HashMap<String, Type>();
 		
 		//Create Column Info
-		for (Column col : mapResult.values()) {
+		for (Column col : cols) {
 			schema.put(col.getColumnName(), col.getColumnType());
 		}
 		
@@ -337,7 +340,7 @@ public class MyQueryLayer implements QueryLayer {
 			/*content = new Object[mapResult.size()];*/
 			content = new HashMap<String, Object>();
 			
-			for (Column col : mapResult.values()) {
+			for (Column col : cols) {
 				type = col.getColumnType();
 				
 				if (type == Types.getIntegerType()) {
@@ -383,7 +386,9 @@ public class MyQueryLayer implements QueryLayer {
 		return new MyOperator(rowResult);
 	}
 
-	private Map<String,Column> adaptedQuery(RelationalAlgebraExpression query) throws SchemaMismatchException, InvalidPredicateException, NoSuchTableException{
+	private Map<String,Column> adaptedQuery(RelationalAlgebraExpression query) 
+	throws NoSuchTableException, SchemaMismatchException, NoSuchColumnException, 
+	InvalidPredicateException{
 
 		
 		RelationalOperatorType qType=query.getType();
@@ -411,11 +416,8 @@ public class MyQueryLayer implements QueryLayer {
 		else if(qType==RelationalOperatorType.PROJECTION){
 			Projection curNode = (Projection)query;	
 			RelationalAlgebraExpression input = curNode.getInput();
-			try {
-				return ProjectionOperator.projectWithDuplicates(adaptedQuery(curNode.getInput()), curNode.getProjectionAttributes());
-			} catch (NoSuchColumnException e) {
-				throw new SchemaMismatchException();
-			}
+			return ProjectionOperator.projectWithDuplicates(adaptedQuery(curNode.getInput()), curNode.getProjectionAttributes());
+			
 		}
 		else if(qType==RelationalOperatorType.SELECTION){
 					
@@ -429,13 +431,7 @@ public class MyQueryLayer implements QueryLayer {
 		}
 		else if(qType==RelationalOperatorType.JOIN){
 			Join join=(Join)query;
-			try {
-				return JoinOperator.joinSimple(adaptedQuery(join.getLeftInput()), adaptedQuery(join.getRightInput()), join.getLeftJoinAttribute(), join.getRightJoinAttribute());
-			} catch (NoSuchColumnException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return null;
+			return JoinOperator.joinSimple(adaptedQuery(join.getLeftInput()), adaptedQuery(join.getRightInput()), join.getLeftJoinAttribute(), join.getRightJoinAttribute());
 		} 
 		else{ // for cross product
 			CrossProduct curNode = (CrossProduct)query;
