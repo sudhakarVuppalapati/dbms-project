@@ -50,8 +50,7 @@ public class JoinOperator {
 		long[] longArrLeft=null,longArrRight=null;
 		float[] floatArrLeft=null,floatArrRight=null;
 		double[] doubleArrLeft=null,doubleArrRight=null;
-		Object[] dateArrLeft=null,dateArrRight=null;
-		Object[] stringArrLeft=null,stringArrRight=null;
+		Object[]objArrLeft=null,objArrRight=null;
 		
 		//aux column
 		Column c;
@@ -131,7 +130,7 @@ public class JoinOperator {
 					}
 				}
 		}
-		else if(colType== Types.getDateType()){
+		/*else if(colType== Types.getDateType()){
 			dateArrLeft=(Object[])(leftCol.getDataArrayAsObject());
 			dateArrRight=(Object[])(rightCol.getDataArrayAsObject());
 			for(i=0;i<leftColSize;i++)
@@ -143,17 +142,17 @@ public class JoinOperator {
 						rightRows[k++]=j;
 					}
 				}
-		}
+		}*/
 		else{ // for the cases of Varchar and Char
-			stringArrLeft=(Object[])(leftCol.getDataArrayAsObject());
-			stringArrRight=(Object[])(rightCol.getDataArrayAsObject());
+			objArrLeft=(Object[])(leftCol.getDataArrayAsObject());
+			objArrRight=(Object[])(rightCol.getDataArrayAsObject());
 			for(i=0;i<leftColSize;i++)
 				for(j=0;j<rightColSize;j++){
-					str1=(String)stringArrLeft[i];
-					str2=(String)stringArrRight[j];
-					if(stringArrLeft[i]!=MyNull.NULLOBJ &&
-							stringArrRight[j]!=MyNull.NULLOBJ &&
-							((String)stringArrLeft[i]).equals((String)stringArrRight[j])){ 
+					str1=(String)objArrLeft[i];
+					str2=(String)objArrRight[j];
+					if(objArrLeft[i]!=MyNull.NULLOBJ &&
+							objArrRight[j]!=MyNull.NULLOBJ &&
+							((String)objArrLeft[i]).equals((String)objArrRight[j])){ 
 						leftRows[k]=i;
 						rightRows[k++]=j;
 					}
@@ -209,16 +208,16 @@ public class JoinOperator {
 				
 				doubleArrLeft=(double[])c.getDataArrayAsObject();
 				for(i=0;i<k;i++){
-					newColData[i]=floatArrLeft[leftRows[i]];
+					newColData[i]=doubleArrLeft[leftRows[i]];
 				}
 				((MyColumn)c).setData(newColData,k);
 			}
 			else { // if Object type
 				List newColData=new ArrayList(k); // k is the cardinality of the join
 				
-				dateArrLeft=(Object[])c.getDataArrayAsObject();
+				objArrLeft=(Object[])c.getDataArrayAsObject();
 				for(i=0;i<k;i++){
-					newColData.add(i,dateArrLeft[leftRows[i]]);
+					newColData.add(i,objArrLeft[leftRows[i]]);
 				}
 				((MyColumn)c).setData(newColData,k);
 			}
@@ -283,11 +282,11 @@ public class JoinOperator {
 			else { // if Object type
 				List newColData=new ArrayList(k); // k is the cardinality of the join
 				
-				dateArrLeft=(Object[])c.getDataArrayAsObject();
+				objArrLeft=(Object[])c.getDataArrayAsObject();
 				for(i=0;i<k;i++){
 					//System.out.println("LeftRows: "+leftRows[i]);
 					//System.out.println("ArrLeft: "+dateArrLeft[leftRows[i]]);
-					newColData.add(i,dateArrLeft[rightRows[i]]);
+					newColData.add(i,objArrLeft[rightRows[i]]);
 				}
 				((MyColumn)c).setData(newColData,k);
 				input1.put(c.getColumnName(),c);
