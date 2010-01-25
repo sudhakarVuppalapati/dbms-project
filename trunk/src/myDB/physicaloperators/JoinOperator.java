@@ -66,9 +66,9 @@ public class JoinOperator {
 		int rightRows[]=new int[crossProdSize];// but this is the only way
 		
 		//initialize the two arrays to -1
-		for(i=0;i<crossProdSize;i++){
-			leftRows[i]=rightRows[i]=0;
-		}
+		/*for(i=0;i<crossProdSize;i++){
+			leftRows[i]=rightRows[i]=-1;
+		}*/
 		
 		if(leftCol==null || rightCol==null){ // the input relation doesn't contain prjAttributes[i] column
 				throw new NoSuchColumnException();
@@ -245,7 +245,7 @@ public class JoinOperator {
 				
 				//set the new array as the new data of the column
 				((MyColumn)c).setData(newColData,k);
-				input1.put(c.getColumnName(),c); //"i." means inner table
+				input1.put(c.getColumnName(),c);
 			}
 			else if(colType==Types.getLongType()){
 				long[] newColData=new long[k]; // k is the cardinality of the join
