@@ -31,7 +31,7 @@ public class ProjectionOperator {
 	 * 
 	 * This method implements the most basic strategy of projection, i.e.: scanning,sorting,eliminating duplicates
 	 */
-	public Map<String,Column> project(Map<String,Column> input, String[] prjAttributes)
+	public static Map<String,Column> project(Map<String,Column> input, String[] prjAttributes)
 	throws NoSuchColumnException{
 		
 		//variable to store the final result of the projection
@@ -106,7 +106,7 @@ public class ProjectionOperator {
 	/**
 	 * This implementation doesn't eliminate duplicates ... which might also be a kind of projection
 	 */
-	public Map<String,Column> projectWithDuplicates(Map<String,Column> input, String[] prjAttributes)
+	public static Map<String,Column> projectWithDuplicates(Map<String,Column> input, String[] prjAttributes)
 	throws NoSuchColumnException{
 		
 		Map<String,Column> result=new HashMap<String,Column>();
