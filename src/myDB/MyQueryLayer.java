@@ -9,11 +9,13 @@ import operator.Operator;
 import metadata.Type;
 import metadata.Types;
 import myDB.physicaloperators.CrossProductOperator;
+import myDB.physicaloperators.JoinOperator;
 import myDB.physicaloperators.ProjectionOperator;
 import myDB.physicaloperators.SelectionOperator;
 import myDB.physicaloperators.TempRow;
 import relationalalgebra.CrossProduct;
 import relationalalgebra.Input;
+import relationalalgebra.Join;
 import relationalalgebra.Projection;
 import relationalalgebra.RelationalAlgebraExpression;
 import relationalalgebra.Selection;
@@ -425,9 +427,16 @@ public class MyQueryLayer implements QueryLayer {
 			return SelectionOperator.select(adaptedQuery(input), curNode.getPredicate(), relation, indexLayer);
 		
 		}
-	/*	else if(qType==RelationalOperatorType.JOIN){
-			
-		} */
+		else if(qType==RelationalOperatorType.JOIN){
+			Join join=(Join)query;
+			try {
+				return JoinOperator.joinSimple(adaptedQuery(join.getLeftInput()), adaptedQuery(join.getRightInput()), join.getLeftJoinAttribute(), join.getRightJoinAttribute());
+			} catch (NoSuchColumnException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return null;
+		} 
 		else{ // for cross product
 			CrossProduct curNode = (CrossProduct)query;
 			RelationalAlgebraExpression leftInput = curNode.getLeftInput();
