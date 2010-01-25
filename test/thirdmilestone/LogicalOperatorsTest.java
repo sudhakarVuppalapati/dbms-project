@@ -100,8 +100,8 @@ public class LogicalOperatorsTest extends TestCase {
 	@Before
 	public void setUp() {
 
-		//table schemas
-		
+		// table schemas
+
 		S1_Schema.put(sid1, Types.getIntegerType());
 		S1_Schema.put(sname1, Types.getVarcharType());
 		S1_Schema.put(rating1, Types.getIntegerType());
@@ -116,8 +116,8 @@ public class LogicalOperatorsTest extends TestCase {
 		R1_Schema.put(bid, Types.getIntegerType());
 		R1_Schema.put(day, Types.getVarcharType());
 
-		//table creation
-		
+		// table creation
+
 		try {
 			myDatabase.getQueryInterface().createTable(S1, S1_Schema);
 			myDatabase.getQueryInterface().createTable(S2, S2_Schema);
@@ -162,7 +162,7 @@ public class LogicalOperatorsTest extends TestCase {
 		schema_R1.add(R1_Col2);
 		schema_R1.add(R1_Col3);
 
-		//insert rows
+		// insert rows
 		try {
 			myDatabase.getQueryInterface().insertRow(
 					S1,
@@ -217,7 +217,7 @@ public class LogicalOperatorsTest extends TestCase {
 	public void tearDown() throws Exception {
 
 		// delete all tables
-		Operator<? extends Table> op =  myDatabase.getStorageInterface()
+		Operator<? extends Table> op = myDatabase.getStorageInterface()
 				.getTables();
 
 		op.open();
@@ -272,16 +272,14 @@ public class LogicalOperatorsTest extends TestCase {
 
 			count++;
 
-			System.out.println(((SampleRow) (r)));
-
 			assertTrue(checkSchema(r.getColumnNames(), expectedSchema));
-			
+
 			try {
 				SName1ResultSet.add((String) r.getColumnValue(sname1));
 			} catch (NoSuchColumnException e) {
 				fail("NoSuchColumnException");
 			}
-			
+
 			r = rowOp.next();
 		}
 
@@ -304,7 +302,7 @@ public class LogicalOperatorsTest extends TestCase {
 		TreeSet<String> expectedSName2ResultSet = new TreeSet<String>();
 		expectedSName2ResultSet.add("yuppy");
 		expectedSName2ResultSet.add("Rusty");
-		
+
 		// selection predicate
 		PredicateTreeNode predicate = new LeafPredicateTreeNode(rating2,
 				ComparisonOperator.GT, new Integer(8));
@@ -323,7 +321,7 @@ public class LogicalOperatorsTest extends TestCase {
 		} catch (InvalidPredicateException e) {
 			fail("InvalidPredicateException");
 		}
-		
+
 		TreeSet<String> SName2ResultSet = new TreeSet<String>();
 
 		rowOp.open();
@@ -335,8 +333,6 @@ public class LogicalOperatorsTest extends TestCase {
 
 			count++;
 
-			System.out.println(((SampleRow) (r)));
-
 			assertTrue(checkSchema(r.getColumnNames(), expectedSchema));
 
 			try {
@@ -344,7 +340,7 @@ public class LogicalOperatorsTest extends TestCase {
 			} catch (NoSuchColumnException e) {
 				fail("NoSuchColumnException");
 			}
-			
+
 			r = rowOp.next();
 
 		}
@@ -370,7 +366,6 @@ public class LogicalOperatorsTest extends TestCase {
 		expectedSName2ResultSet.add("Rusty");
 		expectedSName2ResultSet.add("Lubber");
 		expectedSName2ResultSet.add("guppy");
-		
 
 		Operator<? extends Row> rowOp = null;
 
@@ -387,7 +382,7 @@ public class LogicalOperatorsTest extends TestCase {
 		} catch (InvalidPredicateException e) {
 			fail("InvalidPredicateException");
 		}
-		
+
 		TreeSet<String> SName2ResultSet = new TreeSet<String>();
 
 		rowOp.open();
@@ -399,10 +394,8 @@ public class LogicalOperatorsTest extends TestCase {
 
 			count++;
 
-			System.out.println(((SampleRow) (r)));
-
 			assertTrue(checkSchema(r.getColumnNames(), expectedSchema));
-			
+
 			try {
 				SName2ResultSet.add((String) r.getColumnValue(sname2));
 			} catch (NoSuchColumnException e) {
@@ -432,7 +425,6 @@ public class LogicalOperatorsTest extends TestCase {
 		TreeSet<String> expectedSName1ResultSet = new TreeSet<String>();
 		expectedSName1ResultSet.add("Dustin");
 		expectedSName1ResultSet.add("Rusty");
-		
 
 		Operator<? extends Row> rowOp = null;
 
@@ -448,7 +440,7 @@ public class LogicalOperatorsTest extends TestCase {
 		} catch (InvalidPredicateException e) {
 			fail("InvalidPredicateException");
 		}
-		
+
 		TreeSet<String> SName1ResultSet = new TreeSet<String>();
 
 		rowOp.open();
@@ -460,10 +452,8 @@ public class LogicalOperatorsTest extends TestCase {
 
 			count++;
 
-			System.out.println(((SampleRow) (r)));
-
 			assertTrue(checkSchema(r.getColumnNames(), expectedSchema));
-			
+
 			try {
 				SName1ResultSet.add((String) r.getColumnValue(sname1));
 			} catch (NoSuchColumnException e) {
@@ -494,7 +484,7 @@ public class LogicalOperatorsTest extends TestCase {
 		expectedSName1ResultSet.add("Dustin");
 		expectedSName1ResultSet.add("Rusty");
 		expectedSName1ResultSet.add("Lubber");
-		
+
 		Operator<? extends Row> rowOp = null;
 
 		try {
@@ -509,7 +499,7 @@ public class LogicalOperatorsTest extends TestCase {
 		} catch (InvalidPredicateException e) {
 			fail("InvalidPredicateException");
 		}
-		
+
 		TreeSet<String> SName1ResultSet = new TreeSet<String>();
 
 		rowOp.open();
@@ -521,10 +511,8 @@ public class LogicalOperatorsTest extends TestCase {
 
 			count++;
 
-			System.out.println(((SampleRow) (r)));
-
 			assertTrue(checkSchema(r.getColumnNames(), expectedSchema));
-			
+
 			try {
 				SName1ResultSet.add((String) r.getColumnValue(sname1));
 			} catch (NoSuchColumnException e) {
