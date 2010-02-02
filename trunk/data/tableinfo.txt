@@ -1,4 +1,4 @@
 Customer customer.tbl c_custkey INTEGER c_name VARCHAR c_address VARCHAR c_nationkey INTEGER c_phone VARCHAR c_acctabl DOUBLE c_mktsegment VARCHAR c_comment VARCHAR
 Nation nation.tbl n_nationkey INTEGER n_name VARCHAR n_regionkey INTEGER n_comment VARCHAR
 Region region.tbl r_regionkey INTEGER r_name VARCHAR r_comment VARCHAR
-Supplier supplier.tbl s_suppkey INTEGER s_name VARCHAR s_address VARCHAR s_nationkey INTEGER s_phone VARCHAR s_acctbal DOUBLE c_comment VARCHAR
+Supplier supplier.tbl s_suppkey INTEGER s_name VARCHAR s_address VARCHAR s_nationkey INTEGER s_phone VARCHAR s_acctbal DOUBLE s_comment VARCHAR
