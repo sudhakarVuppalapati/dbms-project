@@ -1,4 +1,4 @@
-	package thirdmilestone;
+package thirdmilestone;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
