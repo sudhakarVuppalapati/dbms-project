@@ -69,7 +69,9 @@ public class SelectionOperator {
 				for (int i = 0; i < n; i++) {
 					newData[i] = tmpContent[result[i]]; 
 				}
-				tmpCol = new MyIntColumn(col.getColumnName(), type, newData);
+				//tmpCol = new MyIntColumn(col.getColumnName(), type, newData);
+				((MyColumn)col).eraseOldArray();
+				((MyColumn)col).setData(newData, n);
 			}
 			else if (type == Types.getFloatType()) {
 				float[] tmpContent = (float[])col.getDataArrayAsObject(); 
@@ -77,7 +79,9 @@ public class SelectionOperator {
 				for (int i = 0; i < n; i++) {
 					newData[i] = tmpContent[result[i]]; 
 				}
-				tmpCol = new MyFloatColumn(col.getColumnName(), type, newData);
+				//tmpCol = new MyFloatColumn(col.getColumnName(), type, newData);
+				((MyColumn)col).eraseOldArray();
+				((MyColumn)col).setData(newData, n);
 			}
 			else if (type == Types.getDoubleType()) {
 				double[] tmpContent = (double[])col.getDataArrayAsObject(); 
@@ -85,7 +89,9 @@ public class SelectionOperator {
 				for (int i = 0; i < n; i++) {
 					newData[i] = tmpContent[result[i]]; 
 				}
-				tmpCol = new MyDoubleColumn(col.getColumnName(), type, newData);
+				//tmpCol = new MyDoubleColumn(col.getColumnName(), type, newData);
+				((MyColumn)col).eraseOldArray();
+				((MyColumn)col).setData(newData, n);
 			}
 			else if (type == Types.getLongType()) {
 				long[] tmpContent = (long[])col.getDataArrayAsObject(); 
@@ -93,7 +99,9 @@ public class SelectionOperator {
 				for (int i = 0; i < n; i++) {
 					newData[i] = tmpContent[result[i]]; 
 				}
-				tmpCol = new MyLongColumn(col.getColumnName(), type, newData);
+				//tmpCol = new MyLongColumn(col.getColumnName(), type, newData);
+				((MyColumn)col).eraseOldArray();
+				((MyColumn)col).setData(newData, n);
 			}
 			//THIS IS REFERENCE, NOT COPY
 			else {
@@ -102,18 +110,22 @@ public class SelectionOperator {
 				for (int i = 0; i < n; i++) {
 					newData.add(tmpContent[result[i]]); 
 				}
-				tmpCol = new MyObjectColumn(col.getColumnName(), type, newData);
+				//tmpCol = new MyObjectColumn(col.getColumnName(), type, newData);
+				((MyColumn)col).eraseOldArray();
+				((MyColumn)col).setData(newData, n);
 			
 			}
-			colList.add(tmpCol);
+			//Razvan: no need for this
+			//colList.add(col);
 		}
 		
 		//Possible optimization: Creating new hashMap is faster than clearing the existing one
-		data.clear();
-		
-		for (Column col : colList) {
+		//Razvan: no need for this
+		//data.clear();
+		//Razvan: no need for this
+		/*for (Column col : colList) {
 			data.put(col.getColumnName(), col);
-		}
+		}*/
 		return data;
 	}
 	
