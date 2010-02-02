@@ -181,7 +181,7 @@ public class JoinOperator {
 				for(i=0;i<k;i++){
 					newColData[i]=intArrLeft[leftRows[i]];
 				}
-				
+				((MyColumn)c).eraseOldArray();
 				//set the new array as the new data of the column
 				((MyColumn)c).setData(newColData,k);
 			}
@@ -192,6 +192,7 @@ public class JoinOperator {
 				for(i=0;i<k;i++){
 					newColData[i]=longArrLeft[leftRows[i]];
 				}
+				((MyColumn)c).eraseOldArray();
 				((MyColumn)c).setData(newColData,k);
 			}
 			else if(colType==Types.getFloatType()){
@@ -201,6 +202,7 @@ public class JoinOperator {
 				for(i=0;i<k;i++){
 					newColData[i]=floatArrLeft[leftRows[i]];
 				}
+				((MyColumn)c).eraseOldArray();
 				((MyColumn)c).setData(newColData,k);
 			}
 			else if(colType==Types.getDoubleType()){
@@ -210,6 +212,7 @@ public class JoinOperator {
 				for(i=0;i<k;i++){
 					newColData[i]=doubleArrLeft[leftRows[i]];
 				}
+				((MyColumn)c).eraseOldArray();
 				((MyColumn)c).setData(newColData,k);
 			}
 			else { // if Object type
@@ -219,6 +222,7 @@ public class JoinOperator {
 				for(i=0;i<k;i++){
 					newColData.add(i,objArrLeft[leftRows[i]]);
 				}
+				((MyColumn)c).eraseOldArray();
 				((MyColumn)c).setData(newColData,k);
 			}
 			
@@ -244,7 +248,7 @@ public class JoinOperator {
 				for(i=0;i<k;i++){
 					newColData[i]=intArrLeft[rightRows[i]];
 				}
-				
+				((MyColumn)c).eraseOldArray();
 				//set the new array as the new data of the column
 				((MyColumn)c).setData(newColData,k);
 				input1.put(c.getColumnName(),c);
@@ -256,6 +260,7 @@ public class JoinOperator {
 				for(i=0;i<k;i++){
 					newColData[i]=longArrLeft[rightRows[i]];
 				}
+				((MyColumn)c).eraseOldArray();
 				((MyColumn)c).setData(newColData,k);
 				input1.put(c.getColumnName(),c);
 			}
@@ -266,6 +271,7 @@ public class JoinOperator {
 				for(i=0;i<k;i++){
 					newColData[i]=floatArrLeft[rightRows[i]];
 				}
+				((MyColumn)c).eraseOldArray();
 				((MyColumn)c).setData(newColData,k);
 				input1.put(c.getColumnName(),c);
 			}
@@ -276,6 +282,7 @@ public class JoinOperator {
 				for(i=0;i<k;i++){
 					newColData[i]=floatArrLeft[rightRows[i]];
 				}
+				((MyColumn)c).eraseOldArray();
 				((MyColumn)c).setData(newColData,k);
 				input1.put(c.getColumnName(),c);
 			}
@@ -288,6 +295,7 @@ public class JoinOperator {
 					//System.out.println("ArrLeft: "+dateArrLeft[leftRows[i]]);
 					newColData.add(i,objArrLeft[rightRows[i]]);
 				}
+				((MyColumn)c).eraseOldArray();
 				((MyColumn)c).setData(newColData,k);
 				input1.put(c.getColumnName(),c);
 			}
