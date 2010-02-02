@@ -337,7 +337,6 @@ public class ThirdPhaseTest {
 		 */
 
 		// create an index on s_acctbal
-
 		try {
 			myDatabase.getIndexInterface().createIndex("s_acctbal_idx",
 					"Supplier", "s_acctbal", true);
@@ -411,9 +410,101 @@ public class ThirdPhaseTest {
 	}
 
 	/**
+	 * Query 3
+	 * 
+	 * @return List with results
+	 */
+	public static List<String> performQuery3() {
+
+		/*
+		 * Query: Names of all suppliers in the middle east.
+		 * 
+		 * 
+		 * Query plan given here:
+		 * 
+		 * 1. Join Suppliers with Nation, join condition s_nationkey =
+		 * n_nationkey
+		 * 
+		 * 2. Join result of (1) with Region, join condition n_regionkey =
+		 * r_regionkey
+		 * 
+		 * 3. Select from result of (2) tuples with r_name = "MIDDLE EAST"
+		 * 
+		 * 4. Project result of (3) on s_name
+		 */
+
+		// Inputs
+		Input S = new Input("Supplier");
+		Input N = new Input("Nation");
+		Input R = new Input("Region");
+
+		// Joins
+		Join S_join_N = new Join(S, N, "s_nationkey", "n_nationkey");
+		Join S_join_N_join_R = new Join(S_join_N, R, "n_regionkey",
+				"r_regionkey");
+
+		// Select
+		PredicateTreeNode predicate = new LeafPredicateTreeNode("r_name",
+				ComparisonOperator.EQ, new String("AFRICA"));
+		Selection sel = new Selection(S_join_N_join_R, predicate);
+
+		// Project
+		Projection proj = new Projection(sel, new String[] { "s_name" });
+
+		Operator<? extends Row> rowOp = null;
+
+		// Execute Query
+		try {
+			rowOp = myDatabase.getQueryInterface().query(proj);
+		} catch (NoSuchTableException e) {
+			Helpers.print(e.getStackTrace().toString(),
+					util.Consts.printType.ERROR);
+		} catch (SchemaMismatchException e) {
+			Helpers.print(e.getStackTrace().toString(),
+					util.Consts.printType.ERROR);
+		} catch (NoSuchColumnException e) {
+			Helpers.print(e.getStackTrace().toString(),
+					util.Consts.printType.ERROR);
+		} catch (InvalidPredicateException e) {
+			Helpers.print(e.getStackTrace().toString(),
+					util.Consts.printType.ERROR);
+		}
+
+		rowOp.open();
+
+		ArrayList<String> results = new ArrayList<String>();
+
+		Row r = rowOp.next();
+		int count = 0;
+
+		while (r != null) {
+
+			count++;
+
+			try {
+				results.add((String) r.getColumnValue("s_name"));
+			} catch (NoSuchColumnException e) {
+				Helpers.print(e.getStackTrace().toString(),
+						util.Consts.printType.ERROR);
+			}
+
+			r = rowOp.next();
+
+		}
+
+		rowOp.close();
+
+		return results;
+
+	}
+
+	/**
 	 * Test steps
 	 */
 	public static void test() {
+
+		long time = 0;
+		long timeBegin, timeEnd;
 
 		// Start DB
 		myDatabase.startSystem();
@@ -421,23 +512,51 @@ public class ThirdPhaseTest {
 		// load tables
 		loadTableData();
 
+		timeBegin = System.currentTimeMillis();
 		// Query1
 		List<String> q1Result = performQuery1();
+		timeEnd = System.currentTimeMillis();
+
+
+		time += (timeEnd - timeBegin);
 
 		// Check Query results
 		if (!checkStringQueryResults(q1Result, "select_me_suppliers.rslt")) {
-			Helpers.print("Query results did not match what is expected",
+			Helpers.print("Query 1 results did not match what is expected",
 					util.Consts.printType.ERROR);
 		}
 
+		timeBegin = System.currentTimeMillis();
 		// Query2
 		List<Double> q2Result = performQuery2();
+		timeEnd = System.currentTimeMillis();
+
+
+		
+		time += (timeEnd - timeBegin);
 
 		if (!checkDoubleQueryResults(q2Result,
 				"select_supplier_acctbal_over_1000.rslt")) {
-			Helpers.print("Query results did not match what is expected",
+			Helpers.print("Query 2 results did not match what is expected",
 					util.Consts.printType.ERROR);
 		}
+
+		timeBegin = System.currentTimeMillis();
+		// Query 3
+		List<String> q3Result = performQuery3();
+
+
+		timeEnd = System.currentTimeMillis();
+
+		time += (timeEnd - timeBegin);
+
+		// Check Query results
+		if (!checkStringQueryResults(q3Result, "select_af_suppliers.rslt")) {
+			Helpers.print("Query 3 results did not match what is expected",
+					util.Consts.printType.ERROR);
+		}
+
+		System.out.println("Time= " + time);
 
 		// myDatabase.shutdownSystem();
 
