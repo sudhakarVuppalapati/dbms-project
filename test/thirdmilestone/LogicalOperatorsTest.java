@@ -101,7 +101,7 @@ public class LogicalOperatorsTest extends TestCase {
 	@Before
 	public void setUp() {
 
-		//table schemas
+		// table schemas
 
 		S1_Schema.put(sid1, Types.getIntegerType());
 		S1_Schema.put(sname1, Types.getVarcharType());
@@ -117,7 +117,7 @@ public class LogicalOperatorsTest extends TestCase {
 		R1_Schema.put(bid, Types.getIntegerType());
 		R1_Schema.put(day, Types.getVarcharType());
 
-		//table creation
+		// table creation
 
 		try {
 			myDatabase.getQueryInterface().createTable(S1, S1_Schema);
@@ -163,7 +163,7 @@ public class LogicalOperatorsTest extends TestCase {
 		schema_R1.add(R1_Col2);
 		schema_R1.add(R1_Col3);
 
-		//insert rows
+		// insert rows
 		try {
 			myDatabase.getQueryInterface().insertRow(
 					S1,
@@ -198,11 +198,11 @@ public class LogicalOperatorsTest extends TestCase {
 			myDatabase.getQueryInterface().insertRow(
 					R1,
 					(Row) ((new SampleRow(schema_R1, new Object[] { 22, 101,
-					"101096" }))));
+							"101096" }))));
 			myDatabase.getQueryInterface().insertRow(
 					R1,
 					(Row) ((new SampleRow(schema_R1, new Object[] { 58, 103,
-					"111296" }))));
+							"111296" }))));
 		} catch (NoSuchTableException e) {
 			fail("NoSuchTableException");
 		} catch (SchemaMismatchException e) {
@@ -219,7 +219,7 @@ public class LogicalOperatorsTest extends TestCase {
 
 		// delete all tables
 		Operator<? extends Table> op = myDatabase.getStorageInterface()
-		.getTables();
+				.getTables();
 
 		ArrayList<String> tableNames = new ArrayList<String>();
 		Table t;
@@ -230,16 +230,12 @@ public class LogicalOperatorsTest extends TestCase {
 		}
 		op.close();
 
-
 		Iterator<String> it = tableNames.iterator();
 		while (it.hasNext()) {
 
-			try {
-				myDatabase.getStorageInterface().deleteTable(it.next());
-			} catch (NoSuchTableException e) {
-				fail("NoSuchTableException");
-			}
+			myDatabase.getStorageInterface().deleteTable(it.next());
 		}
+
 	}
 
 	/**
@@ -283,8 +279,6 @@ public class LogicalOperatorsTest extends TestCase {
 
 			count++;
 
-			System.out.println(((myDB.physicaloperators.TempRow) (r)));
-
 			assertTrue(checkSchema(r.getColumnNames(), expectedSchema));
 
 			try {
@@ -302,6 +296,7 @@ public class LogicalOperatorsTest extends TestCase {
 		assertTrue(SName1ResultSet.equals(expectedSName1ResultSet));
 
 	}
+
 	/**
 	 * Test Selection
 	 */
@@ -345,8 +340,6 @@ public class LogicalOperatorsTest extends TestCase {
 
 			count++;
 
-			System.out.println(((myDB.physicaloperators.TempRow) (r)));
-
 			assertTrue(checkSchema(r.getColumnNames(), expectedSchema));
 
 			try {
@@ -381,7 +374,6 @@ public class LogicalOperatorsTest extends TestCase {
 		expectedSName2ResultSet.add("Lubber");
 		expectedSName2ResultSet.add("guppy");
 
-
 		Operator<? extends Row> rowOp = null;
 
 		try {
@@ -409,8 +401,6 @@ public class LogicalOperatorsTest extends TestCase {
 
 			count++;
 
-			System.out.println(((myDB.physicaloperators.TempRow) (r)));
-
 			assertTrue(checkSchema(r.getColumnNames(), expectedSchema));
 
 			try {
@@ -433,7 +423,7 @@ public class LogicalOperatorsTest extends TestCase {
 	/**
 	 * Test Joins
 	 */
-	/*public void testJoin() {
+	public void testJoin() {
 
 		System.out.println("testJoin");
 
@@ -442,7 +432,6 @@ public class LogicalOperatorsTest extends TestCase {
 		TreeSet<String> expectedSName1ResultSet = new TreeSet<String>();
 		expectedSName1ResultSet.add("Dustin");
 		expectedSName1ResultSet.add("Rusty");
-
 
 		Operator<? extends Row> rowOp = null;
 
@@ -470,8 +459,6 @@ public class LogicalOperatorsTest extends TestCase {
 
 			count++;
 
-			System.out.println(((SampleRow) (r)));
-
 			assertTrue(checkSchema(r.getColumnNames(), expectedSchema));
 
 			try {
@@ -489,7 +476,7 @@ public class LogicalOperatorsTest extends TestCase {
 		assertEquals(expectedResultSize, count);
 		assertTrue(SName1ResultSet.equals(expectedSName1ResultSet));
 
-	}*/
+	}
 
 	/**
 	 * Test Cross Product
@@ -530,8 +517,6 @@ public class LogicalOperatorsTest extends TestCase {
 		while (r != null) {
 
 			count++;
-
-			System.out.println(((myDB.physicaloperators.TempRow) (r)));
 
 			assertTrue(checkSchema(r.getColumnNames(), expectedSchema));
 
