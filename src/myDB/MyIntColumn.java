@@ -98,4 +98,9 @@ public class MyIntColumn extends MyColumn {
 			data[rowID]=((Integer)value).intValue();
 		//statuses[rowID]=2;
 	}
+	
+	@Override
+	public void eraseOldArray(){
+		this.data=null;
+	}
 }

@@ -99,5 +99,10 @@ public class MyDoubleColumn extends MyColumn {
 			data[rowID]=((Double)value).doubleValue();
 		//statuses[rowID]=2;
 	}
+	
+	@Override
+	public void eraseOldArray(){
+		this.data=null;
+	}
 
 }

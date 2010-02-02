@@ -293,5 +293,9 @@ public abstract class MyColumn implements Column {
 		}
 		return false;
 	}
+	
+	
+	//temporary method just to end with the third milestone
+	public abstract void eraseOldArray();
 
 }

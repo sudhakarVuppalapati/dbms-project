@@ -98,5 +98,10 @@ public class MyFloatColumn extends MyColumn {
 			data[rowID]=((Float)value).floatValue();
 		//statuses[rowID]=2;
 	}
-
+	
+	
+	@Override
+	public void eraseOldArray(){
+		this.data=null;
+	}
 }
