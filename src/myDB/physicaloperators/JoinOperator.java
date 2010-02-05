@@ -1,10 +1,6 @@
 package myDB.physicaloperators;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import exceptions.NoSuchColumnException;
@@ -56,8 +52,8 @@ public class JoinOperator {
 		Column c;
 		
 		//aux 
-		int i,j,k=0,l=0;
-		String str1,str2;
+		int i,j,k=0/*,l=0*/;
+		/*String str1,str2;*/
 		
 		//aux arrays to maintain the rowIds from the two tables
 		
@@ -148,8 +144,8 @@ public class JoinOperator {
 			objArrRight=(Object[])(rightCol.getDataArrayAsObject());
 			for(i=0;i<leftColSize;i++)
 				for(j=0;j<rightColSize;j++){
-					str1=(String)objArrLeft[i];
-					str2=(String)objArrRight[j];
+					/*str1=(String)objArrLeft[i];
+					str2=(String)objArrRight[j];*/
 					if(objArrLeft[i]!=MyNull.NULLOBJ &&
 							objArrRight[j]!=MyNull.NULLOBJ &&
 							((String)objArrLeft[i]).equals((String)objArrRight[j])){ 
@@ -173,9 +169,7 @@ public class JoinOperator {
 			if(colType==Types.getIntegerType()){
 				//declare new array to hold the new column data
 				int[] newColData=new int[k]; // k is the cardinality of the join
-				
-				
-				
+								
 				//copy from the old array of the column
 				intArrLeft=(int[])c.getDataArrayAsObject();
 				for(i=0;i<k;i++){
@@ -216,11 +210,12 @@ public class JoinOperator {
 				((MyColumn)c).setData(newColData,k);
 			}
 			else { // if Object type
-				List newColData=new ArrayList(k); // k is the cardinality of the join
-				
+				/*List newColData=new ArrayList(k); // k is the cardinality of the join
+*/				Object[] newColData= new Object[k]; // k is the cardinality of the join
 				objArrLeft=(Object[])c.getDataArrayAsObject();
 				for(i=0;i<k;i++){
-					newColData.add(i,objArrLeft[leftRows[i]]);
+					//newColData.add(i,objArrLeft[leftRows[i]]);
+					newColData[i] = objArrLeft[leftRows[i]];
 				}
 				((MyColumn)c).eraseOldArray();
 				((MyColumn)c).setData(newColData,k);
@@ -287,13 +282,15 @@ public class JoinOperator {
 				input1.put(c.getColumnName(),c);
 			}
 			else { // if Object type
-				List newColData=new ArrayList(k); // k is the cardinality of the join
+				/*List newColData=new ArrayList(k); // k is the cardinality of the join*/
+				Object[] newColData = new Object[k]; // k is the cardinality of the join
 				
 				objArrLeft=(Object[])c.getDataArrayAsObject();
 				for(i=0;i<k;i++){
 					//System.out.println("LeftRows: "+leftRows[i]);
 					//System.out.println("ArrLeft: "+dateArrLeft[leftRows[i]]);
-					newColData.add(i,objArrLeft[rightRows[i]]);
+					//newColData.add(i,objArrLeft[rightRows[i]]);
+					newColData[i] = objArrLeft[rightRows[i]];
 				}
 				((MyColumn)c).eraseOldArray();
 				((MyColumn)c).setData(newColData,k);

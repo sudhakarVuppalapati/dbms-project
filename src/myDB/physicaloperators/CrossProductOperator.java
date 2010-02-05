@@ -174,14 +174,16 @@ public class CrossProductOperator {
 				((MyColumn)col).setData(data, k);
 			}
 			else {
-				List data = new ArrayList();
+				/*List data = new ArrayList();*/
+				Object[] data = new Object[size1 * size2];
 				Object[] cells1 = (Object[])col.getDataArrayAsObject();
 				
 				for (int i = 0, m = col.getRowCount(); i < m; i++) {
 					if (cells1[i] != MyNull.NULLOBJ)
 						for (int j = 0; j < size2; j++)
 							//Reference, not copying
-							data.add(cells1[i]);
+							//data.add(cells1[i]);
+							data[k++] = cells1[i];
 				}
 				/*tmpCol = new MyObjectColumn(col.getColumnName(), type, data);*/
 				((MyColumn)col).setData(data, k);
@@ -242,13 +244,15 @@ public class CrossProductOperator {
 				((MyColumn)col).setData(data, k);
 			}
 			else {
-				List data = new ArrayList();
+				/*List data = new ArrayList();*/
+				Object[] data = new Object[size1 * size2];
 				Object[] cells2 = (Object[])col.getDataArrayAsObject();
 				
 				for (int i = 0; i < size1; i++)
 					for (int j = 0, m = col.getRowCount(); j < m; j++) {
 						if (cells2[j] != MyNull.NULLOBJ)
-							data.add(cells2[j]);
+							/*data.add(cells2[j]);*/
+							data[k++] = cells2[j];
 					}
 				/*tmpCol = new MyObjectColumn(col.getColumnName(), type, data);*/
 				((MyColumn)col).setData(data, k);
