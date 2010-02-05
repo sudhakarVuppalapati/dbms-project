@@ -401,8 +401,39 @@ public class MyQueryLayer implements QueryLayer {
 			
 				tableAsCols.open();
 				Column c;
+				Type t;
 				while((c=tableAsCols.next())!=null){
-					processingResult.put(c.getColumnName(), c);
+					
+					t=c.getColumnType();
+					int colSize=c.getRowCount();
+					Object oldArray=c.getDataArrayAsObject();
+					
+					if(t==Types.getIntegerType()){
+						int[] newData=new int[colSize];
+						System.arraycopy(oldArray,0, newData, 0, colSize);
+						c=new MyIntColumn(c.getColumnName(),c.getColumnType(),newData);
+					}
+					else if(t==Types.getLongType()){
+						long[] newData=new long[colSize];
+						System.arraycopy(oldArray,0, newData, 0, colSize);
+						c=new MyLongColumn(c.getColumnName(),c.getColumnType(),newData);
+					}
+					else if(t==Types.getFloatType()){
+						float[] newData=new float[colSize];
+						System.arraycopy(oldArray,0, newData, 0, colSize);
+						c=new MyFloatColumn(c.getColumnName(),c.getColumnType(),newData);
+					}
+					else if(t==Types.getDoubleType()){
+						double[] newData=new double[colSize];
+						System.arraycopy(oldArray,0, newData, 0, colSize);
+						c=new MyDoubleColumn(c.getColumnName(),c.getColumnType(),newData);
+					}
+					else{
+						Object[] newData=new Object[colSize];
+						System.arraycopy(oldArray,0, newData, 0, colSize);
+						c=new MyObjectColumn(c.getColumnName(),c.getColumnType(),newData);
+					}
+					processingResult.put(c.getColumnName(),c);
 				}
 				
 				tableAsCols.close();
