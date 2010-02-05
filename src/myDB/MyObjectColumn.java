@@ -33,6 +33,7 @@ public class MyObjectColumn extends MyColumn {
 	public MyObjectColumn(String name, Type type,/*List*/Object[] data) {
 		super(name,type);
 		this.data=data;
+		curSize=data.length;
 		//statuses=new byte[data.size()];
 	}
 	
