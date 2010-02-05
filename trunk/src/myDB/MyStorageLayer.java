@@ -106,6 +106,7 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 		int[] ints = null;
 		float[] floats = null;
 		long[] longs = null;
+		Object[] objects = null;
 
 		ObjectInputStream ois = null;
 		DataInputStream dis = null;
@@ -233,10 +234,13 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 								continue;
 							}
 
-							tmpColList = new ArrayList(Math.round(tc.rowNum * Const.FACTOR));
+							//tmpColList = new ArrayList(Math.round(tc.rowNum * Const.FACTOR));
+							objects = new Object[Math.round(tc.rowNum * Const.FACTOR)];
 							for (i = 0; i < tc.rowNum; i++) 
-								tmpColList.add(tc.data[i + tc.rowNum * tmp]);
-							mc.setData(tmpColList, tc.rowNum);	
+								//tmpColList.add(tc.data[i + tc.rowNum * tmp]);
+								objects[i] = tc.data[i + tc.rowNum * tmp];
+							//mc.setData(tmpColList, tc.rowNum);	
+							mc.setData(objects, tc.rowNum);
 						}
 
 						/** Construct the rows */
@@ -294,19 +298,25 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 							}
 
 							if(tmpType == Types.getDateType()){
-								tmpColList = new ArrayList(Math.round(rowNo * Const.FACTOR));
+								//tmpColList = new ArrayList(Math.round(rowNo * Const.FACTOR));
+								objects = new Object[Math.round(rowNo * Const.FACTOR)];
 								for (i = 0; i < rowNo; i++) {
-									tmpColList.add(new Date(dis.readLong()));	
+									//tmpColList.add(new Date(dis.readLong()));	
+									objects[i] = new Date(dis.readLong());
 								}
 
-								mc.setData(tmpColList, rowNo);
+								//mc.setData(tmpColList, rowNo);
+								mc.setData(objects, rowNo);
 								continue;
 							}
 
-							tmpColList = new ArrayList(Math.round(rowNo * Const.FACTOR));
+							//tmpColList = new ArrayList(Math.round(rowNo * Const.FACTOR));
+							objects = new Object[Math.round(rowNo * Const.FACTOR)];
 							for (i = 0; i < rowNo; i++)
-								tmpColList.add(dis.readUTF());
-							mc.setData(tmpColList, rowNo);			
+								//tmpColList.add(dis.readUTF());
+								objects[i] = dis.readUTF();
+							//mc.setData(tmpColList, rowNo);			
+							mc.setData(objects, rowNo);
 						}
 
 						/** Construct the rows */
@@ -362,7 +372,6 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 		Column mc = null;
 		Type tmpType = null;
 		Table t = null;
-		Object obj = null;
 
 		/** All possible arrays, to speed up writing */
 		double[] doubles = null;

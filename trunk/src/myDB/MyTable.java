@@ -76,7 +76,7 @@ public class MyTable implements Table {
 				col=new MyLongColumn(colName,colType);
 			}
 			else col=new MyObjectColumn(colName,colType);
-
+			
 			cols.put(colName,col);
 		}
 	}
