@@ -12,6 +12,7 @@ import myDB.MyIntColumn;
 import myDB.MyLongColumn;
 import myDB.MyNull;
 import myDB.MyObjectColumn;
+import myDB.btree.util.Infinity;
 import exceptions.InvalidKeyException;
 import exceptions.InvalidPredicateException;
 import exceptions.InvalidRangeException;
@@ -33,7 +34,7 @@ public class SelectionOperator {
 	 * This method acts as a intercepter to a various types of select methods.
 	 * @param data
 	 * @param relations
-	 * @param predicate
+	 * @param predicate 
 	 * @param indexLayer
 	 * @return
 	 * @throws InvalidPredicateException
@@ -52,80 +53,124 @@ public class SelectionOperator {
 			throws InvalidPredicateException, SchemaMismatchException, NoSuchTableException {
 
 		int[] result;
-		if (relations != null) 
-				result = singleBoundedSelect(data, relations, predicate, indexLayer, null);
+		
+		Column tmpCol = null;
+		List<Column> colList = null;
+		
+		if (relations != null) {
+			result = singleBoundedSelect(data, relations, predicate, indexLayer, null);
+			colList = new ArrayList<Column>();	
+		}
 		else 
 			result =  boundedSelect(data, predicate, null);
 		
-		int n = result.length;
+		/** 
+		 * TODO 
+		 * 1. defer the checking deleted rows until final result retrieval
+		 * 2. Improvement1: keep track of deleted rows ID at the first column, so we dont need to 
+		 *                  check every column
+		 * 3. Improvement2: dont need to create new array. Just set data directly in existing 
+		 *                  column. To do that, we need to create type-specific update() method
+		 *                  for each Column (no use of update(int, Object) anymore, except in MyTable)
+		 * 4. Improvement3: no need for eraseOldArray();
+		 */
+		int k, n = result.length;
 		Type type;
-		List<Column> colList = new ArrayList<Column>();
-		MyColumn tmpCol;
+		
 		for (Column col : data.values()) {
 			type = col.getColumnType();
+			k = 0;
 			if (type == Types.getIntegerType()) {
 				int[] tmpContent = (int[])col.getDataArrayAsObject(); 
 				int[] newData = new int[result.length];
 				for (int i = 0; i < n; i++) {
-					newData[i] = tmpContent[result[i]]; 
+					if (tmpContent[result[i]] != Integer.MAX_VALUE)
+						newData[k++] = tmpContent[result[i]]; 
 				}
-				//tmpCol = new MyIntColumn(col.getColumnName(), type, newData);
-				((MyColumn)col).eraseOldArray();
-				((MyColumn)col).setData(newData, n);
+				if (relations != null)
+					tmpCol = new MyIntColumn(col.getColumnName(), type, newData);
+				else {
+					((MyColumn)col).eraseOldArray();
+					((MyColumn)col).setData(newData, k);
+				}
 			}
 			else if (type == Types.getFloatType()) {
 				float[] tmpContent = (float[])col.getDataArrayAsObject(); 
 				float[] newData = new float[result.length];
 				for (int i = 0; i < n; i++) {
-					newData[i] = tmpContent[result[i]]; 
+					if (tmpContent[result[i]] != Float.MAX_VALUE)
+						newData[k++] = tmpContent[result[i]]; 
 				}
-				//tmpCol = new MyFloatColumn(col.getColumnName(), type, newData);
-				((MyColumn)col).eraseOldArray();
-				((MyColumn)col).setData(newData, n);
+				if (relations != null)
+					tmpCol = new MyFloatColumn(col.getColumnName(), type, newData);
+				else {
+					((MyColumn)col).eraseOldArray();
+					((MyColumn)col).setData(newData, k);
+				}
 			}
 			else if (type == Types.getDoubleType()) {
 				double[] tmpContent = (double[])col.getDataArrayAsObject(); 
 				double[] newData = new double[result.length];
 				for (int i = 0; i < n; i++) {
-					newData[i] = tmpContent[result[i]]; 
+					if (tmpContent[result[i]] != Double.MAX_VALUE)
+						newData[k++] = tmpContent[result[i]]; 
 				}
-				//tmpCol = new MyDoubleColumn(col.getColumnName(), type, newData);
-				((MyColumn)col).eraseOldArray();
-				((MyColumn)col).setData(newData, n);
+				if (relations != null)
+					tmpCol = new MyDoubleColumn(col.getColumnName(), type, newData);
+				else {
+					((MyColumn)col).eraseOldArray();
+					((MyColumn)col).setData(newData, k);
+				}
 			}
 			else if (type == Types.getLongType()) {
 				long[] tmpContent = (long[])col.getDataArrayAsObject(); 
 				long[] newData = new long[result.length];
 				for (int i = 0; i < n; i++) {
-					newData[i] = tmpContent[result[i]]; 
+					if (tmpContent[result[i]] != Long.MAX_VALUE)
+						newData[k++] = tmpContent[result[i]]; 
 				}
-				//tmpCol = new MyLongColumn(col.getColumnName(), type, newData);
-				((MyColumn)col).eraseOldArray();
-				((MyColumn)col).setData(newData, n);
+				if (relations != null)
+					tmpCol = new MyLongColumn(col.getColumnName(), type, newData);
+				else
+				{
+					((MyColumn)col).eraseOldArray();
+					((MyColumn)col).setData(newData, k);
+				}
 			}
 			//THIS IS REFERENCE, NOT COPY
 			else {
 				Object[] tmpContent = (Object[])col.getDataArrayAsObject(); 	
-				List newData = new ArrayList();
+				//List newData = new ArrayList();
+				Object[] newData = new Object[result.length];
 				for (int i = 0; i < n; i++) {
-					newData.add(tmpContent[result[i]]); 
+					//newData.add(tmpContent[result[i]]);
+					if (tmpContent[result[i]] != Infinity.MAX_VALUE)
+						newData[k++] = tmpContent[result[i]];
 				}
-				//tmpCol = new MyObjectColumn(col.getColumnName(), type, newData);
-				((MyColumn)col).eraseOldArray();
-				((MyColumn)col).setData(newData, n);
+				if (relations != null)
+					tmpCol = new MyObjectColumn(col.getColumnName(), type, newData);
+				else {
+					((MyColumn)col).eraseOldArray();
+					((MyColumn)col).setData(newData, k);
+				}
 			
 			}
 			//Razvan: no need for this
-			//colList.add(col);
+			if (relations != null) {
+				colList.add(tmpCol);
+			}
+			
 		}
 		
 		//Possible optimization: Creating new hashMap is faster than clearing the existing one
 		//Razvan: no need for this
-		//data.clear();
 		//Razvan: no need for this
-		/*for (Column col : colList) {
-			data.put(col.getColumnName(), col);
-		}*/
+		if (relations != null) {
+			data.clear();
+			for (Column col : colList) {
+				data.put(col.getColumnName(), col);
+			}	
+		}		
 		return data;
 	}
 	
@@ -505,22 +550,20 @@ public class SelectionOperator {
 		if (pTreeNode.isLeaf()) {
 			try {
 				String colName = pTreeNode.getColumnName();
-				ComparisonOperator op = pTreeNode.getComparisonOperator();
-				Object value = pTreeNode.getValue();
 				
 				String[] indexNames = indexLayer.findIndex(relation, colName);
 				
-				if (indexNames != null && indexNames.length > 0)
+				/*if (indexNames != null && indexNames.length > 0)
 					return indexedSelectByConjunct(indexNames, pTreeNode, indexLayer);
-				else if (bounds != null)
+				else */if (bounds != null)
 					return boundedScanByConjunct(data, pTreeNode, bounds);
 				else return scanByConjunct(data, pTreeNode);
 				
 			} catch (NotLeafNodeException e) {
 				throw new InvalidPredicateException();
-			} catch (NoSuchIndexException e) {
+			} /*catch (NoSuchIndexException e) {
 				throw new SchemaMismatchException();
-			}
+			}*/
 		}
 		else {
 			try {
@@ -583,9 +626,6 @@ public class SelectionOperator {
 	throws InvalidPredicateException {
 		if (pTreeNode.isLeaf()) {
 			try {
-				String colName = pTreeNode.getColumnName();
-				ComparisonOperator op = pTreeNode.getComparisonOperator();
-				Object value = pTreeNode.getValue();
 				if (bounds != null)
 					return boundedScanByConjunct(data, pTreeNode, bounds);
 				else return scanByConjunct(data, pTreeNode);				
@@ -655,7 +695,6 @@ public class SelectionOperator {
 			SchemaMismatchException, NoSuchTableException, InvalidPredicateException {
 
 		/** Get the conjunct's element */
-		String colName = predicate.getColumnName();
 		ComparisonOperator op = predicate.getComparisonOperator();
 		Object value = predicate.getValue();
 
