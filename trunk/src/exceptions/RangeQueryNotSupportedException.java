@@ -1,7 +1,7 @@
 package exceptions;
 
 /**
- *
+ * 
  */
 public class RangeQueryNotSupportedException extends Exception {
 

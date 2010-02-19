@@ -1,6 +1,6 @@
 package exceptions;
 
-/** 
+/**
  * 
  */
 public class NotLeafNodeException extends Exception {
