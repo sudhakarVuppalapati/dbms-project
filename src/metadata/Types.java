@@ -8,11 +8,25 @@ package metadata;
 public class Types {
 
 	private enum FixedType implements Type {
-		FLOAT(java.lang.Float.class, -1, "Float"),
-		DOUBLE(java.lang.Double.class, -1, "Double"), 
-		INTEGER(java.lang.Integer.class, -1, "Integer"), 
-		LONG(java.lang.Long.class, -1, "Long"), 
-		VARCHAR(java.lang.String.class, -1, "Varchar"),
+
+		/**
+		 * Float type
+		 */
+		FLOAT(java.lang.Float.class, -1, "Float"), /**
+		 * Double type
+		 */
+		DOUBLE(java.lang.Double.class, -1, "Double"), /**
+		 * Integer type
+		 */
+		INTEGER(java.lang.Integer.class, -1, "Integer"), /**
+		 * Long type
+		 */
+		LONG(java.lang.Long.class, -1, "Long"), /**
+		 * Varchar type
+		 */
+		VARCHAR(java.lang.String.class, -1, "Varchar"), /**
+		 * Date type
+		 */
 		DATE(java.util.Date.class, -1, "Date");
 
 		private FixedType(Class<?> clazz, int length, String name) {
@@ -97,6 +111,10 @@ public class Types {
 	 */
 	static final class CharType implements Type {
 
+		/**
+		 * @param length
+		 *            Maximum length of a string with this Char type
+		 */
 		public CharType(int length) {
 			this.length = length;
 			this.name = "Char(" + length + ")";
