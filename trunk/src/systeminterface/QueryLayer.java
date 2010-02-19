@@ -183,6 +183,10 @@ public interface QueryLayer {
 	public void dropColumn(String tableName, String columnName)
 			throws NoSuchTableException, NoSuchColumnException;
 
+	/*
+	 * Queries
+	 */
+
 	/**
 	 * 
 	 * Perform a query.
