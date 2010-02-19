@@ -2,7 +2,7 @@ package exceptions;
 
 /**
  * 
- *
+ * 
  */
 public class NoSuchIndexException extends Exception {
 
