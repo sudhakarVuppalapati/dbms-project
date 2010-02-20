@@ -18,7 +18,7 @@ public class MyOperator<OUTPUT> implements Operator<OUTPUT> {
 	}
 
 	public MyOperator(Collection<OUTPUT> dataValue) {
-		data = new ArrayList<OUTPUT>(dataValue);
+		data = dataValue;
 	}
 
 	@Override
