@@ -41,7 +41,9 @@ public class MyTable implements Table {
 	private Map<String, Type> schema;
 	private List<Row> rows;
 	private Map<String, Column> cols;
-
+	
+	/** The transactionID that is currently locking. Negative if it's free of lock */
+	private int lockingTrans = -1;
 	
 	/*
 	 * temporary vars used all over the class
@@ -1019,6 +1021,26 @@ public class MyTable implements Table {
 			result[i] = rowIDs.get(i);
 		}
 		return result;
+	}
+	
+	protected int findRow(Row row) throws SchemaMismatchException, NoSuchRowException {
+		int[] res = getRowID(row);
+		if (res.length == 0) {
+			throw new NoSuchRowException();
+		}
+		else return res[0];
+	}
+	
+	protected int getLock() {
+		return lockingTrans;
+	}
+	
+	protected void releaseLock() {
+		lockingTrans = -1;
+	}
+	
+	protected void setLock(int trans) {
+		lockingTrans = trans;
 	}
 	
 	/** TENTATIVE -$END */
