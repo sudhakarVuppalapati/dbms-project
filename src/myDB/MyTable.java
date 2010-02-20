@@ -4,7 +4,6 @@
 package myDB;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,9 +40,6 @@ public class MyTable implements Table {
 	private Map<String, Type> schema;
 	private List<Row> rows;
 	private Map<String, Column> cols;
-	
-	/** The transactionID that is currently locking. Negative if it's free of lock */
-	private int lockingTrans = -1;
 	
 	/*
 	 * temporary vars used all over the class
@@ -815,6 +811,57 @@ public class MyTable implements Table {
 		}
 		rows.set(tupleID,row);
 	}
+	
+	protected void insertRow(int tupleID, Row row)
+	throws SchemaMismatchException, NoSuchRowException {
+		
+		colNames=row.getColumnNames();
+		tmpRowValues=new Object[colNames.length];
+
+		if(tupleID >= rows.size()) throw new NoSuchRowException();
+		
+		if(rows.get(tupleID)!=null) throw new NoSuchRowException();
+		
+		//check size of the new rowSchema
+		if(colNames.length!=schema.size()){
+			throw new SchemaMismatchException();
+		}
+
+		//check if the name of the columns are the same
+		schemaColNames=(String[])schema.keySet().toArray(new String[0]);
+		boolean found=false;
+		for(int i=0;i<schemaColNames.length;i++){
+			for(int j=0;j<colNames.length;j++)
+				if(schemaColNames[i].equalsIgnoreCase(colNames[j])) {
+					found=true;
+					break;
+				}
+			if(!found){
+				throw new SchemaMismatchException(); //the schema lacks at least one column name
+			}
+		}
+
+		//check the actual types
+		for(int j=0;j<colNames.length;j++){
+			try{
+				if(! row.getColumnType(colNames[j]).equals(schema.get(colNames[j]))){
+					throw new SchemaMismatchException();
+				}
+
+				tmpRowValues[j]=row.getColumnValue(colNames[j]);
+			}
+			catch(NoSuchColumnException nsce){
+				throw new SchemaMismatchException();
+			}
+		}
+		
+		Column col;
+		for(int i=0;i<colNames.length;i++){
+			col=cols.get(colNames[i]);
+			((MyColumn)col).update(tupleID,tmpRowValues[i]);
+		}
+		rows.set(tupleID,row);
+	}
 
 	/* (non-Javadoc)
 	 * @see systeminterface.Table#updateRow(systeminterface.Row, systeminterface.Row)
@@ -1030,18 +1077,6 @@ public class MyTable implements Table {
 		}
 		else return res[0];
 	}
-	
-	protected int getLock() {
-		return lockingTrans;
-	}
-	
-	protected void releaseLock() {
-		lockingTrans = -1;
-	}
-	
-	protected void setLock(int trans) {
-		lockingTrans = trans;
-	}
-	
+
 	/** TENTATIVE -$END */
 }
