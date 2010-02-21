@@ -1,7 +1,9 @@
 package myDB;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import logrecords.DeleteLogPayload;
 import logrecords.InsertLogPayload;
@@ -120,7 +122,8 @@ public class MyTransactionLayer implements TransactionLayer {
 		synchronized (lockedTables) {
 			Enumeration<String> keys = lockedTables.keys();
 			
-			while ((table = keys.nextElement()) != null) {
+			while (keys.hasMoreElements()) {
+				table = keys.nextElement();
 				if (lockedTables.get(table).intValue() == TID) {
 					lockedTables.remove(table);
 				}
@@ -156,12 +159,16 @@ public class MyTransactionLayer implements TransactionLayer {
 			
 			synchronized (lockedTables) {
 				Enumeration<String> keys = lockedTables.keys();
+				List<String> list = new ArrayList<String>();
 				
-				while ((table = keys.nextElement()) != null) {
+				while (keys.hasMoreElements()) {
+					table = keys.nextElement();
 					if (lockedTables.get(table).intValue() == TID) {
-						lockedTables.remove(table);
+						list.add(table);
 					}
 				}	
+				for (String str : list)
+					lockedTables.remove(str);
 			}
 								
 			trans.clearTransaction(TID);
@@ -178,24 +185,30 @@ public class MyTransactionLayer implements TransactionLayer {
 			TableLockedException {
 		
 		if (trans.isActive(TID)) {		
-			Integer i = lockedTables.get(tableName);
-			if (i == null) {
+			Integer in = lockedTables.get(tableName);
+			if (in == null) {
 				lockedTables.put(tableName, TID);
 			}
-			else if (i.intValue() != TID)
+			else if (in.intValue() != TID)
 				throw new TableLockedException();
 			
 			MyTable t = ((MyTable)storageLayer.getTableByName(tableName));
-			int rowID = t.findRow(row);
+			int[] rowIDs = t.getRowID(row);
 			
+			if (rowIDs.length == 0)
+				throw new NoSuchRowException();
+			
+			for (int i = 0; i < rowIDs.length; i++) {
+				LogRecord log = new LogRecord(TID, LoggedOperation.DELETE, 
+						new DeleteLogPayload(rowIDs[i], tableName, row));
+				trans.writeOperation(TID, log);
+				logStore.writeRecord(log);
+				
+				//delete row
+				t.deleteRow(rowIDs[i]);
+				
+			}
 			//Write log ahead
-			LogRecord log = new LogRecord(TID, LoggedOperation.DELETE, 
-					new DeleteLogPayload(rowID, tableName, row));
-			trans.writeOperation(TID, log);
-			logStore.writeRecord(log);
-			
-			//delete row
-			t.deleteRow(rowID);
 		}
 		else throw new NoSuchTransactionException("Cannot delete. Invalid transaction ID: " + TID);
 	}
@@ -276,7 +289,8 @@ public class MyTransactionLayer implements TransactionLayer {
 		synchronized (lockedTables) {
 			if (testLocks(query, TID, tempTables)) {
 				Enumeration<String> keys = tempTables.keys();			
-				while ((table = keys.nextElement()) != null) {
+				while (keys.hasMoreElements()) {
+					table = keys.nextElement();
 					if (!lockedTables.contains(table)) {
 						lockedTables.put(table, TID);
 					}
@@ -313,15 +327,20 @@ public class MyTransactionLayer implements TransactionLayer {
 			
 		//TODO might need to check for row existence
 		MyTable t = ((MyTable)storageLayer.getTableByName(tableName));
-		int rowID = t.findRow(oldRow);
+		int[] rowIDs = t.getRowID(oldRow);
 	
-		//Write log ahead
-		LogRecord log = new LogRecord(TID, LoggedOperation.UPDATE, new UpdateLogPayload(rowID, tableName, oldRow, newRow));
-		trans.writeOperation(TID, log);
-		logStore.writeRecord(log);
+		if (rowIDs.length == 0)
+			throw new NoSuchRowException();
 		
-		//insert row
-		t.updateRow(rowID, newRow);
+		for (int j = 0; j < rowIDs.length; j++) {
+			LogRecord log = new LogRecord(TID, LoggedOperation.UPDATE, new UpdateLogPayload(rowIDs[j], tableName, oldRow, newRow));
+			trans.writeOperation(TID, log);
+			logStore.writeRecord(log);
+			
+			//insert row
+			t.updateRow(rowIDs[j], newRow);
+		}
+		//Write log ahead
 	}
 
 	@Override
