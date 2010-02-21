@@ -381,7 +381,8 @@ public class MyQueryLayer implements QueryLayer {
 						content.put(col.getColumnName(), data[i]);
 				}
 			}
-			rowResult.add(new TempRow(schema, content));
+			if (content.size() > 0)
+				rowResult.add(new TempRow(schema, content));
 		}
 		return new MyOperator(rowResult);
 	}
