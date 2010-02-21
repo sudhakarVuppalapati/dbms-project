@@ -1035,9 +1035,10 @@ public class MyTable implements Table {
 		// or -1 if not found
 		Row r = null;
 		Object rowCell = null, givenRowCell = null;
-		boolean found = true;
+		boolean found;
 		int i=0, m = rows.size(), p = colNames.length;
 		for(; i < m; i++){
+			found = true;
 			r = rows.get(i);
 			if(r != null) {			
 				for(int j = 0; j < p; j++) {
