@@ -377,7 +377,7 @@ public class MyTable implements Table {
 		rows.set(tupleID,null); // we finally decided to do it this way but think about it
 		
 	}
-
+	
 	@Override
 	public void dropColumnByName(String columnName)
 	throws NoSuchColumnException {
