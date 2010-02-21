@@ -23,9 +23,9 @@ public abstract class MyColumn implements Column {
 	private Type type;
 	
 	//syncronize with Const !!!!!!!!!
-	protected final float FACTOR= 1.2f;
+	protected static final float FACTOR= 1.2f;
 	
-	protected final int defaulInitialCapacity=20;
+	protected static final int defaulInitialCapacity=20;
 	
 	//private byte status;  /* 0-unchanged, 1-deleted, 2-updated, 3-newly added to schema*/
 	
