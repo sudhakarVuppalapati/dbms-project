@@ -203,7 +203,10 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 							tmpType = mc.getColumnType();
 
 							if(tmpType == Types.getIntegerType()) {
-								ints = new int[Math.round(tc.rowNum * Const.FACTOR)];
+								if (tc.rowNum > 0) 
+									ints = new int[Math.round(tc.rowNum * Const.FACTOR)];
+								else 
+									ints = new int[Math.round(MyColumn.defaulInitialCapacity * Const.FACTOR)];
 								for (i = 0; i < tc.rowNum; i++) 
 									ints[i] = (Integer) tc.data[i + tc.rowNum * tmp];				
 								mc.setData(ints, tc.rowNum);
@@ -211,7 +214,10 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 							}
 
 							if(tmpType == Types.getLongType()){
-								longs = new long[Math.round(tc.rowNum * Const.FACTOR)];
+								if (tc.rowNum > 0) 
+									longs = new long[Math.round(tc.rowNum * Const.FACTOR)];
+								else 
+									longs = new long[Math.round(MyColumn.defaulInitialCapacity * Const.FACTOR)];
 								for (i = 0; i < tc.rowNum; i++) 
 									longs[i] = (Long) tc.data[i + tc.rowNum * tmp];
 								mc.setData(longs, tc.rowNum);
@@ -219,7 +225,10 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 							}
 
 							if(tmpType == Types.getDoubleType()){
-								doubles = new double[Math.round(tc.rowNum * Const.FACTOR)];
+								if (tc.rowNum > 0)
+									doubles = new double[Math.round(tc.rowNum * Const.FACTOR)];
+								else 
+									doubles = new double[Math.round(MyColumn.defaulInitialCapacity * Const.FACTOR)];
 								for (i = 0; i < tc.rowNum; i++) 
 									doubles[i] = (Double) tc.data[i + tc.rowNum * tmp];
 								mc.setData(doubles, tc.rowNum);
@@ -227,7 +236,10 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 							}
 
 							if(tmpType == Types.getFloatType()){
-								floats = new float[Math.round(tc.rowNum * Const.FACTOR)];
+								if (tc.rowNum > 0)
+									floats = new float[Math.round(tc.rowNum * Const.FACTOR)];
+								else
+									floats = new float[Math.round(MyColumn.defaulInitialCapacity * Const.FACTOR)];
 								for (i = 0; i < tc.rowNum; i++) 
 									floats[i] = (Float) tc.data[i + tc.rowNum * tmp];
 								mc.setData(floats, tc.rowNum);
@@ -235,7 +247,10 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 							}
 
 							//tmpColList = new ArrayList(Math.round(tc.rowNum * Const.FACTOR));
-							objects = new Object[Math.round(tc.rowNum * Const.FACTOR)];
+							if (tc.rowNum > 0)
+								objects = new Object[Math.round(tc.rowNum * Const.FACTOR)];
+							else
+								objects = new Object[Math.round(MyColumn.defaulInitialCapacity * Const.FACTOR)];
 							for (i = 0; i < tc.rowNum; i++) 
 								//tmpColList.add(tc.data[i + tc.rowNum * tmp]);
 								objects[i] = tc.data[i + tc.rowNum * tmp];
