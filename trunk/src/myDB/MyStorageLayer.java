@@ -260,7 +260,7 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 
 						/** Construct the rows */
 						for (i = 0; i < tc.rowNum; i++) {
-							tmpTbl.addRow(new MyRow(tmpTbl, i));
+							tmpTbl.addToRow(new MyRow(tmpTbl, i));
 						}	
 					}					
 				}
@@ -354,7 +354,7 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 
 						/** Construct the rows */
 						for (i = 0; i < rowNo; i++) {
-							tmpTbl.addRow(new MyRow(tmpTbl, i));
+							tmpTbl.addToRow(new MyRow(tmpTbl, i));
 						}					
 					}				
 				}
@@ -362,9 +362,6 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 		}
 		catch (NoSuchColumnException nsce) {
 			nsce.printStackTrace();
-		}
-		catch (SchemaMismatchException sme) {
-			throw new IOException();
 		}
 		catch (FileNotFoundException fnfe) {
 			throw new IOException();

@@ -1078,6 +1078,10 @@ public class MyTable implements Table {
 		}
 		else return res[0];
 	}
+	
+	protected void addToRow(Row r){
+		rows.add(r);
+	}
 
 	/** TENTATIVE -$END */
 }
