@@ -13,6 +13,7 @@ import operator.Operator;
 import util.LoggedOperation;
 
 import logrecords.DeleteLogPayload;
+import logrecords.InsertLogPayload;
 import logrecords.LogPayload;
 import logrecords.LogRecord;
 import logrecords.UpdateLogPayload;
@@ -105,8 +106,16 @@ public class MyRecoveryManager implements RecoveryManager {
 				if( loggedOp == LoggedOperation.START_TRANSACTION )
 					tt.put(tid, new  ArrayList<LogRecord>());
 				
-				else if (loggedOp == LoggedOperation.ABORT_TRANSACTION || loggedOp == LoggedOperation.COMMIT_TRANSACTION){
-					orderedLogs.removeAll(tt.remove(lr.getTID()));
+				/*else if (loggedOp == LoggedOperation.ABORT_TRANSACTION ){
+					//ArrayList list=tt.remove();
+					//if(list != null)
+					orderedLogs.removeAll(tt.get(lr.getTID()));
+				}*/
+				
+				else if(loggedOp == LoggedOperation.COMMIT_TRANSACTION){
+					/*ArrayList list=tt.get(lr.getTID());
+					orderedLogs.removeAll(list);*/
+					tt.remove(tid);
 				}
 				
 				/*
@@ -114,28 +123,35 @@ public class MyRecoveryManager implements RecoveryManager {
 				 * to the list of ops of the transaction it belongs to 
 				 */
 				else {
-					orderedLogs.add(lr);
-					tt.get(tid).add(lr);
+					if(loggedOp != LoggedOperation.ABORT_TRANSACTION){
+						orderedLogs.add(lr);
+						tt.get(tid).add(lr);
+					}
 				}
 					
 			}
+			
+			
+			for(ArrayList<LogRecord> l : tt.values()){
+				orderedLogs.removeAll(l);
+			}
+			
+			
 			
 			/*
 			 * Redo phase: iterate through the LinkedList and apply the 
 			 * inverse of each operation
 			 */
-			Iterator<LogRecord> it=orderedLogs.descendingIterator();
-			while(it.hasNext()){
+			for (LogRecord lrec: orderedLogs){
 				
-				lr = it.next();
-				loggedOp = lr.getOperation();
-				payload = lr.getLogPayload();
+				loggedOp = lrec.getOperation();
+				payload = lrec.getLogPayload();
 				tableName=payload.getTableName();
 				rId=payload.getRowID();
 				
 				if(loggedOp == LoggedOperation.UPDATE){
 					try {
-						storageLayer.getTableByName(tableName).updateRow(rId,((UpdateLogPayload)payload).getOldRow());
+						storageLayer.getTableByName(tableName).updateRow(rId,((UpdateLogPayload)payload).getNewRow());
 					} catch (SchemaMismatchException e) {
 						e.printStackTrace();
 					} catch (NoSuchRowException e) {
@@ -146,19 +162,19 @@ public class MyRecoveryManager implements RecoveryManager {
 				}
 				else if(loggedOp == LoggedOperation.INSERT){
 					try {
-						storageLayer.getTableByName(tableName).deleteRow(rId);
-					} catch (NoSuchRowException e) {
+						((MyTable)storageLayer.getTableByName(tableName)).addRow(((InsertLogPayload)payload).getInsertedRow());
+					}  catch (NoSuchTableException e) {
 						e.printStackTrace();
-					} catch (NoSuchTableException e) {
+					} catch (SchemaMismatchException e) {
 						e.printStackTrace();
 					}
 				}
 				else{
 					try {
-						storageLayer.getTableByName(tableName).addRow(((DeleteLogPayload)payload).getDeletedRow());
-					} catch (SchemaMismatchException e) {
-						e.printStackTrace();
+						storageLayer.getTableByName(tableName).deleteRow(rId);
 					} catch (NoSuchTableException e) {
+						e.printStackTrace();
+					} catch (NoSuchRowException e) {
 						e.printStackTrace();
 					}
 				}
