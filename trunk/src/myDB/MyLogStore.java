@@ -3,6 +3,9 @@
  */
 package myDB;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import logrecords.LogRecord;
 import operator.Operator;
 import systeminterface.LogStore;
@@ -14,11 +17,12 @@ import systeminterface.LogStore;
  */
 public class MyLogStore implements LogStore {
 
+	List<LogRecord> logs;
 	/**
 	 * Constructor. Please do not modify this constructor
 	 */
 	public MyLogStore() {
-		// TODO Auto-generated constructor stub
+		logs = new ArrayList<LogRecord>();
 	}
 
 	/*
@@ -28,8 +32,7 @@ public class MyLogStore implements LogStore {
 	 */
 	@Override
 	public void clear() {
-		// TODO Auto-generated method stub
-
+		logs.clear();
 	}
 
 	/*
@@ -39,8 +42,7 @@ public class MyLogStore implements LogStore {
 	 */
 	@Override
 	public Operator<? extends LogRecord> getLogRecords() {
-		// TODO Auto-generated method stub
-		return null;
+		return new MyOperator<LogRecord>(logs);
 	}
 
 	/*
@@ -50,8 +52,7 @@ public class MyLogStore implements LogStore {
 	 */
 	@Override
 	public void writeRecord(LogRecord record) {
-		// TODO Auto-generated method stub
-
+		logs.add(record);
 	}
 
 }
