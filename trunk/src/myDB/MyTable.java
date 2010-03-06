@@ -44,10 +44,10 @@ public class MyTable implements Table {
 	/*
 	 * temporary vars used all over the class
 	 */
-	String[] colNames;
-	Object[] tmpRowValues;
-	String[] schemaColNames;
-	int noRows=0;
+	private String[] colNames;
+	private Object[] tmpRowValues;
+	private String[] schemaColNames;
+	private int noRows=0;
 
 	public MyTable(String tableName, Map<String,Type> tableSchema){
 		name=tableName;
@@ -55,12 +55,15 @@ public class MyTable implements Table {
 		rows=new ArrayList<Row>();
 		cols=new HashMap<String,Column>();
 
+		
+		
 		/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!    */
 		Set<String> colNames=schema.keySet();
 		Type colType;
 		Column col;
 		for(String colName:colNames){
 			colType=schema.get(colName);
+			
 			if(colType == Types.getIntegerType()){
 				col=new MyIntColumn(colName,colType);
 			}
@@ -84,7 +87,7 @@ public class MyTable implements Table {
 	}
 
 
-	//to be re-written without all the stupid comparison  of type
+	//to be re-written without all the stupid comparisons of type
 	@Override
 	public void addColumn(String columnName, Type columnType)
 	throws ColumnAlreadyExistsException {
@@ -211,24 +214,12 @@ public class MyTable implements Table {
 		//declare this auxiliary var if the sizes of the schemas are equal
 		boolean existingCols[]=new boolean[colNames.length];
 		
-		//check if the name of the columns are the same
-		/*schemaColNames=(String[])schema.keySet().toArray(new String[0]);
-		boolean found=false;
-		for(int i=0;i<schemaColNames.length;i++){
-			for(int j=0;j<colNames.length;j++)
-				if(schemaColNames[i].equalsIgnoreCase(colNames[j])) {
-					found=true;
-					break;
-				}
-			if(!found){
-				throw new SchemaMismatchException(); //the schema lacks at least one column name
-			}
-		}*/
 		
-		for(int i=0; i< colNames.length;i++){
+		//this is wrong !!!!!!!!
+		/*for(int i=0; i< colNames.length;i++){
 			if(!schema.containsKey(colNames[i]) || existingCols[i]) throw new SchemaMismatchException();
 			existingCols[i]=true;
-		}
+		}*/
 		
 		
 		//check the actual types
@@ -246,7 +237,7 @@ public class MyTable implements Table {
 		}
 		
 		rows.add(row);	
-		//MyRow mRow=new MyRow(this,);
+		
 		MyColumn curCol;
 		for(int i=0;i<colNames.length;i++){
 			curCol=((MyColumn)cols.get(colNames[i]));
@@ -254,7 +245,6 @@ public class MyTable implements Table {
 		}
 		noRows++;
 		
-		//return rows.size()-1;
 		return noRows-1;
 	}
 
@@ -275,14 +265,363 @@ public class MyTable implements Table {
 	SchemaMismatchException {
 
 		colNames=row.getColumnNames();
-		tmpRowValues=new Object[colNames.length];
+		
+		//aux Column var
+		Column c;
+		
+		//aux Type var
+		Type t;
+		
+		
+		//currentSize of the matchingRows array
+		int mrCurSize=20;
+		
+		//array to hold the matching rows and to pass them from column to column 
+		//so that at each new column I can check only the remaining matching rows 
+		//initial capacity to be increased if needed
+		int matchingRows[]=new int[mrCurSize];
+		
+		//no of used positions in the matchingRows array
+		int mr = 0;
+		
+		
+		
+		//hashmap used to store the names of the columns of the incoming row
+		//to check for column names duplicates
+		HashMap<String,Object> tmpColsNames=new HashMap<String,Object>();
+		
+		/*
+		 * new version of the method
+		 */
+		
 		
 		//check size of the new rowSchema
 		if(colNames.length!=schema.size()){
 			throw new SchemaMismatchException();
 		}
+		
+		
+		//initialize the matchingRows array
+		for(int i=0; i<mrCurSize; i++)
+			matchingRows[i] = -1;
+		
+		//iterate through all the columns of the incoming row and check 
+		//if it matches the schema of the table and at the same time look for possible matching rows	
+		for(int i=0; i<colNames.length; i++){
+			
+			t=schema.get(colNames[i]);
+			
+			//first check whether this columnName is part of the schema
+			if(t==null) throw new SchemaMismatchException();
+			
+			//check the type
+			try {
+				if(t != row.getColumnType(colNames[i]))
+					throw new SchemaMismatchException();
+			} catch (NoSuchColumnException e) {
+				e.printStackTrace();
+				throw new SchemaMismatchException();
+			}
+			
+			
+			//check for duplicates : see if this column name already exists
+			if(tmpColsNames.containsKey(colNames[i])) throw new SchemaMismatchException();
+			
+			
+			//add the current column name to tmpColsNames so that you can check for
+			//duplicates - put the current column name with any value in the map
+			tmpColsNames.put(colNames[i],MyNull.NULLOBJ);
+			
+			//retrieve the current column and it corresponding array
+			c =cols.get(colNames[i]);
+			
+			
+			//depending on the type of the column
+			if(t == Types.getIntegerType()){
+				
+				//cast the array to the specific type
+				int[] columnData= (int[])c.getDataArrayAsObject();
+				
+				//cast the value of the row to be deleted to the right type
+				int searchedVal;
+				try {
+					searchedVal = (Integer)row.getColumnValue(colNames[i]);
+				} catch (NoSuchColumnException e) {
+					e.printStackTrace();
+					throw new SchemaMismatchException();
+				}
+				
+				
+				
+				if(i == 0 ) { // for the first column, fill the matchingRows array
+				
+					//iterate through the columnData and look for the rows having the same value as the
+					//current value of the row to be deleted
+					for(int k = 0;k<columnData.length;k++){
+						if(columnData[k] == searchedVal) {
+							if(mr == mrCurSize){//no more space in the matchingRows array - this should happen very infrequently
+								
+								//double the size of the matching row 
+								int[] newMatchingRows=new int[mrCurSize*2];
+								
+								//initialize the newMatchingRows array in the additional elements
+								for(int l= mrCurSize; l< 2 * mrCurSize;  l++)
+									newMatchingRows[l] = -1;
+								
+								System.arraycopy(matchingRows, 0, newMatchingRows, 0, mrCurSize);
+								matchingRows=newMatchingRows;
+								mrCurSize*=2;
+								
+							}
+						
+							matchingRows[mr++] = k;
+						}
+					}
+				}
+				else { //not the first column in the incoming row=> check only the row that have already matched the previous values
+					
+					//iterate through the matchingRows array => and check only those rows in the current column
+					for(int k=0;k<matchingRows.length;k++){
+						if (matchingRows[k]!=-1 && 
+								columnData[matchingRows[k]] != searchedVal)  
+							matchingRows[k]= -1; //delete the matching row as it doesn't match anymore
+					}
+					
+				}
+			     
+			}
+			else if(t == Types.getLongType()){
+				
+				//cast the array to the specific type
+				long[] columnData= (long[])c.getDataArrayAsObject();
+				
+				//cast the value of the row to be deleted to the right type
+				long  searchedVal;
+				try {
+					searchedVal = (Long)row.getColumnValue(colNames[i]);
+				} catch (NoSuchColumnException e) {
+					e.printStackTrace();
+					throw new SchemaMismatchException();
+				}
+				
+				
+				
+				if(i == 0 ) { // for the first column, fill the matchingRows array
+				
+					//iterate through the columnData and look for the rows having the same value as the
+					//current value of the row to be deleted
+					for(int k = 0;k<columnData.length;k++){
+						if(columnData[k] == searchedVal) {
+							if(mr == mrCurSize){//no more space in the matchingRows array - this should happen very infrequently
+								
+								//double the size of the matching row 
+								int[] newMatchingRows=new int[mrCurSize*2];
+								
+								//initialize the newMatchingRows array in the additional elements
+								for(int l= mrCurSize; l< 2 * mrCurSize;  l++)
+									newMatchingRows[l] = -1;
+								
+								System.arraycopy(matchingRows, 0, newMatchingRows, 0, mrCurSize);
+								matchingRows=newMatchingRows;
+								mrCurSize*=2;
+								
+							}
+						
+							matchingRows[mr++] = k;
+						}
+					}
+				}
+				else { //not the first column in the incoming row=> check only the row that have already matched the previous values
+					
+					//iterate through the matchingRows array => and check only those rows in the current column
+					for(int k=0;k<matchingRows.length;k++){
+						if (matchingRows[k]!=-1 && 
+								columnData[matchingRows[k]] != searchedVal)  
+							matchingRows[k]= -1; //delete the matching row as it doesn't match anymore
+					}
+					
+				}
+			}
+			else if(t == Types.getFloatType()){
+				
+				//cast the array to the specific type
+				float[] columnData= (float[])c.getDataArrayAsObject();
+				
+				//cast the value of the row to be deleted to the right type
+				float  searchedVal;
+				try {
+					searchedVal = (Float)row.getColumnValue(colNames[i]);
+				} catch (NoSuchColumnException e) {
+					e.printStackTrace();
+					throw new SchemaMismatchException();
+				}
+				
+				
+				
+				if(i == 0 ) { // for the first column, fill the matchingRows array
+				
+					//iterate through the columnData and look for the rows having the same value as the
+					//current value of the row to be deleted
+					for(int k = 0;k<columnData.length;k++){
+						if(columnData[k] == searchedVal) {
+							if(mr == mrCurSize){//no more space in the matchingRows array - this should happen very infrequently
+								
+								//double the size of the matching row 
+								int[] newMatchingRows=new int[mrCurSize*2];
+								
+								//initialize the newMatchingRows array in the additional elements
+								for(int l= mrCurSize; l< 2 * mrCurSize;  l++)
+									newMatchingRows[l] = -1;
+								
+								System.arraycopy(matchingRows, 0, newMatchingRows, 0, mrCurSize);
+								matchingRows=newMatchingRows;
+								mrCurSize*=2;
+								
+							}
+						
+							matchingRows[mr++] = k;
+						}
+					}
+				}
+				else { //not the first column in the incoming row=> check only the row that have already matched the previous values
+					
+					//iterate through the matchingRows array => and check only those rows in the current column
+					for(int k=0;k<matchingRows.length;k++){
+						if (matchingRows[k]!=-1 && 
+								columnData[matchingRows[k]] != searchedVal)  
+							matchingRows[k]= -1; //delete the matching row as it doesn't match anymore
+					}
+					
+				}
+				
+			}
+			else if(t == Types.getDoubleType()){
+				
+				//cast the array to the specific type
+				double[] columnData= (double[])c.getDataArrayAsObject();
+				
+				//cast the value of the row to be deleted to the right type
+				double searchedVal;
+				try {
+					searchedVal = (Double)row.getColumnValue(colNames[i]);
+				} catch (NoSuchColumnException e) {
+					e.printStackTrace();
+					throw new SchemaMismatchException();
+				}
+				
+				
+				
+				if(i == 0 ) { // for the first column, fill the matchingRows array
+				
+					//iterate through the columnData and look for the rows having the same value as the
+					//current value of the row to be deleted
+					for(int k = 0;k<columnData.length;k++){
+						if(columnData[k] == searchedVal) {
+							if(mr == mrCurSize){//no more space in the matchingRows array - this should happen very infrequently
+								
+								//double the size of the matching row 
+								int[] newMatchingRows=new int[mrCurSize*2];
+								
+								//initialize the newMatchingRows array in the additional elements
+								for(int l= mrCurSize; l< 2 * mrCurSize;  l++)
+									newMatchingRows[l] = -1;
+								
+								System.arraycopy(matchingRows, 0, newMatchingRows, 0, mrCurSize);
+								matchingRows=newMatchingRows;
+								mrCurSize*=2;
+								
+							}
+						
+							matchingRows[mr++] = k;
+						}
+					}
+				}
+				else { //not the first column in the incoming row=> check only the row that have already matched the previous values
+					
+					//iterate through the matchingRows array => and check only those rows in the current column
+					for(int k=0;k<matchingRows.length;k++){
+						if (matchingRows[k] !=-1 && 
+								columnData[matchingRows[k]] != searchedVal)  
+							matchingRows[k]= -1; //delete the matching row as it doesn't match anymore
+					}
+					
+				}
+				
+			}
+			else{ // all object-types
+				
+				//cast the array to the specific type
+				Object[] columnData= (Object[])c.getDataArrayAsObject();
+				
+				//cast the value of the row to be deleted to the right type
+				Object searchedVal;
+				try {
+					searchedVal = row.getColumnValue(colNames[i]);
+				} catch (NoSuchColumnException e) {
+					e.printStackTrace();
+					throw new SchemaMismatchException();
+				}
+				
+				
+				
+				if(i == 0 ) { // for the first column, fill the matchingRows array
+				
+					//iterate through the columnData and look for the rows having the same value as the
+					//current value of the row to be deleted
+					for(int k = 0;k<columnData.length;k++){
+						if(columnData[k] != null && columnData[k].equals(searchedVal)) {
+							if(mr == mrCurSize){//no more space in the matchingRows array - this should happen very infrequently
+								
+								//double the size of the matching row 
+								int[] newMatchingRows=new int[mrCurSize*2];
+								
+								//initialize the newMatchingRows array in the additional elements
+								for(int l= mrCurSize; l< 2 * mrCurSize;  l++)
+									newMatchingRows[l] = -1;
+								
+								System.arraycopy(matchingRows, 0, newMatchingRows, 0, mrCurSize);
+								matchingRows=newMatchingRows;
+								mrCurSize*=2;
+								
+							}
+						
+							matchingRows[mr++] = k;
+						}
+					}
+				}
+				else { //not the first column in the incoming row=> check only the row that have already matched the previous values
+					
+					//iterate through the matchingRows array => and check only those rows in the current column
+					for(int k=0;k<matchingRows.length;k++){
+						if (matchingRows[k]!=-1 && 
+								!columnData[matchingRows[k]].equals(searchedVal))  
+							matchingRows[k]= -1; //delete the matching row as it doesn't match anymore
+					}
+					
+				}
+				
+			}
+		}
+		
+		
+		//At this point we have the matching rows int the matchingRows array
+		//delete them from the table;
+		
+		//check first that you found the row to be deleted
+		int j=0;
+		for(j=0; j < matchingRows.length; j++)
+			if(matchingRows[j] != -1) break;
+		
+		if( j == matchingRows.length) throw new NoSuchRowException();
+		
+		for(int i=0; i < matchingRows.length; i++){
+			if(matchingRows[i] != -1) 
+				deleteRow(matchingRows[i]);
+		}
+		
+			
 
-		//check if the name of the columns are the same
+		/*//check if the name of the columns are the same
 		schemaColNames=(String[])schema.keySet().toArray(new String[0]);
 		boolean col_found=false;
 		for(int i=0;i<schemaColNames.length;i++){
@@ -342,12 +681,12 @@ public class MyTable implements Table {
 					deleted=true;
 					rows.set(i, null); //we finally decided to do it this way but think about it
 					
-					/*Operator<Column> columns=getAllColumns();
+					Operator<Column> columns=getAllColumns();
 					columns.open();
 					Column curCol;
 					while((curCol=columns.next())!=null){
 						((MyColumn)curCol).remove(i);
-					}*/
+					}
 					Column col;
 					for(int k=0;k<colNames.length;k++){
 						col=cols.get(colNames[k]);
@@ -358,7 +697,7 @@ public class MyTable implements Table {
 		}
 		
 		if(!deleted)
-			throw new NoSuchRowException();
+			throw new NoSuchRowException();*/
 	}
 
 	@Override
@@ -429,12 +768,16 @@ public class MyTable implements Table {
 	}
 
 	
+	public static long totalTime;
+	
+	private long start,stop;
 	/* (non-Javadoc)
 	 * @see systeminterface.Table#getRows()
 	 */
 	@Override
 	public Operator<Row> getRows() {
 		//filter out the null and than return the resulting operator
+		start=System.currentTimeMillis();
 		List<Row> filteredRows=new ArrayList();
 		Row r=null;
 		for(int i=0;i<rows.size();i++)
@@ -442,6 +785,8 @@ public class MyTable implements Table {
 				filteredRows.add(r);
 		
 		Operator<Row> opRow = new MyOperator<Row>(filteredRows);
+		stop=System.currentTimeMillis();
+		totalTime+=(stop-start);
 		return opRow;
 	}
 
@@ -867,9 +1212,375 @@ public class MyTable implements Table {
 	 * @see systeminterface.Table#updateRow(systeminterface.Row, systeminterface.Row)
 	 */
 	@Override
-	public void updateRow(Row oldRow, Row newRow)
+	public void updateRow(Row row, Row newRow)
 	throws SchemaMismatchException, NoSuchRowException {
-		colNames=newRow.getColumnNames();
+		
+		colNames=row.getColumnNames();
+		
+		//aux Column var
+		Column c;
+		
+		//aux Type var
+		Type t;
+		
+		
+		//currentSize of the matchingRows array
+		int mrCurSize=20;
+		
+		//array to hold the matching rows and to pass them from column to column 
+		//so that at each new column I can check only the remaining matching rows 
+		//initial capacity to be increased if needed
+		int matchingRows[]=new int[mrCurSize];
+		
+		//no of used positions in the matchingRows array
+		int mr = 0;
+		
+		
+		
+		//hashmap used to store the names of the columns of the incoming row
+		//to check for column names duplicates
+		HashMap<String,Object> tmpColsNames=new HashMap<String,Object>();
+		
+		/*
+		 * new version of the method
+		 */
+		
+		
+		//check size of the new rowSchema
+		if(colNames.length!=schema.size()){
+			throw new SchemaMismatchException();
+		}
+		
+		
+		//initialize the matchingRows array
+		for(int i=0; i<mrCurSize; i++)
+			matchingRows[i] = -1;
+		
+		//iterate through all the columns of the incoming row and check 
+		//if it matches the schema of the table and at the same time look for possible matching rows	
+		for(int i=0; i<colNames.length; i++){
+			
+			t=schema.get(colNames[i]);
+			
+			//first check whether this columnName is part of the schema
+			if(t==null) throw new SchemaMismatchException();
+			
+			//check the type
+			try {
+				if(t != row.getColumnType(colNames[i]))
+					throw new SchemaMismatchException();
+			} catch (NoSuchColumnException e) {
+				e.printStackTrace();
+				throw new SchemaMismatchException();
+			}
+			
+			
+			//check for duplicates : see if this column name already exists
+			if(tmpColsNames.containsKey(colNames[i])) throw new SchemaMismatchException();
+			
+			
+			//add the current column name to tmpColsNames so that you can check for
+			//duplicates - put the current column name with any value in the map
+			tmpColsNames.put(colNames[i],MyNull.NULLOBJ);
+			
+			//retrieve the current column and it corresponding array
+			c =cols.get(colNames[i]);
+			
+			
+			//depending on the type of the column
+			if(t == Types.getIntegerType()){
+				
+				//cast the array to the specific type
+				int[] columnData= (int[])c.getDataArrayAsObject();
+				
+				//cast the value of the row to be deleted to the right type
+				int searchedVal;
+				try {
+					searchedVal = (Integer)row.getColumnValue(colNames[i]);
+				} catch (NoSuchColumnException e) {
+					e.printStackTrace();
+					throw new SchemaMismatchException();
+				}
+				
+				
+				
+				if(i == 0 ) { // for the first column, fill the matchingRows array
+				
+					//iterate through the columnData and look for the rows having the same value as the
+					//current value of the row to be updated
+					for(int k = 0;k<columnData.length;k++){
+						if(columnData[k] == searchedVal) {
+							if(mr == mrCurSize){//no more space in the matchingRows array - this should happen very infrequently
+								
+								//double the size of the matching row 
+								int[] newMatchingRows=new int[mrCurSize*2];
+								
+								//initialize the newMatchingRows array in the additional elements
+								for(int l= mrCurSize; l< 2 * mrCurSize;  l++)
+									newMatchingRows[l] = -1;
+								
+								System.arraycopy(matchingRows, 0, newMatchingRows, 0, mrCurSize);
+								matchingRows=newMatchingRows;
+								mrCurSize*=2;
+								
+							}
+						
+							matchingRows[mr++] = k;
+						}
+					}
+				}
+				else { //not the first column in the incoming row=> check only the row that have already matched the previous values
+					
+					//iterate through the matchingRows array => and check only those rows in the current column
+					for(int k=0;k<matchingRows.length;k++){
+						if (matchingRows[k]!=-1 && 
+								columnData[matchingRows[k]] != searchedVal)  
+							matchingRows[k]= -1; //delete the matching row as it doesn't match anymore
+					}
+					
+				}
+			     
+			}
+			else if(t == Types.getLongType()){
+				
+				//cast the array to the specific type
+				long[] columnData= (long[])c.getDataArrayAsObject();
+				
+				//cast the value of the row to be updated to the right type
+				long  searchedVal;
+				try {
+					searchedVal = (Long)row.getColumnValue(colNames[i]);
+				} catch (NoSuchColumnException e) {
+					e.printStackTrace();
+					throw new SchemaMismatchException();
+				}
+				
+				
+				
+				if(i == 0 ) { // for the first column, fill the matchingRows array
+				
+					//iterate through the columnData and look for the rows having the same value as the
+					//current value of the row to be updated
+					for(int k = 0;k<columnData.length;k++){
+						if(columnData[k] == searchedVal) {
+							if(mr == mrCurSize){//no more space in the matchingRows array - this should happen very infrequently
+								
+								//double the size of the matching row 
+								int[] newMatchingRows=new int[mrCurSize*2];
+								
+								//initialize the newMatchingRows array in the additional elements
+								for(int l= mrCurSize; l< 2 * mrCurSize;  l++)
+									newMatchingRows[l] = -1;
+								
+								System.arraycopy(matchingRows, 0, newMatchingRows, 0, mrCurSize);
+								matchingRows=newMatchingRows;
+								mrCurSize*=2;
+								
+							}
+						
+							matchingRows[mr++] = k;
+						}
+					}
+				}
+				else { //not the first column in the incoming row=> check only the row that have already matched the previous values
+					
+					//iterate through the matchingRows array => and check only those rows in the current column
+					for(int k=0;k<matchingRows.length;k++){
+						if (matchingRows[k]!=-1 && 
+								columnData[matchingRows[k]] != searchedVal)  
+							matchingRows[k]= -1; //delete the matching row as it doesn't match anymore
+					}
+					
+				}
+			}
+			else if(t == Types.getFloatType()){
+				
+				//cast the array to the specific type
+				float[] columnData= (float[])c.getDataArrayAsObject();
+				
+				//cast the value of the row to be deleted to the right type
+				float  searchedVal;
+				try {
+					searchedVal = (Float)row.getColumnValue(colNames[i]);
+				} catch (NoSuchColumnException e) {
+					e.printStackTrace();
+					throw new SchemaMismatchException();
+				}
+				
+				
+				
+				if(i == 0 ) { // for the first column, fill the matchingRows array
+				
+					//iterate through the columnData and look for the rows having the same value as the
+					//current value of the row to be update
+					for(int k = 0;k<columnData.length;k++){
+						if(columnData[k] == searchedVal) {
+							if(mr == mrCurSize){//no more space in the matchingRows array - this should happen very infrequently
+								
+								//double the size of the matching row 
+								int[] newMatchingRows=new int[mrCurSize*2];
+								
+								//initialize the newMatchingRows array in the additional elements
+								for(int l= mrCurSize; l< 2 * mrCurSize;  l++)
+									newMatchingRows[l] = -1;
+								
+								System.arraycopy(matchingRows, 0, newMatchingRows, 0, mrCurSize);
+								matchingRows=newMatchingRows;
+								mrCurSize*=2;
+								
+							}
+						
+							matchingRows[mr++] = k;
+						}
+					}
+				}
+				else { //not the first column in the incoming row=> check only the row that have already matched the previous values
+					
+					//iterate through the matchingRows array => and check only those rows in the current column
+					for(int k=0;k<matchingRows.length;k++){
+						if (matchingRows[k]!=-1 && 
+								columnData[matchingRows[k]] != searchedVal)  
+							matchingRows[k]= -1; //delete the matching row as it doesn't match anymore
+					}
+					
+				}
+				
+			}
+			else if(t == Types.getDoubleType()){
+				
+				//cast the array to the specific type
+				double[] columnData= (double[])c.getDataArrayAsObject();
+				
+				//cast the value of the row to be updated to the right type
+				double searchedVal;
+				try {
+					searchedVal = (Double)row.getColumnValue(colNames[i]);
+				} catch (NoSuchColumnException e) {
+					e.printStackTrace();
+					throw new SchemaMismatchException();
+				}
+				
+				
+				
+				if(i == 0 ) { // for the first column, fill the matchingRows array
+				
+					//iterate through the columnData and look for the rows having the same value as the
+					//current value of the row to be updated
+					for(int k = 0;k<columnData.length;k++){
+						if(columnData[k] == searchedVal) {
+							if(mr == mrCurSize){//no more space in the matchingRows array - this should happen very infrequently
+								
+								//double the size of the matching row 
+								int[] newMatchingRows=new int[mrCurSize*2];
+								
+								//initialize the newMatchingRows array in the additional elements
+								for(int l= mrCurSize; l< 2 * mrCurSize;  l++)
+									newMatchingRows[l] = -1;
+								
+								System.arraycopy(matchingRows, 0, newMatchingRows, 0, mrCurSize);
+								matchingRows=newMatchingRows;
+								mrCurSize*=2;
+								
+							}
+						
+							matchingRows[mr++] = k;
+						}
+					}
+				}
+				else { //not the first column in the incoming row=> check only the row that have already matched the previous values
+					
+					//iterate through the matchingRows array => and check only those rows in the current column
+					for(int k=0;k<matchingRows.length;k++){
+						if (matchingRows[k] !=-1 && 
+								columnData[matchingRows[k]] != searchedVal)  
+							matchingRows[k]= -1; //delete the matching row as it doesn't match anymore
+					}
+					
+				}
+				
+			}
+			else{ // all object-types
+				
+				//cast the array to the specific type
+				Object[] columnData= (Object[])c.getDataArrayAsObject();
+				
+				//cast the value of the row to be deleted to the right type
+				Object searchedVal;
+				try {
+					searchedVal = row.getColumnValue(colNames[i]);
+				} catch (NoSuchColumnException e) {
+					e.printStackTrace();
+					throw new SchemaMismatchException();
+				}
+				
+				
+				
+				if(i == 0 ) { // for the first column, fill the matchingRows array
+				
+					//iterate through the columnData and look for the rows having the same value as the
+					//current value of the row to be updated
+					for(int k = 0;k<columnData.length;k++){
+						if(columnData[k] != null && columnData[k].equals(searchedVal)) {
+							if(mr == mrCurSize){//no more space in the matchingRows array - this should happen very infrequently
+								
+								//double the size of the matching row 
+								int[] newMatchingRows=new int[mrCurSize*2];
+								
+								//initialize the newMatchingRows array in the additional elements
+								for(int l= mrCurSize; l< 2 * mrCurSize;  l++)
+									newMatchingRows[l] = -1;
+								
+								System.arraycopy(matchingRows, 0, newMatchingRows, 0, mrCurSize);
+								matchingRows=newMatchingRows;
+								mrCurSize*=2;
+								
+							}
+						
+							matchingRows[mr++] = k;
+						}
+					}
+				}
+				else { //not the first column in the incoming row=> check only the row that have already matched the previous values
+					
+					//iterate through the matchingRows array => and check only those rows in the current column
+					for(int k=0;k<matchingRows.length;k++){
+						if (matchingRows[k]!=-1 && 
+								!columnData[matchingRows[k]].equals(searchedVal))  
+							matchingRows[k]= -1; //delete the matching row as it doesn't match anymore
+					}
+					
+				}
+				
+			}
+		}
+		
+		
+		//At this point we have the matching rows int the matchingRows array
+		//delete them from the table;
+		
+		//check first that you found the row to be updated
+		int j=0;
+		for(j=0; j < matchingRows.length; j++)
+			if(matchingRows[j] != -1) break;
+		
+		if( j == matchingRows.length) throw new NoSuchRowException();
+		
+		for(int i=0; i < matchingRows.length; i++)
+			if(matchingRows[i] != -1) 
+				updateRow(matchingRows[i],newRow);
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		/*colNames=newRow.getColumnNames();
 		tmpRowValues=new Object[colNames.length];
 		
 		//check size of the new rowSchema
@@ -919,7 +1630,7 @@ public class MyTable implements Table {
 				for(int j=0;j<colNames.length;j++){
 					try{
 						rowCell=r.getColumnValue(colNames[j]);
-						/*col=cols.get(colNames[j]);
+						col=cols.get(colNames[j]);
 						t=col.getColumnType();
 						
 						if(t==Types.getFloatType()){
@@ -935,7 +1646,7 @@ public class MyTable implements Table {
 							rowCell=((int[])(col.getDataArrayAsObject()))[i];
 						}
 						else rowCell=((Object[])(col.getDataArrayAsObject()))[i];
-						*/			
+									
 						oldRowCell=oldRow.getColumnValue(colNames[j]);
 						if(rowCell==null && oldRowCell!=null){
 							found=false;
@@ -966,7 +1677,7 @@ public class MyTable implements Table {
 		}		
 		
 		if(!updated)
-			throw new NoSuchRowException();
+			throw new NoSuchRowException();*/
 		
 	}
 
