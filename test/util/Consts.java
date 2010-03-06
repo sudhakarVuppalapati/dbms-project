@@ -10,9 +10,9 @@ package util;
 public class Consts {
 
 	/* set what kind of printing you want */
-	protected static final boolean infoMsg = true;
+	protected static final boolean infoMsg = false;
 
-	protected static final boolean warnMsg = true;
+	protected static final boolean warnMsg = false;
 
 	protected static final boolean errorMsg = true;
 
@@ -46,13 +46,13 @@ public class Consts {
 	/* Params for rand Date -- see getRandDate() */
 
 	/** Min Table cardinality */
-	public static final int minCardinality = 10;
+	public static final int minCardinality = 100;
 	/** Max Table cardinality */
-	public static final int maxCardinality = 50;
+	public static final int maxCardinality = 5000;
 
 	/** Number of tables to create */
-	public static final int numTables = 100;
-
+	public static final int numTables = 10; //100
+	
 	public enum printType {
 
 		INFO, WARN, ERROR
