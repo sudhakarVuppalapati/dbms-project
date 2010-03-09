@@ -1,6 +1,3 @@
-/**
- * 
- */
 package myDB;
 
 import exceptions.IsLeafException;
@@ -10,73 +7,105 @@ import util.ComparisonOperator;
 import util.LogicalOperator;
 
 /**
- * @author tuanta
+ * 
+ * @author attran
  *
  */
 public class MyPredicateTreeNode implements PredicateTreeNode {
 
-	/* (non-Javadoc)
-	 * @see systeminterface.PredicateTreeNode#getColumnName()
-	 */
+	private PredicateTreeNode leftChild;
+
+	private PredicateTreeNode rightChild;
+
+	private LogicalOperator logicalOperator;	
+	
+	private String columnName;
+
+	private ComparisonOperator comparisonOperator;
+
+	private Object value;
+	
+	private boolean isLeaf;
+	
+	public MyPredicateTreeNode() {
+		
+	}
+	
+	public MyPredicateTreeNode(String columnName,
+			ComparisonOperator comparisonOperator, Object value) {
+
+		this.columnName = columnName;
+		this.comparisonOperator = comparisonOperator;
+		this.value = value;
+		this.isLeaf = true;
+	}
+	
+	public MyPredicateTreeNode(PredicateTreeNode leftChild,
+			LogicalOperator logicalOperator, PredicateTreeNode rightChild) {
+
+		this.leftChild = leftChild;
+		this.rightChild = rightChild;
+		this.logicalOperator = logicalOperator;
+		this.isLeaf = false;
+	}
+	
 	@Override
 	public String getColumnName() throws NotLeafNodeException {
-		// TODO Auto-generated method stub
-		return null;
+		return columnName;
 	}
 
-	/* (non-Javadoc)
-	 * @see systeminterface.PredicateTreeNode#getComparisonOperator()
-	 */
 	@Override
 	public ComparisonOperator getComparisonOperator()
 			throws NotLeafNodeException {
-		// TODO Auto-generated method stub
-		return null;
+		return comparisonOperator;
 	}
 
-	/* (non-Javadoc)
-	 * @see systeminterface.PredicateTreeNode#getLeftChild()
-	 */
 	@Override
 	public PredicateTreeNode getLeftChild() throws IsLeafException {
-		// TODO Auto-generated method stub
-		return null;
+		return leftChild;
 	}
 
-	/* (non-Javadoc)
-	 * @see systeminterface.PredicateTreeNode#getLogicalOperator()
-	 */
 	@Override
 	public LogicalOperator getLogicalOperator() throws IsLeafException {
-		// TODO Auto-generated method stub
-		return null;
+		return logicalOperator;
 	}
 
-	/* (non-Javadoc)
-	 * @see systeminterface.PredicateTreeNode#getRightChild()
-	 */
 	@Override
 	public PredicateTreeNode getRightChild() throws IsLeafException {
-		// TODO Auto-generated method stub
-		return null;
+		return rightChild;
 	}
 
-	/* (non-Javadoc)
-	 * @see systeminterface.PredicateTreeNode#getValue()
-	 */
 	@Override
 	public Object getValue() throws NotLeafNodeException {
-		// TODO Auto-generated method stub
-		return null;
+		return value;
 	}
 
-	/* (non-Javadoc)
-	 * @see systeminterface.PredicateTreeNode#isLeaf()
-	 */
 	@Override
 	public boolean isLeaf() {
-		// TODO Auto-generated method stub
-		return false;
+		return isLeaf;
+	}
+	
+	protected PredicateTreeNode addConjunct(PredicateTreeNode treeNode, LogicalOperator logicOp) 
+	throws NotLeafNodeException {
+		if (leftChild == null) {
+			leftChild = treeNode;
+			columnName = treeNode.getColumnName();
+			comparisonOperator = treeNode.getComparisonOperator();
+			value = treeNode.getValue();
+			isLeaf = true;
+			return this;
+		}
+		else if (rightChild == null) {
+			isLeaf = false;
+			rightChild = treeNode;
+			logicalOperator = logicOp;
+			return this;
+		}
+		else {
+			MyPredicateTreeNode newNode = new MyPredicateTreeNode(this,logicOp, treeNode);
+			return newNode;
+		}
+		
 	}
 
 }
