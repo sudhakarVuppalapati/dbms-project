@@ -182,7 +182,7 @@ public abstract class MyColumn implements Column {
 					else return false;
 				else {
 					try {
-						if (((Comparable)obj1).compareTo((Comparable)obj1) >= 0) return true;
+						if (((Comparable)obj1).compareTo(obj1) >= 0) return true;
 						else return false;
 					} catch (ClassCastException e) {
 						e.printStackTrace();
@@ -207,7 +207,7 @@ public abstract class MyColumn implements Column {
 					else return false;
 				else {
 					try {
-						if (((Comparable)obj1).compareTo((Comparable)obj1) > 0) return true;
+						if (((Comparable)obj1).compareTo(obj1) > 0) return true;
 						else return false;
 					} catch (ClassCastException e) {
 						e.printStackTrace();
@@ -232,7 +232,7 @@ public abstract class MyColumn implements Column {
 					else return false;
 				else {
 					try {
-						if (((Comparable)obj1).compareTo((Comparable)obj1) <= 0) return true;
+						if (((Comparable)obj1).compareTo(obj1) <= 0) return true;
 						else return false;
 					} catch (ClassCastException e) {
 						e.printStackTrace();
@@ -257,7 +257,7 @@ public abstract class MyColumn implements Column {
 					else return false;
 				else {
 					try {
-						if (((Comparable)obj1).compareTo((Comparable)obj1) < 0) return true;
+						if (((Comparable)obj1).compareTo(obj1) < 0) return true;
 						else return false;
 					} catch (ClassCastException e) {
 						e.printStackTrace();
@@ -282,7 +282,7 @@ public abstract class MyColumn implements Column {
 					else return false;
 				else {
 					try {
-						if (((Comparable)obj1).compareTo((Comparable)obj1) != 0) return true;
+						if (((Comparable)obj1).compareTo(obj1) != 0) return true;
 						else return false;
 					} catch (ClassCastException e) {
 						e.printStackTrace();

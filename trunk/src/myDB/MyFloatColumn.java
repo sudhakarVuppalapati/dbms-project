@@ -14,7 +14,7 @@ public class MyFloatColumn extends MyColumn {
 	
 	public MyFloatColumn(String name, Type type) {
 		super(name, type);
-		data= new float[this.defaulInitialCapacity];
+		data= new float[MyColumn.defaulInitialCapacity];
 		//statuses=new byte[this.defaulInitialCapacity];
 		curSize=0;
 	}

@@ -46,7 +46,7 @@ public class MyTransactionLayer implements TransactionLayer {
 
 	private final QueryLayer queryLayer;
 
-	private LogStore logStore = null;
+	private LogStore logStore;
 
 	/** TODO: Alternatives: using map to maintain list of transaction. Need experiments */
 	private TransactionMap trans = new TransactionMap();

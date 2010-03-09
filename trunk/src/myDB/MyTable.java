@@ -49,34 +49,35 @@ public class MyTable implements Table {
 	private String[] schemaColNames;
 	private int noRows=0;
 
-	public MyTable(String tableName, Map<String,Type> tableSchema){
-		name=tableName;
-		schema=tableSchema;
-		rows=new ArrayList<Row>();
-		cols=new HashMap<String,Column>();
+	public MyTable(String tableName, Map<String,Type> tableSchema) {
+		name = tableName;
+		schema = tableSchema;
+		rows = new ArrayList<Row>();
+		cols = new HashMap<String,Column>();
 
+		Set<String> colNames = tableSchema.keySet();
 		
-		
-		/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!    */
-		Set<String> colNames=schema.keySet();
 		Type colType;
 		Column col;
-		for(String colName:colNames){
-			colType=schema.get(colName);
+		
+		for(String colName : colNames){
+			
+			colType = schema.get(colName);
+			
 			
 			if(colType == Types.getIntegerType()){
-				col=new MyIntColumn(colName,colType);
+				col = new MyIntColumn(colName,colType);
 			}
 			else if(colType == Types.getDoubleType()){
-				col=new MyDoubleColumn(colName,colType);
+				col = new MyDoubleColumn(colName,colType);
 			}
 			else if(colType == Types.getFloatType()){
-				col=new MyFloatColumn(colName,colType);
+				col = new MyFloatColumn(colName,colType);
 			}
 			else if(colType == Types.getLongType()){
-				col=new MyLongColumn(colName,colType);
+				col = new MyLongColumn(colName,colType);
 			}
-			else col=new MyObjectColumn(colName,colType);
+			else col = new MyObjectColumn(colName,colType);
 			
 			cols.put(colName,col);
 		}
@@ -117,8 +118,8 @@ public class MyTable implements Table {
 		}
 
 		cols.put(columnName,new MyObjectColumn(columnName,columnType));
-
-
+	
+	
 	}
 
 	/*public boolean checkSchema_v2(Row row){
@@ -211,16 +212,7 @@ public class MyTable implements Table {
 			throw new SchemaMismatchException();
 		}
 
-		//declare this auxiliary var if the sizes of the schemas are equal
-		boolean existingCols[]=new boolean[colNames.length];
-		
-		
-		//this is wrong !!!!!!!!
-		/*for(int i=0; i< colNames.length;i++){
-			if(!schema.containsKey(colNames[i]) || existingCols[i]) throw new SchemaMismatchException();
-			existingCols[i]=true;
-		}*/
-		
+				
 		
 		//check the actual types
 		try{
@@ -299,7 +291,6 @@ public class MyTable implements Table {
 		if(colNames.length!=schema.size()){
 			throw new SchemaMismatchException();
 		}
-		
 		
 		//initialize the matchingRows array
 		for(int i=0; i<mrCurSize; i++)
@@ -621,7 +612,7 @@ public class MyTable implements Table {
 			
 
 		/*//check if the name of the columns are the same
-		schemaColNames=(String[])schema.keySet().toArray(new String[0]);
+		schemaColNames=schema.keySet().toArray(new String[0]);
 		boolean col_found=false;
 		for(int i=0;i<schemaColNames.length;i++){
 			for(int j=0;j<colNames.length;j++)
@@ -708,7 +699,7 @@ public class MyTable implements Table {
 			throw new NoSuchRowException();
 		
 		
-		String[] cNames=(String[])cols.keySet().toArray(new String[0]);
+		String[] cNames=cols.keySet().toArray(new String[0]);
 		for(int p=0;p<cNames.length;p++)
 			((MyColumn)cols.get(cNames[p])).remove(tupleID);
 		
@@ -1117,7 +1108,7 @@ public class MyTable implements Table {
 		}
 
 		//check if the name of the columns are the same
-		schemaColNames=(String[])schema.keySet().toArray(new String[0]);
+		schemaColNames=schema.keySet().toArray(new String[0]);
 		boolean found=false;
 		for(int i=0;i<schemaColNames.length;i++){
 			for(int j=0;j<colNames.length;j++)
@@ -1168,7 +1159,7 @@ public class MyTable implements Table {
 		}
 
 		//check if the name of the columns are the same
-		schemaColNames=(String[])schema.keySet().toArray(new String[0]);
+		schemaColNames=schema.keySet().toArray(new String[0]);
 		boolean found=false;
 		for(int i=0;i<schemaColNames.length;i++){
 			for(int j=0;j<colNames.length;j++)
@@ -1584,7 +1575,7 @@ public class MyTable implements Table {
 		}
 
 		//check if the name of the columns are the same
-		schemaColNames=(String[])schema.keySet().toArray(new String[0]);
+		schemaColNames=schema.keySet().toArray(new String[0]);
 		boolean col_found=false;
 		for(int i=0;i<schemaColNames.length;i++){
 			for(int j=0;j<colNames.length;j++)

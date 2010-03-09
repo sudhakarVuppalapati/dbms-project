@@ -1,17 +1,10 @@
 package myDB.physicaloperators;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import metadata.Type;
 import metadata.Types;
 import myDB.MyColumn;
-import myDB.MyDoubleColumn;
-import myDB.MyFloatColumn;
-import myDB.MyIntColumn;
-import myDB.MyLongColumn;
 import myDB.MyNull;
-import myDB.MyObjectColumn;
 import exceptions.NoSuchTableException;
 
 import systeminterface.Column;

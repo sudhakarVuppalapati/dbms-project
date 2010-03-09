@@ -163,7 +163,7 @@ public class MyIndexLayer implements IndexLayer {
 	public String describeAllIndexes() {
 		StringBuilder des = new StringBuilder();
 
-		String[] indexes = (String[])namedIndexes.keySet().toArray(new String[0]);
+		String[] indexes = namedIndexes.keySet().toArray(new String[0]);
 
 		int i = 0, n = indexes.length;
 		for (; i < n; i++) 

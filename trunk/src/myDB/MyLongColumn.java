@@ -14,7 +14,7 @@ public class MyLongColumn extends MyColumn {
 	
 	public MyLongColumn(String name, Type type) {
 		super(name,type);
-		data= new long[this.defaulInitialCapacity];
+		data= new long[MyColumn.defaulInitialCapacity];
 		//statuses=new byte[this.defaulInitialCapacity];
 		curSize=0;
 	}
@@ -62,6 +62,7 @@ public class MyLongColumn extends MyColumn {
 	}
 	
 	
+	@Override
 	public void add(Object newData){
 		//check if there is place for a new value
 		if(curSize == data.length){
