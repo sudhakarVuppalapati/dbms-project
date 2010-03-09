@@ -27,7 +27,7 @@ import myDB.btree.util.IntPushOperator;
  * @author jens / marcos
  */
 public class IntBTree extends BTree {
-	
+
 	/** the root of the b-tree */
 	protected IntBTreeNode root = null;
 
@@ -57,21 +57,23 @@ public class IntBTree extends BTree {
 			firstLeaf = new IntLeaf(k_star);
 			root = firstLeaf;
 		}
-		IntSplitInfo splitInfo = root.add(key, value, Integer.MIN_VALUE, Integer.MAX_VALUE, leafCarrier);
+		IntSplitInfo splitInfo = root.add(key, value, Integer.MIN_VALUE,
+				Integer.MAX_VALUE, leafCarrier);
 		if (splitInfo != null) {
 			IntInternalNode newRoot;
 			// root overflow!:
 			if (firstTime) {
-				newRoot = new IntInternalNode(root, splitInfo.pivot, splitInfo.rightNode, k);
+				newRoot = new IntInternalNode(root, splitInfo.pivot,
+						splitInfo.rightNode, k);
 				firstTime = false;
-			}
-			else
-				newRoot = new IntInternalNode(splitInfo.leftNode, splitInfo.pivot, splitInfo.rightNode, k);
+			} else
+				newRoot = new IntInternalNode(splitInfo.leftNode,
+						splitInfo.pivot, splitInfo.rightNode, k);
 
 			root = newRoot;
 		}
 		refreshNeeded = true;
-		
+
 	}
 
 	public void add(int key, int value) {
@@ -95,7 +97,8 @@ public class IntBTree extends BTree {
 	 * @return
 	 */
 	public void remove(int key) {
-		root.remove(key, BTreeConstants.ALL_MAPPINGS, Integer.MIN_VALUE, Integer.MAX_VALUE);
+		root.remove(key, BTreeConstants.ALL_MAPPINGS, Integer.MIN_VALUE,
+				Integer.MAX_VALUE);
 		refreshNeeded = true;
 	}
 
@@ -111,7 +114,7 @@ public class IntBTree extends BTree {
 		root.remove(key, value, Integer.MIN_VALUE, Integer.MAX_VALUE);
 		refreshNeeded = true;
 	}
-	
+
 	public void remove(int lowKey, int highKey, int value) {
 		root.removeRange(lowKey, highKey);
 		refreshNeeded = true;
@@ -181,7 +184,8 @@ public class IntBTree extends BTree {
 				currentLeaf = currentLeaf.nextLeaf;
 			}
 
-			leafUtilization = (double) elemCount / (double) (leafCount * 2 * k_star);
+			leafUtilization = (double) elemCount
+					/ (double) (leafCount * 2 * k_star);
 			refreshNeeded = false;
 		}
 	}

@@ -18,6 +18,7 @@ import systeminterface.LogStore;
 public class MyLogStore implements LogStore {
 
 	List<LogRecord> logs;
+
 	/**
 	 * Constructor. Please do not modify this constructor
 	 */

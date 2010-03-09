@@ -6,8 +6,8 @@ package myDB.btree.core.btree;
  * @author jens/marcos
  */
 public abstract class Leaf implements BTreeNode {
-	//my addition
-	//int type;	
+	// my addition
+	// int type;
 
 	protected int k_star;
 

@@ -57,16 +57,18 @@ public class FloatBTree extends BTree {
 			firstLeaf = new FloatLeaf(k_star);
 			root = firstLeaf;
 		}
-		FloatSplitInfo splitInfo = root.add(key, value, Float.MIN_VALUE, Float.MAX_VALUE, leafCarrier);
+		FloatSplitInfo splitInfo = root.add(key, value, Float.MIN_VALUE,
+				Float.MAX_VALUE, leafCarrier);
 		if (splitInfo != null) {
 			// root overflow!:
 			FloatInternalNode newRoot;
 			if (firstTime) {
-				newRoot = new FloatInternalNode(root, splitInfo.pivot, splitInfo.rightNode, k);
+				newRoot = new FloatInternalNode(root, splitInfo.pivot,
+						splitInfo.rightNode, k);
 				firstTime = false;
-			}				
-			else
-				newRoot = new FloatInternalNode(splitInfo.leftNode, splitInfo.pivot, splitInfo.rightNode, k);
+			} else
+				newRoot = new FloatInternalNode(splitInfo.leftNode,
+						splitInfo.pivot, splitInfo.rightNode, k);
 
 			root = newRoot;
 		}
@@ -94,7 +96,8 @@ public class FloatBTree extends BTree {
 	 * @return
 	 */
 	public void remove(float key) {
-		root.remove(key, BTreeConstants.ALL_MAPPINGS, Float.MIN_VALUE, Float.MAX_VALUE);
+		root.remove(key, BTreeConstants.ALL_MAPPINGS, Float.MIN_VALUE,
+				Float.MAX_VALUE);
 		refreshNeeded = true;
 	}
 
@@ -110,7 +113,7 @@ public class FloatBTree extends BTree {
 		root.remove(key, value, Float.MIN_VALUE, Float.MAX_VALUE);
 		refreshNeeded = true;
 	}
-	
+
 	public void remove(float lowKey, float highKey) {
 		root.removeRange(lowKey, highKey);
 		refreshNeeded = true;
@@ -180,7 +183,8 @@ public class FloatBTree extends BTree {
 				currentLeaf = currentLeaf.nextLeaf;
 			}
 
-			leafUtilization = (double) elemCount / (double) (leafCount * 2 * k_star);
+			leafUtilization = (double) elemCount
+					/ (double) (leafCount * 2 * k_star);
 			refreshNeeded = false;
 		}
 	}

@@ -55,7 +55,8 @@ public class LongInternalNodeArrayMap extends InternalNodeArrayMap {
 	 * @return
 	 */
 	public LongInternalNodeArrayMap split() {
-		LongInternalNodeArrayMap newMap = new LongInternalNodeArrayMap(keys.length);
+		LongInternalNodeArrayMap newMap = new LongInternalNodeArrayMap(
+				keys.length);
 		final int mid = currentSize / 2;
 		int count = 0;
 		newMap.nodes[0] = nodes[mid + 1];

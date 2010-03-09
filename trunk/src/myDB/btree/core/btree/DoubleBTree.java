@@ -57,16 +57,18 @@ public class DoubleBTree extends BTree {
 			firstLeaf = new DoubleLeaf(k_star);
 			root = firstLeaf;
 		}
-		DoubleSplitInfo splitInfo = root.add(key, value, Double.MIN_VALUE, Double.MAX_VALUE, leafCarrier);
+		DoubleSplitInfo splitInfo = root.add(key, value, Double.MIN_VALUE,
+				Double.MAX_VALUE, leafCarrier);
 		if (splitInfo != null) {
 			DoubleInternalNode newRoot;
 			// root overflow!:
 			if (firstTime) {
-				newRoot = new DoubleInternalNode(root, splitInfo.pivot, splitInfo.rightNode, k);
+				newRoot = new DoubleInternalNode(root, splitInfo.pivot,
+						splitInfo.rightNode, k);
 				firstTime = false;
-			}
-			else
-				newRoot = new DoubleInternalNode(splitInfo.leftNode, splitInfo.pivot, splitInfo.rightNode, k);
+			} else
+				newRoot = new DoubleInternalNode(splitInfo.leftNode,
+						splitInfo.pivot, splitInfo.rightNode, k);
 
 			root = newRoot;
 		}
@@ -94,7 +96,8 @@ public class DoubleBTree extends BTree {
 	 * @return
 	 */
 	public void remove(double key) {
-		root.remove(key, BTreeConstants.ALL_MAPPINGS, Double.MIN_VALUE, Double.MAX_VALUE);
+		root.remove(key, BTreeConstants.ALL_MAPPINGS, Double.MIN_VALUE,
+				Double.MAX_VALUE);
 		refreshNeeded = true;
 	}
 
@@ -110,7 +113,7 @@ public class DoubleBTree extends BTree {
 		root.remove(key, value, Double.MIN_VALUE, Double.MAX_VALUE);
 		refreshNeeded = true;
 	}
-	
+
 	public void remove(double lowKey, double highKey) {
 		root.removeRange(lowKey, highKey);
 		refreshNeeded = true;
@@ -125,7 +128,8 @@ public class DoubleBTree extends BTree {
 	 * @param highKey
 	 * @return
 	 */
-	public void queryRange(double lowKey, double highKey, IntPushOperator results) {
+	public void queryRange(double lowKey, double highKey,
+			IntPushOperator results) {
 		root.queryRange(lowKey, highKey, results);
 	}
 
@@ -180,7 +184,8 @@ public class DoubleBTree extends BTree {
 				currentLeaf = currentLeaf.nextLeaf;
 			}
 
-			leafUtilization = (double) elemCount / (double) (leafCount * 2 * k_star);
+			leafUtilization = (double) elemCount
+					/ (double) (leafCount * 2 * k_star);
 			refreshNeeded = false;
 		}
 	}

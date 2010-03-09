@@ -2,14 +2,13 @@ package myDB.btree.core.btree;
 
 import myDB.btree.util.IntPushOperator;
 
-
 /**
  * Helper for b-tree leaves. Has to be taylored to different key and value types
  * manually as Generics would use Complex type (inefficent) instead of native
  * types.
  */
 public class DoubleLeafArrayMap extends LeafArrayMap {
-	
+
 	protected double[] keys;
 
 	protected int[] values;
@@ -32,7 +31,7 @@ public class DoubleLeafArrayMap extends LeafArrayMap {
 			return pos;
 		}
 	}
-	
+
 	/**
 	 * This binary search method is modified to guarantee that, in the presence
 	 * of duplicate keys, we will always return the first occurrence of a found

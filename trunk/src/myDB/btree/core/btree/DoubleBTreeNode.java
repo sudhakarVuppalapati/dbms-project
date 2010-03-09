@@ -26,7 +26,8 @@ public interface DoubleBTreeNode extends BTreeNode {
 	 * @param highKey
 	 * @param results
 	 */
-	public void queryRange(double lowKey, double highKey, IntPushOperator results);
+	public void queryRange(double lowKey, double highKey,
+			IntPushOperator results);
 
 	/**
 	 * Adds the given mapping to the node.
@@ -35,7 +36,8 @@ public interface DoubleBTreeNode extends BTreeNode {
 	 * @param value
 	 * @return
 	 */
-	public DoubleSplitInfo add(double key, int value, double lowKey, double highKey, LeafCarrier leafCarrier);
+	public DoubleSplitInfo add(double key, int value, double lowKey,
+			double highKey, LeafCarrier leafCarrier);
 
 	/**
 	 * Removes a single instance of the key-value mapping from the node. If the

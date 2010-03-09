@@ -11,11 +11,11 @@ import myDB.btree.util.IntPushOperator;
  * @author jens/marcos
  */
 public class ObjectLeaf extends Leaf implements ObjectBTreeNode {
-	//my addition
-	//int type;	
+	// my addition
+	// int type;
 	protected ObjectLeafArrayMap entries;
 
-	//protected int k_star;
+	// protected int k_star;
 
 	protected ObjectLeaf nextLeaf;
 
@@ -29,8 +29,8 @@ public class ObjectLeaf extends Leaf implements ObjectBTreeNode {
 		this(k_star, new ObjectLeafArrayMap(2 * k_star));
 	}
 
-	public ObjectSplitInfo add(Comparable key, int value, Comparable lowKey, Comparable highKey,
-			LeafCarrier leafCarrier) {		
+	public ObjectSplitInfo add(Comparable key, int value, Comparable lowKey,
+			Comparable highKey, LeafCarrier leafCarrier) {
 		// search for insertion point: last allowed node of a scan for that key
 		// a node is allowed as far as its first key is smaller than the highKey
 		// this keeps the strict tree invariant that a leaf pointed to by
@@ -106,7 +106,8 @@ public class ObjectLeaf extends Leaf implements ObjectBTreeNode {
 		}
 	}
 
-	public void remove(Comparable key, int value, Comparable lowKey, Comparable highKey) {
+	public void remove(Comparable key, int value, Comparable lowKey,
+			Comparable highKey) {
 		// continue search on the leaf level until all entries with the given
 		// key are guaranteed to be removed
 		boolean continueSearch = entries.remove(key, value);
@@ -137,15 +138,16 @@ public class ObjectLeaf extends Leaf implements ObjectBTreeNode {
 
 	public void removeRange1(Comparable lowKey, Comparable highKey) {
 		int currentSize = entries.currentSize;
-		int pos = ObjectLeafArrayMap.binarySearch(entries.keys, lowKey, 0, currentSize - 1);
-		
+		int pos = ObjectLeafArrayMap.binarySearch(entries.keys, lowKey, 0,
+				currentSize - 1);
+
 		Comparable tmp;
-		
+
 		if (pos < 0) {
 			pos = -(pos + 1);
-		} 
+		}
 		ObjectLeaf currentLeaf = this;
-		
+
 		while (currentLeaf != null) {
 			while (pos < currentLeaf.entries.currentSize) {
 				tmp = currentLeaf.entries.keys[pos];
@@ -157,7 +159,7 @@ public class ObjectLeaf extends Leaf implements ObjectBTreeNode {
 			pos = 0;
 		}
 	}
-	
+
 	public void removeRange2(Comparable lowKey, Comparable highKey) {
 
 		ObjectLeaf currentLeaf = this;
@@ -167,74 +169,74 @@ public class ObjectLeaf extends Leaf implements ObjectBTreeNode {
 
 		while (currentLeaf != null) {
 			if (continueSearch)
-				pos = ObjectLeafArrayMap.binarySearch(currentLeaf.entries.keys, lowKey, 0,
-						currentLeaf.entries.currentSize - 1);
+				pos = ObjectLeafArrayMap.binarySearch(currentLeaf.entries.keys,
+						lowKey, 0, currentLeaf.entries.currentSize - 1);
 
 			if (pos < 0) {
 				pos = -(pos + 1);
-			} 
+			}
 
 			if (pos == currentLeaf.entries.currentSize) {
 				currentLeaf = currentLeaf.nextLeaf;
 				continue;
-			}
-			else while (pos < currentLeaf.entries.currentSize) {
-				tmp = currentLeaf.entries.keys[pos];
-				if (highKey.compareTo(tmp) < 0)
-					return;
-				currentLeaf.entries.deleteAtPos(pos);
-			}
+			} else
+				while (pos < currentLeaf.entries.currentSize) {
+					tmp = currentLeaf.entries.keys[pos];
+					if (highKey.compareTo(tmp) < 0)
+						return;
+					currentLeaf.entries.deleteAtPos(pos);
+				}
 			currentLeaf = currentLeaf.nextLeaf;
-			pos = 0;		
+			pos = 0;
 			continueSearch = false;
 		}
 	}
 
 	public void removeRange(Comparable lowKey, Comparable highKey) {
-		int pos = ObjectLeafArrayMap.binarySearch(entries.keys, lowKey, 0, entries.currentSize - 1);
+		int pos = ObjectLeafArrayMap.binarySearch(entries.keys, lowKey, 0,
+				entries.currentSize - 1);
 
 		Comparable tmp;
 
 		if (pos < 0) {
 			pos = -(pos + 1);
-		} 
+		}
 
 		ObjectLeaf currentLeaf = this;
 
-		//if a value greater than the lowKey was not found , go to the next leaf 
-		if(pos == this.entries.currentSize){
-			currentLeaf=this.nextLeaf;
+		// if a value greater than the lowKey was not found , go to the next
+		// leaf
+		if (pos == this.entries.currentSize) {
+			currentLeaf = this.nextLeaf;
 		}
-		
 
-		//while the consequent leaf contains only values smaller than the lowKey, ignore
-		//them and go further
-		while(currentLeaf!=null)
-		{
+		// while the consequent leaf contains only values smaller than the
+		// lowKey, ignore
+		// them and go further
+		while (currentLeaf != null) {
 			if (currentLeaf.entries.currentSize == 0) {
 				currentLeaf = currentLeaf.nextLeaf;
-			}				
-			else if (lowKey.compareTo(currentLeaf.entries.keys[currentLeaf.entries.currentSize-1]) > 0)
-				currentLeaf=currentLeaf.nextLeaf;
-			else break;
+			} else if (lowKey
+					.compareTo(currentLeaf.entries.keys[currentLeaf.entries.currentSize - 1]) > 0)
+				currentLeaf = currentLeaf.nextLeaf;
+			else
+				break;
 		}
-		//if we didn't reach the end 
-		if(currentLeaf!=null){
-			//in the leaf that contains the first value greater than the lowKey 
-			//do a binary search to locate the position of that key 
-			pos = ObjectLeafArrayMap.binarySearch(currentLeaf.entries.keys, lowKey, 0, currentLeaf.entries.currentSize - 1);
-		}
-		else{
-			//get out of the method;
+		// if we didn't reach the end
+		if (currentLeaf != null) {
+			// in the leaf that contains the first value greater than the lowKey
+			// do a binary search to locate the position of that key
+			pos = ObjectLeafArrayMap.binarySearch(currentLeaf.entries.keys,
+					lowKey, 0, currentLeaf.entries.currentSize - 1);
+		} else {
+			// get out of the method;
 			return;
 		}
 
-
-		//adapt the pos again
+		// adapt the pos again
 		if (pos < 0) {
 			pos = -(pos + 1);
-		} 
-
+		}
 
 		while (currentLeaf != null) {
 			while (pos < currentLeaf.entries.currentSize) {
@@ -329,13 +331,11 @@ public class ObjectLeaf extends Leaf implements ObjectBTreeNode {
 			currentLeaf = currentLeaf.nextLeaf;
 		}
 	}
-	
 
 	@Override
 	public String toString() {
 		return "[" + entries.toString() + "]";
 	}
-
 
 	public boolean isEmpty() {
 		return entries.size() == 0;

@@ -12,21 +12,20 @@ import myDB.btree.util.IntPushOperator;
  */
 
 public class IntInternalNode extends InternalNode implements IntBTreeNode {
-	
-	protected static final IntInternalNode NULL = new IntInternalNode(0, null);
 
+	protected static final IntInternalNode NULL = new IntInternalNode(0, null);
 
 	protected IntInternalNodeArrayMap entries;
 
-//	protected IntInternalNode nextNode;
+	// protected IntInternalNode nextNode;
 
 	public IntInternalNode(int k, IntInternalNodeArrayMap entries) {
 		super(k);
 		this.entries = entries;
 	}
 
-	public IntInternalNode(IntBTreeNode leftChild, int pivot, IntBTreeNode rightChild,
-			int k) {
+	public IntInternalNode(IntBTreeNode leftChild, int pivot,
+			IntBTreeNode rightChild, int k) {
 		super(k);
 		this.entries = new IntInternalNodeArrayMap(2 * k);
 
@@ -34,7 +33,8 @@ public class IntInternalNode extends InternalNode implements IntBTreeNode {
 		entries.put(pivot, rightChild);
 	}
 
-	public IntSplitInfo add(int key, int value, int lowKey, int highKey, LeafCarrier leafCarrier) {
+	public IntSplitInfo add(int key, int value, int lowKey, int highKey,
+			LeafCarrier leafCarrier) {
 		// get next node to recurse insertion
 		int pos = entries.getIntervalPosition(key);
 		IntBTreeNode next = entries.nodes[pos];
@@ -42,7 +42,8 @@ public class IntInternalNode extends InternalNode implements IntBTreeNode {
 		// calculate key interval for next node
 		int newLowKey = pos == 0 ? lowKey : entries.keys[pos - 1];
 		int newHighKey = pos == entries.size() ? highKey : entries.keys[pos];
-		IntSplitInfo splitInfo = next.add(key, value, newLowKey, newHighKey, leafCarrier);
+		IntSplitInfo splitInfo = next.add(key, value, newLowKey, newHighKey,
+				leafCarrier);
 
 		// after recursion, check for split coming from lower levels
 		if (splitInfo != null) {
@@ -63,9 +64,9 @@ public class IntInternalNode extends InternalNode implements IntBTreeNode {
 		int midKey = entries.getMidKey();
 		IntInternalNode newNode = new IntInternalNode(k, entries.split());
 
-//		// fix sibling pointers
-//		newNode.nextNode = nextNode;
-//		nextNode = newNode;
+		// // fix sibling pointers
+		// newNode.nextNode = nextNode;
+		// nextNode = newNode;
 
 		return new IntSplitInfo(this, midKey, newNode);
 	}
@@ -84,7 +85,7 @@ public class IntInternalNode extends InternalNode implements IntBTreeNode {
 
 		}
 	}
-	
+
 	public void removeRange(int lowKey, int highKey) {
 		// get next node to recurse deletion
 		int pos = entries.getIntervalPosition(lowKey);
@@ -134,12 +135,12 @@ public class IntInternalNode extends InternalNode implements IntBTreeNode {
 				}
 			}
 
-//			// write next, if any
-//			if (nextNode != null) {
-//				dest.write(("\"nodeX" + this.hashCode() + "\":"
-//						+ entries.size() + " -> \"" + "nodeX"
-//						+ nextNode.hashCode() + "\":0;\n").getBytes());
-//			}
+			// // write next, if any
+			// if (nextNode != null) {
+			// dest.write(("\"nodeX" + this.hashCode() + "\":"
+			// + entries.size() + " -> \"" + "nodeX"
+			// + nextNode.hashCode() + "\":0;\n").getBytes());
+			// }
 
 		} catch (IOException e) {
 			System.out.println("could not write dotty");

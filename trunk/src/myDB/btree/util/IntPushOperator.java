@@ -18,6 +18,6 @@ public interface IntPushOperator {
 	 * @param element
 	 */
 	public void pass(int element);
-	
+
 	public void thatsallfolks();
 }

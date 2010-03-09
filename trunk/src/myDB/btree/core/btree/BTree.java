@@ -25,11 +25,12 @@ import java.io.OutputStream;
  */
 public abstract class BTree {
 
-
-	/** The first time constructing internal node from leaf node. Need to
-	 * be careful to avoid losing overflow leaves */
+	/**
+	 * The first time constructing internal node from leaf node. Need to be
+	 * careful to avoid losing overflow leaves
+	 */
 	protected boolean firstTime = true;
-	
+
 	/** the degree of the b-tree (internal nodes) */
 	protected int k;
 
@@ -59,11 +60,11 @@ public abstract class BTree {
 	 * generates a dotty representation of the tree in the given output stream.
 	 */
 	public abstract void toDot(OutputStream dest);
-	
 
 	public void printStats() {
 		calculateStats();
-		System.out.print("leafUtilization:\t" + leafUtilization + "\tleafCount:\t" + leafCount + "\telementCount:\t"
+		System.out.print("leafUtilization:\t" + leafUtilization
+				+ "\tleafCount:\t" + leafCount + "\telementCount:\t"
 				+ elemCount + "\t");
 	}
 
@@ -73,7 +74,6 @@ public abstract class BTree {
 	}
 
 	protected abstract void calculateStats();
-	
 
 	public double getLeafUtilization() {
 		calculateStats();

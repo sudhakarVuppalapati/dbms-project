@@ -57,16 +57,18 @@ public class LongBTree extends BTree {
 			firstLeaf = new LongLeaf(k_star);
 			root = firstLeaf;
 		}
-		LongSplitInfo splitInfo = root.add(key, value, Long.MIN_VALUE, Long.MAX_VALUE, leafCarrier);
+		LongSplitInfo splitInfo = root.add(key, value, Long.MIN_VALUE,
+				Long.MAX_VALUE, leafCarrier);
 		if (splitInfo != null) {
 			LongInternalNode newRoot;
 			// root overflow!:
 			if (firstTime) {
-				newRoot = new LongInternalNode(root, splitInfo.pivot, splitInfo.rightNode, k);
+				newRoot = new LongInternalNode(root, splitInfo.pivot,
+						splitInfo.rightNode, k);
 				firstTime = false;
-			}
-			else {
-				newRoot = new LongInternalNode(splitInfo.leftNode, splitInfo.pivot, splitInfo.rightNode, k);
+			} else {
+				newRoot = new LongInternalNode(splitInfo.leftNode,
+						splitInfo.pivot, splitInfo.rightNode, k);
 			}
 			root = newRoot;
 		}
@@ -94,7 +96,8 @@ public class LongBTree extends BTree {
 	 * @return
 	 */
 	public void remove(long key) {
-		root.remove(key, BTreeConstants.ALL_MAPPINGS, Long.MIN_VALUE, Long.MAX_VALUE);
+		root.remove(key, BTreeConstants.ALL_MAPPINGS, Long.MIN_VALUE,
+				Long.MAX_VALUE);
 		refreshNeeded = true;
 	}
 
@@ -110,7 +113,7 @@ public class LongBTree extends BTree {
 		root.remove(key, value, Long.MIN_VALUE, Long.MAX_VALUE);
 		refreshNeeded = true;
 	}
-	
+
 	public void remove(long lowKey, long highKey) {
 		root.removeRange(lowKey, highKey);
 		refreshNeeded = true;
@@ -180,7 +183,8 @@ public class LongBTree extends BTree {
 				currentLeaf = currentLeaf.nextLeaf;
 			}
 
-			leafUtilization = (double) elemCount / (double) (leafCount * 2 * k_star);
+			leafUtilization = (double) elemCount
+					/ (double) (leafCount * 2 * k_star);
 			refreshNeeded = false;
 		}
 	}

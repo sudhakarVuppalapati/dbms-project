@@ -29,9 +29,12 @@ public class JavaTreeMap implements Map {
 	}
 
 	public void rangeQuery(int lowKey, int highKey, IntPushOperator results) {
-		SortedMap<Integer, Integer> mapResult = treeMap.subMap(lowKey, highKey + 1);
-		Set<java.util.Map.Entry<Integer, Integer>> setView = mapResult.entrySet();
-		for (Iterator<java.util.Map.Entry<Integer, Integer>> iterator = setView.iterator(); iterator.hasNext();) {
+		SortedMap<Integer, Integer> mapResult = treeMap.subMap(lowKey,
+				highKey + 1);
+		Set<java.util.Map.Entry<Integer, Integer>> setView = mapResult
+				.entrySet();
+		for (Iterator<java.util.Map.Entry<Integer, Integer>> iterator = setView
+				.iterator(); iterator.hasNext();) {
 			results.pass(iterator.next().getValue());
 		}
 	}

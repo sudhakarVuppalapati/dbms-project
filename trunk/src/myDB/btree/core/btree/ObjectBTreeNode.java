@@ -26,7 +26,8 @@ public interface ObjectBTreeNode extends BTreeNode {
 	 * @param highKey
 	 * @param results
 	 */
-	public void queryRange(Comparable lowKey, Comparable highKey, IntPushOperator results);
+	public void queryRange(Comparable lowKey, Comparable highKey,
+			IntPushOperator results);
 
 	/**
 	 * Adds the given mapping to the node.
@@ -35,7 +36,8 @@ public interface ObjectBTreeNode extends BTreeNode {
 	 * @param value
 	 * @return
 	 */
-	public ObjectSplitInfo add(Comparable key, int value, Comparable lowKey, Comparable highKey, LeafCarrier leafCarrier);
+	public ObjectSplitInfo add(Comparable key, int value, Comparable lowKey,
+			Comparable highKey, LeafCarrier leafCarrier);
 
 	/**
 	 * Removes a single instance of the key-value mapping from the node. If the
@@ -46,10 +48,11 @@ public interface ObjectBTreeNode extends BTreeNode {
 	 * @param lowKey
 	 * @param highKey
 	 */
-	public void remove(Comparable key, int value, Comparable lowKey, Comparable highKey);
+	public void remove(Comparable key, int value, Comparable lowKey,
+			Comparable highKey);
 
 	public void removeRange(Comparable lowKey, Comparable highKey);
-	
+
 	// do we need this method?
 	// public boolean update(int key, int value);
 }
