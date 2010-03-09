@@ -55,7 +55,8 @@ public class FloatInternalNodeArrayMap extends InternalNodeArrayMap {
 	 * @return
 	 */
 	public FloatInternalNodeArrayMap split() {
-		FloatInternalNodeArrayMap newMap = new FloatInternalNodeArrayMap(keys.length);
+		FloatInternalNodeArrayMap newMap = new FloatInternalNodeArrayMap(
+				keys.length);
 		final int mid = currentSize / 2;
 		int count = 0;
 		newMap.nodes[0] = nodes[mid + 1];

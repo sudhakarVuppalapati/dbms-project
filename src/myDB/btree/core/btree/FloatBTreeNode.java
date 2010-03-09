@@ -35,7 +35,8 @@ public interface FloatBTreeNode extends BTreeNode {
 	 * @param value
 	 * @return
 	 */
-	public FloatSplitInfo add(float key, int value, float lowKey, float highKey, LeafCarrier leafCarrier);
+	public FloatSplitInfo add(float key, int value, float lowKey,
+			float highKey, LeafCarrier leafCarrier);
 
 	/**
 	 * Removes a single instance of the key-value mapping from the node. If the

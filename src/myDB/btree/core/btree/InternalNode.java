@@ -9,16 +9,17 @@ import java.io.OutputStream;
  */
 
 public class InternalNode implements BTreeNode {
-	
+
 	protected int k;
 
-//	protected InternalNode nextNode;
+	// protected InternalNode nextNode;
 
 	public InternalNode(int k) {
 		this.k = k;
 	}
 
-	public void toDot(OutputStream dest){}
+	public void toDot(OutputStream dest) {
+	}
 
 	public boolean isLeaf() {
 		return false;

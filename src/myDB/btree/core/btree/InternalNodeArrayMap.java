@@ -8,15 +8,12 @@ package myDB.btree.core.btree;
  */
 public abstract class InternalNodeArrayMap {
 
-
-
 	/**
 	 * number of keys in this map. Note that we have one extra pointer to the
 	 * left (position 0).
 	 */
 	protected int currentSize = 0;
 
-	
 	/**
 	 * Deletes the key-node mapping at the given position.
 	 * 

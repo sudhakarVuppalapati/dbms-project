@@ -11,11 +11,11 @@ import myDB.btree.util.IntPushOperator;
  * @author jens/marcos
  */
 public class LongLeaf extends Leaf implements LongBTreeNode {
-	//my addition
-	//int type;	
+	// my addition
+	// int type;
 	protected LongLeafArrayMap entries;
 
-	//protected int k_star;
+	// protected int k_star;
 
 	protected LongLeaf nextLeaf;
 
@@ -137,15 +137,16 @@ public class LongLeaf extends Leaf implements LongBTreeNode {
 
 	public void removeRange1(long lowKey, long highKey) {
 		int currentSize = entries.currentSize;
-		int pos = LongLeafArrayMap.binarySearch(entries.keys, lowKey, 0, currentSize - 1);
-		
+		int pos = LongLeafArrayMap.binarySearch(entries.keys, lowKey, 0,
+				currentSize - 1);
+
 		long tmp;
-		
+
 		if (pos < 0) {
 			pos = -(pos + 1);
-		} 
+		}
 		LongLeaf currentLeaf = this;
-		
+
 		while (currentLeaf != null) {
 			while (pos < currentLeaf.entries.currentSize) {
 				tmp = currentLeaf.entries.keys[pos];
@@ -157,7 +158,7 @@ public class LongLeaf extends Leaf implements LongBTreeNode {
 			pos = 0;
 		}
 	}
-	
+
 	public void removeRange2(long lowKey, long highKey) {
 
 		LongLeaf currentLeaf = this;
@@ -167,73 +168,74 @@ public class LongLeaf extends Leaf implements LongBTreeNode {
 
 		while (currentLeaf != null) {
 			if (continueSearch)
-				pos = LongLeafArrayMap.binarySearch(currentLeaf.entries.keys, lowKey, 0,
-						currentLeaf.entries.currentSize - 1);
+				pos = LongLeafArrayMap.binarySearch(currentLeaf.entries.keys,
+						lowKey, 0, currentLeaf.entries.currentSize - 1);
 
 			if (pos < 0) {
 				pos = -(pos + 1);
-			} 
+			}
 
 			if (pos == currentLeaf.entries.currentSize) {
 				currentLeaf = currentLeaf.nextLeaf;
 				continue;
-			}
-			else while (pos < currentLeaf.entries.currentSize) {
-				tmp = currentLeaf.entries.keys[pos];
-				if (tmp > highKey)
-					return;
-				currentLeaf.entries.deleteAtPos(pos);
-			}
+			} else
+				while (pos < currentLeaf.entries.currentSize) {
+					tmp = currentLeaf.entries.keys[pos];
+					if (tmp > highKey)
+						return;
+					currentLeaf.entries.deleteAtPos(pos);
+				}
 			currentLeaf = currentLeaf.nextLeaf;
-			pos = 0;		
+			pos = 0;
 			continueSearch = false;
 		}
 	}
 
 	public void removeRange(long lowKey, long highKey) {
-		int pos = LongLeafArrayMap.binarySearch(entries.keys, lowKey, 0, entries.currentSize - 1);
+		int pos = LongLeafArrayMap.binarySearch(entries.keys, lowKey, 0,
+				entries.currentSize - 1);
 
 		long tmp;
 
 		if (pos < 0) {
 			pos = -(pos + 1);
-		} 
+		}
 
 		LongLeaf currentLeaf = this;
 
-		//if a value greater than the lowKey was not found , go to the next leaf 
-		if(pos == this.entries.currentSize){
-			currentLeaf=this.nextLeaf;
+		// if a value greater than the lowKey was not found , go to the next
+		// leaf
+		if (pos == this.entries.currentSize) {
+			currentLeaf = this.nextLeaf;
 		}
 
-
-		//while the consequent leaf contains only values smaller than the lowKey, ignore
-		//them and go further
-		while(currentLeaf!=null) {
+		// while the consequent leaf contains only values smaller than the
+		// lowKey, ignore
+		// them and go further
+		while (currentLeaf != null) {
 			if (currentLeaf.entries.currentSize == 0)
 				currentLeaf = currentLeaf.nextLeaf;
-			else if (currentLeaf.entries.keys[currentLeaf.entries.currentSize-1]< lowKey)
-				currentLeaf=currentLeaf.nextLeaf;
-			else break;
+			else if (currentLeaf.entries.keys[currentLeaf.entries.currentSize - 1] < lowKey)
+				currentLeaf = currentLeaf.nextLeaf;
+			else
+				break;
 		}
 
-		//if we didn't reach the end 
-		if(currentLeaf!=null){
-			//in the leaf that contains the first value greater than the lowKey 
-			//do a binary search to locate the position of that key 
-			pos = LongLeafArrayMap.binarySearch(currentLeaf.entries.keys, lowKey, 0, currentLeaf.entries.currentSize - 1);
-		}
-		else{
-			//get out of the method;
+		// if we didn't reach the end
+		if (currentLeaf != null) {
+			// in the leaf that contains the first value greater than the lowKey
+			// do a binary search to locate the position of that key
+			pos = LongLeafArrayMap.binarySearch(currentLeaf.entries.keys,
+					lowKey, 0, currentLeaf.entries.currentSize - 1);
+		} else {
+			// get out of the method;
 			return;
 		}
 
-
-		//adapt the pos again
+		// adapt the pos again
 		if (pos < 0) {
 			pos = -(pos + 1);
-		} 
-
+		}
 
 		while (currentLeaf != null) {
 			while (pos < currentLeaf.entries.currentSize) {
@@ -246,7 +248,7 @@ public class LongLeaf extends Leaf implements LongBTreeNode {
 			pos = 0;
 		}
 	}
-	
+
 	public void get(long key, IntPushOperator results) {
 		// search in entries
 		int continueSearch = entries.get(key, results);
@@ -328,13 +330,11 @@ public class LongLeaf extends Leaf implements LongBTreeNode {
 			currentLeaf = currentLeaf.nextLeaf;
 		}
 	}
-	
 
 	@Override
 	public String toString() {
 		return "[" + entries.toString() + "]";
 	}
-
 
 	public boolean isEmpty() {
 		return entries.size() == 0;

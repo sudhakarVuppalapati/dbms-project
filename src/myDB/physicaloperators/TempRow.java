@@ -9,14 +9,14 @@ import systeminterface.Row;
 public class TempRow implements Row {
 
 	private Map<String, Type> schema;
-	
+
 	private Map<String, Object> data;
-	
+
 	public TempRow(Map<String, Type> schema, Map<String, Object> data) {
 		this.schema = schema;
 		this.data = data;
 	}
-	
+
 	@Override
 	public int getColumnCount() {
 		return data.values().size();
@@ -37,17 +37,16 @@ public class TempRow implements Row {
 			throws NoSuchColumnException {
 		return data.get(columnName);
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder str = new StringBuilder();
 		String names[] = schema.keySet().toArray(new String[0]);
-		
+
 		for (int i = 0; i < names.length; i++) {
 			try {
 				str.append(getColumnValue(names[i].toString()));
-			}
-			catch (NoSuchColumnException ex) {
+			} catch (NoSuchColumnException ex) {
 				ex.printStackTrace();
 			}
 			str.append("/t");

@@ -13,6 +13,6 @@ public interface Map {
 	public void pointQuery(int key, IntPushOperator results);
 
 	public void rangeQuery(int lowKey, int highKey, IntPushOperator results);
-	
+
 	public long size();
 }

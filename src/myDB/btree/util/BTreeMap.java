@@ -13,15 +13,18 @@ import myDB.TreeIndex;
 public abstract class BTreeMap implements TreeIndex {
 
 	protected final MyTable table;
-	
+
 	private String des;
-		
+
 	private final boolean range;
 	
-	public BTreeMap(String indexDes, Table tableObj, Column colObj, boolean isRange) 
-	throws SchemaMismatchException {
+	private Column column;
+
+	public BTreeMap(String indexDes, Table tableObj, Column colObj,
+			boolean isRange) throws SchemaMismatchException {
+		column = colObj;
 		des = indexDes;
-		table = (MyTable)tableObj;
+		table = (MyTable) tableObj;
 		range = isRange;
 	}
 
@@ -32,8 +35,8 @@ public abstract class BTreeMap implements TreeIndex {
 			throws InvalidKeyException, InvalidRangeException;
 
 	@Override
-	public abstract Operator<Row> rangeQuery(Object startingKey, Object endingKey)
-			throws InvalidKeyException, InvalidRangeException ;
+	public abstract Operator<Row> rangeQuery(Object startingKey,
+			Object endingKey) throws InvalidKeyException, InvalidRangeException;
 
 	@Override
 	public abstract int[] rangeQueryRowIDs(Object startingKey, Object endingKey)
@@ -44,10 +47,12 @@ public abstract class BTreeMap implements TreeIndex {
 			throws InvalidKeyException;
 
 	@Override
-	public abstract int[] pointQueryRowIDs(Object key) throws InvalidKeyException;
+	public abstract int[] pointQueryRowIDs(Object key)
+			throws InvalidKeyException;
 
 	@Override
-	public abstract void delete(Object key, int rowID) throws InvalidKeyException;
+	public abstract void delete(Object key, int rowID)
+			throws InvalidKeyException;
 
 	@Override
 	public abstract void delete(Object key) throws InvalidKeyException;
@@ -63,7 +68,8 @@ public abstract class BTreeMap implements TreeIndex {
 	}
 
 	@Override
-	public abstract void insert(Object key, int rowID) throws InvalidKeyException;
+	public abstract void insert(Object key, int rowID)
+			throws InvalidKeyException;
 
 	@Override
 	public boolean supportRangeQueries() {
@@ -73,5 +79,9 @@ public abstract class BTreeMap implements TreeIndex {
 	@Override
 	public abstract void update(Object key, int oldRowID, int newRowID)
 			throws InvalidKeyException;
+	
+	public Column getColumn() {
+		return column;
+	}
 
 }

@@ -2,7 +2,6 @@ package myDB.btree.core.btree;
 
 import myDB.btree.util.IntPushOperator;
 
-
 /**
  * Helper for b-tree leaves. Has to be taylored to different key and value types
  * manually as Generics would use Complex type (inefficent) instead of native
@@ -32,6 +31,7 @@ public class ObjectLeafArrayMap extends LeafArrayMap {
 			return pos;
 		}
 	}
+
 	/**
 	 * This binary search method is modified to guarantee that, in the presence
 	 * of duplicate keys, we will always return the first occurrence of a found
@@ -43,7 +43,8 @@ public class ObjectLeafArrayMap extends LeafArrayMap {
 	 * @param to
 	 * @return
 	 */
-	public static int binarySearch(Comparable[] a, Comparable key, int from, int to) {
+	public static int binarySearch(Comparable[] a, Comparable key, int from,
+			int to) {
 		int low = from;
 		int high = to;
 
@@ -126,7 +127,7 @@ public class ObjectLeafArrayMap extends LeafArrayMap {
 			}
 
 			// find insertion point
-			while (pos < currentSize && key.compareTo(keys[pos]) >= 0 ) {
+			while (pos < currentSize && key.compareTo(keys[pos]) >= 0) {
 				pos++;
 			}
 			if (pos == currentSize) {
@@ -248,7 +249,7 @@ public class ObjectLeafArrayMap extends LeafArrayMap {
 
 			// now delete all occurrences in one move, if necessary
 			/** TENTATIVE -$BEGIN */
-					
+
 			if (firstOccurrence != -1) {
 				System.arraycopy(keys, lastOccurrence + 1, keys,
 						firstOccurrence, currentSize - (lastOccurrence + 1));
@@ -256,21 +257,18 @@ public class ObjectLeafArrayMap extends LeafArrayMap {
 						firstOccurrence, currentSize - (lastOccurrence + 1));
 				currentSize -= (lastOccurrence - firstOccurrence + 1);
 			}
-					
-			/*if (firstOccurrence != -1) {
-				if (lastOccurrence + 1 != currentSize) {
-					System.arraycopy(keys, lastOccurrence + 1, keys,
-							firstOccurrence, currentSize - (lastOccurrence + 1));
-					System.arraycopy(values, lastOccurrence + 1, values,
-							firstOccurrence, currentSize - (lastOccurrence + 1));
-					currentSize -= (lastOccurrence - firstOccurrence + 1);
-					
-				}
-				else {
-					currentSize = firstOccurrence;
-				}
-			}*/
-			
+
+			/*
+			 * if (firstOccurrence != -1) { if (lastOccurrence + 1 !=
+			 * currentSize) { System.arraycopy(keys, lastOccurrence + 1, keys,
+			 * firstOccurrence, currentSize - (lastOccurrence + 1));
+			 * System.arraycopy(values, lastOccurrence + 1, values,
+			 * firstOccurrence, currentSize - (lastOccurrence + 1)); currentSize
+			 * -= (lastOccurrence - firstOccurrence + 1);
+			 * 
+			 * } else { currentSize = firstOccurrence; } }
+			 */
+
 			/** TENTATIVE -$END */
 
 			return continueSearch;
@@ -302,7 +300,8 @@ public class ObjectLeafArrayMap extends LeafArrayMap {
 	 * @param results
 	 * @return
 	 */
-	public int queryRange(Comparable lowKey, Comparable highKey, IntPushOperator results) {
+	public int queryRange(Comparable lowKey, Comparable highKey,
+			IntPushOperator results) {
 		if (currentSize == 0) {
 			return CONTINUE_WITH_BINSEARCH; // maybe leaf was emptied by
 			// deletions

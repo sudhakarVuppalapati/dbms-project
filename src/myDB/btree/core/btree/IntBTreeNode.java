@@ -35,7 +35,8 @@ public interface IntBTreeNode extends BTreeNode {
 	 * @param value
 	 * @return
 	 */
-	public IntSplitInfo add(int key, int value, int lowKey, int highKey, LeafCarrier leafCarrier);
+	public IntSplitInfo add(int key, int value, int lowKey, int highKey,
+			LeafCarrier leafCarrier);
 
 	/**
 	 * Removes a single instance of the key-value mapping from the node. If the
@@ -47,7 +48,7 @@ public interface IntBTreeNode extends BTreeNode {
 	 * @param highKey
 	 */
 	public void remove(int key, int value, int lowKey, int highKey);
-	
+
 	public void removeRange(int lowKey, int highKey);
 
 	// do we need this method?

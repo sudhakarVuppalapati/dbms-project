@@ -12,21 +12,20 @@ import myDB.btree.util.IntPushOperator;
  */
 
 public class LongInternalNode extends InternalNode implements LongBTreeNode {
-	
-	protected static final LongInternalNode NULL = new LongInternalNode(0, null);
 
+	protected static final LongInternalNode NULL = new LongInternalNode(0, null);
 
 	protected LongInternalNodeArrayMap entries;
 
-//	protected LongInternalNode nextNode;
+	// protected LongInternalNode nextNode;
 
 	public LongInternalNode(int k, LongInternalNodeArrayMap entries) {
 		super(k);
 		this.entries = entries;
 	}
 
-	public LongInternalNode(LongBTreeNode leftChild, long pivot, LongBTreeNode rightChild,
-			int k) {
+	public LongInternalNode(LongBTreeNode leftChild, long pivot,
+			LongBTreeNode rightChild, int k) {
 		super(k);
 		this.entries = new LongInternalNodeArrayMap(2 * k);
 
@@ -34,7 +33,8 @@ public class LongInternalNode extends InternalNode implements LongBTreeNode {
 		entries.put(pivot, rightChild);
 	}
 
-	public LongSplitInfo add(long key, int value, long lowKey, long highKey, LeafCarrier leafCarrier) {
+	public LongSplitInfo add(long key, int value, long lowKey, long highKey,
+			LeafCarrier leafCarrier) {
 		// get next node to recurse insertion
 		int pos = entries.getIntervalPosition(key);
 		LongBTreeNode next = entries.nodes[pos];
@@ -42,7 +42,8 @@ public class LongInternalNode extends InternalNode implements LongBTreeNode {
 		// calculate key interval for next node
 		long newLowKey = pos == 0 ? lowKey : entries.keys[pos - 1];
 		long newHighKey = pos == entries.size() ? highKey : entries.keys[pos];
-		LongSplitInfo splitInfo = next.add(key, value, newLowKey, newHighKey, leafCarrier);
+		LongSplitInfo splitInfo = next.add(key, value, newLowKey, newHighKey,
+				leafCarrier);
 
 		// after recursion, check for split coming from lower levels
 		if (splitInfo != null) {
@@ -63,9 +64,9 @@ public class LongInternalNode extends InternalNode implements LongBTreeNode {
 		long midKey = entries.getMidKey();
 		LongInternalNode newNode = new LongInternalNode(k, entries.split());
 
-//		// fix sibling pointers
-//		newNode.nextNode = nextNode;
-//		nextNode = newNode;
+		// // fix sibling pointers
+		// newNode.nextNode = nextNode;
+		// nextNode = newNode;
 
 		return new LongSplitInfo(this, midKey, newNode);
 	}
@@ -83,7 +84,7 @@ public class LongInternalNode extends InternalNode implements LongBTreeNode {
 			next.remove(key, value, newLowKey, newHighKey);
 		}
 	}
-	
+
 	public void removeRange(long lowKey, long highKey) {
 		// get next node to recurse deletion
 		int pos = entries.getIntervalPosition(lowKey);
@@ -133,12 +134,12 @@ public class LongInternalNode extends InternalNode implements LongBTreeNode {
 				}
 			}
 
-//			// write next, if any
-//			if (nextNode != null) {
-//				dest.write(("\"nodeX" + this.hashCode() + "\":"
-//						+ entries.size() + " -> \"" + "nodeX"
-//						+ nextNode.hashCode() + "\":0;\n").getBytes());
-//			}
+			// // write next, if any
+			// if (nextNode != null) {
+			// dest.write(("\"nodeX" + this.hashCode() + "\":"
+			// + entries.size() + " -> \"" + "nodeX"
+			// + nextNode.hashCode() + "\":0;\n").getBytes());
+			// }
 
 		} catch (IOException e) {
 			System.out.println("could not write dotty");

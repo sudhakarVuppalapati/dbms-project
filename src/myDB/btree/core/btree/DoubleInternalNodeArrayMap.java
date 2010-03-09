@@ -55,7 +55,8 @@ public class DoubleInternalNodeArrayMap extends InternalNodeArrayMap {
 	 * @return
 	 */
 	public DoubleInternalNodeArrayMap split() {
-		DoubleInternalNodeArrayMap newMap = new DoubleInternalNodeArrayMap(keys.length);
+		DoubleInternalNodeArrayMap newMap = new DoubleInternalNodeArrayMap(
+				keys.length);
 		final int mid = currentSize / 2;
 		int count = 0;
 		newMap.nodes[0] = nodes[mid + 1];

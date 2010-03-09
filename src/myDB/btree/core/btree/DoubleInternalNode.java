@@ -12,21 +12,21 @@ import myDB.btree.util.IntPushOperator;
  */
 
 public class DoubleInternalNode extends InternalNode implements DoubleBTreeNode {
-	
-	protected static final DoubleInternalNode NULL = new DoubleInternalNode(0, null);
 
+	protected static final DoubleInternalNode NULL = new DoubleInternalNode(0,
+			null);
 
 	protected DoubleInternalNodeArrayMap entries;
 
-//	protected DoubleInternalNode nextNode;
+	// protected DoubleInternalNode nextNode;
 
 	public DoubleInternalNode(int k, DoubleInternalNodeArrayMap entries) {
 		super(k);
 		this.entries = entries;
 	}
 
-	public DoubleInternalNode(DoubleBTreeNode leftChild, double pivot, DoubleBTreeNode rightChild,
-			int k) {
+	public DoubleInternalNode(DoubleBTreeNode leftChild, double pivot,
+			DoubleBTreeNode rightChild, int k) {
 		super(k);
 		this.entries = new DoubleInternalNodeArrayMap(2 * k);
 
@@ -34,7 +34,8 @@ public class DoubleInternalNode extends InternalNode implements DoubleBTreeNode 
 		entries.put(pivot, rightChild);
 	}
 
-	public DoubleSplitInfo add(double key, int value, double lowKey, double highKey, LeafCarrier leafCarrier) {
+	public DoubleSplitInfo add(double key, int value, double lowKey,
+			double highKey, LeafCarrier leafCarrier) {
 		// get next node to recurse insertion
 		int pos = entries.getIntervalPosition(key);
 		DoubleBTreeNode next = entries.nodes[pos];
@@ -42,7 +43,8 @@ public class DoubleInternalNode extends InternalNode implements DoubleBTreeNode 
 		// calculate key interval for next node
 		double newLowKey = pos == 0 ? lowKey : entries.keys[pos - 1];
 		double newHighKey = pos == entries.size() ? highKey : entries.keys[pos];
-		DoubleSplitInfo splitInfo = next.add(key, value, newLowKey, newHighKey, leafCarrier);
+		DoubleSplitInfo splitInfo = next.add(key, value, newLowKey, newHighKey,
+				leafCarrier);
 
 		// after recursion, check for split coming from lower levels
 		if (splitInfo != null) {
@@ -63,9 +65,9 @@ public class DoubleInternalNode extends InternalNode implements DoubleBTreeNode 
 		double midKey = entries.getMidKey();
 		DoubleInternalNode newNode = new DoubleInternalNode(k, entries.split());
 
-//		// fix sibling pointers
-//		newNode.nextNode = nextNode;
-//		nextNode = newNode;
+		// // fix sibling pointers
+		// newNode.nextNode = nextNode;
+		// nextNode = newNode;
 
 		return new DoubleSplitInfo(this, midKey, newNode);
 	}
@@ -83,7 +85,7 @@ public class DoubleInternalNode extends InternalNode implements DoubleBTreeNode 
 			next.remove(key, value, newLowKey, newHighKey);
 		}
 	}
-	
+
 	public void removeRange(double lowKey, double highKey) {
 		// get next node to recurse deletion
 		int pos = entries.getIntervalPosition(lowKey);
@@ -133,12 +135,12 @@ public class DoubleInternalNode extends InternalNode implements DoubleBTreeNode 
 				}
 			}
 
-//			// write next, if any
-//			if (nextNode != null) {
-//				dest.write(("\"nodeX" + this.hashCode() + "\":"
-//						+ entries.size() + " -> \"" + "nodeX"
-//						+ nextNode.hashCode() + "\":0;\n").getBytes());
-//			}
+			// // write next, if any
+			// if (nextNode != null) {
+			// dest.write(("\"nodeX" + this.hashCode() + "\":"
+			// + entries.size() + " -> \"" + "nodeX"
+			// + nextNode.hashCode() + "\":0;\n").getBytes());
+			// }
 
 		} catch (IOException e) {
 			System.out.println("could not write dotty");
@@ -147,7 +149,8 @@ public class DoubleInternalNode extends InternalNode implements DoubleBTreeNode 
 
 	}
 
-	public void queryRange(double lowKey, double highKey, IntPushOperator results) {
+	public void queryRange(double lowKey, double highKey,
+			IntPushOperator results) {
 		// look for lowKey and delegate
 		DoubleBTreeNode next = entries.get(lowKey);
 		next.queryRange(lowKey, highKey, results);

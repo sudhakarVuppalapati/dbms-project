@@ -7,47 +7,48 @@ import systeminterface.Row;
 
 /**
  * Tree structured index
+ * 
  * @author attran
- *
+ * 
  */
 public interface TreeIndex extends HashIndex {
 
 	/**
-	 * Look up in this index the corresponding data entries with 
-	 * a search key ranging from startingKey to endingKey. 
-	 * Note that to keep it flexible, we have no exception regarding 
-	 * the checking of the key type 
+	 * Look up in this index the corresponding data entries with a search key
+	 * ranging from startingKey to endingKey. Note that to keep it flexible, we
+	 * have no exception regarding the checking of the key type
+	 * 
 	 * @param startingKey
 	 * @param endingKey
 	 * @return list of rowIDs as a primitive array
 	 */
-	public int[] rangeQueryRowIDs(Object startingKey, Object endingKey) 
-	throws InvalidKeyException, InvalidRangeException;
-	
+	public int[] rangeQueryRowIDs(Object startingKey, Object endingKey)
+			throws InvalidKeyException, InvalidRangeException;
 
 	/**
-	 * Look up in this index, returning the List of Row objects
-	 * with search key matching the supplied ones. This method returns
-	 * null if not found. Note that to aid the flexibility, we dispatch
-	 * the checking of key type to the caller method (usually pointQuery()
-	 * in IndexLayer)
+	 * Look up in this index, returning the List of Row objects with search key
+	 * matching the supplied ones. This method returns null if not found. Note
+	 * that to aid the flexibility, we dispatch the checking of key type to the
+	 * caller method (usually pointQuery() in IndexLayer)
+	 * 
 	 * @param startingKey
 	 * @param endingKey
 	 * @return Operator of Row types, or null if not found
 	 */
-	public Operator<Row> rangeQuery(Object startingKey, Object endingKey) 
-	throws InvalidKeyException, InvalidRangeException;
-	
+	public Operator<Row> rangeQuery(Object startingKey, Object endingKey)
+			throws InvalidKeyException, InvalidRangeException;
+
 	/**
 	 * Look up in this index, deleting every data entries with search key
 	 * ranging between the supplied ones. Note that when querying the deleted
 	 * data entries, the querying method should return empty arrays or empty
 	 * operators, not the null reference.
+	 * 
 	 * @param startingKEy
 	 * @param endingKey
 	 * @throws InvalidKeyException
 	 * @throws InvalidRangeException
 	 */
 	public void delete(Object startingKey, Object endingKey)
-	throws InvalidKeyException, InvalidRangeException;
+			throws InvalidKeyException, InvalidRangeException;
 }

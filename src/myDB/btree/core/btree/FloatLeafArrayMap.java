@@ -2,7 +2,6 @@ package myDB.btree.core.btree;
 
 import myDB.btree.util.IntPushOperator;
 
-
 /**
  * Helper for b-tree leaves. Has to be taylored to different key and value types
  * manually as Generics would use Complex type (inefficent) instead of native
@@ -13,7 +12,6 @@ public class FloatLeafArrayMap extends LeafArrayMap {
 	protected float[] keys;
 
 	protected int[] values;
-
 
 	public int getIntervalPosition(float key) {
 		if (currentSize == 0) {
@@ -33,7 +31,7 @@ public class FloatLeafArrayMap extends LeafArrayMap {
 			return pos;
 		}
 	}
-	
+
 	/**
 	 * This binary search method is modified to guarantee that, in the presence
 	 * of duplicate keys, we will always return the first occurrence of a found
@@ -275,7 +273,6 @@ public class FloatLeafArrayMap extends LeafArrayMap {
 
 		return sb.toString();
 	}
-
 
 	/**
 	 * Obtains all values mapped to the given key range in this array. If the

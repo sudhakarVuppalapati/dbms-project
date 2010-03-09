@@ -11,11 +11,11 @@ import myDB.btree.util.IntPushOperator;
  * @author jens/marcos
  */
 public class DoubleLeaf extends Leaf implements DoubleBTreeNode {
-	//my addition
-	//int type;	
+	// my addition
+	// int type;
 	protected DoubleLeafArrayMap entries;
 
-	//protected int k_star;
+	// protected int k_star;
 
 	protected DoubleLeaf nextLeaf;
 
@@ -29,8 +29,8 @@ public class DoubleLeaf extends Leaf implements DoubleBTreeNode {
 		this(k_star, new DoubleLeafArrayMap(2 * k_star));
 	}
 
-	public DoubleSplitInfo add(double key, int value, double lowKey, double highKey,
-			LeafCarrier leafCarrier) {
+	public DoubleSplitInfo add(double key, int value, double lowKey,
+			double highKey, LeafCarrier leafCarrier) {
 		// search for insertion point: last allowed node of a scan for that key
 		// a node is allowed as far as its first key is smaller than the highKey
 		// this keeps the strict tree invariant that a leaf pointed to by
@@ -137,15 +137,16 @@ public class DoubleLeaf extends Leaf implements DoubleBTreeNode {
 
 	public void removeRange1(double lowKey, double highKey) {
 		int currentSize = entries.currentSize;
-		int pos = DoubleLeafArrayMap.binarySearch(entries.keys, lowKey, 0, currentSize - 1);
-		
+		int pos = DoubleLeafArrayMap.binarySearch(entries.keys, lowKey, 0,
+				currentSize - 1);
+
 		double tmp;
-		
+
 		if (pos < 0) {
 			pos = -(pos + 1);
-		} 
+		}
 		DoubleLeaf currentLeaf = this;
-		
+
 		while (currentLeaf != null) {
 			while (pos < currentLeaf.entries.currentSize) {
 				tmp = currentLeaf.entries.keys[pos];
@@ -157,7 +158,7 @@ public class DoubleLeaf extends Leaf implements DoubleBTreeNode {
 			pos = 0;
 		}
 	}
-	
+
 	public void removeRange2(double lowKey, double highKey) {
 
 		DoubleLeaf currentLeaf = this;
@@ -167,73 +168,74 @@ public class DoubleLeaf extends Leaf implements DoubleBTreeNode {
 
 		while (currentLeaf != null) {
 			if (continueSearch)
-				pos = DoubleLeafArrayMap.binarySearch(currentLeaf.entries.keys, lowKey, 0,
-						currentLeaf.entries.currentSize - 1);
+				pos = DoubleLeafArrayMap.binarySearch(currentLeaf.entries.keys,
+						lowKey, 0, currentLeaf.entries.currentSize - 1);
 
 			if (pos < 0) {
 				pos = -(pos + 1);
-			} 
+			}
 
 			if (pos == currentLeaf.entries.currentSize) {
 				currentLeaf = currentLeaf.nextLeaf;
 				continue;
-			}
-			else while (pos < currentLeaf.entries.currentSize) {
-				tmp = currentLeaf.entries.keys[pos];
-				if (tmp > highKey)
-					return;
-				currentLeaf.entries.deleteAtPos(pos);
-			}
+			} else
+				while (pos < currentLeaf.entries.currentSize) {
+					tmp = currentLeaf.entries.keys[pos];
+					if (tmp > highKey)
+						return;
+					currentLeaf.entries.deleteAtPos(pos);
+				}
 			currentLeaf = currentLeaf.nextLeaf;
-			pos = 0;		
+			pos = 0;
 			continueSearch = false;
 		}
 	}
 
 	public void removeRange(double lowKey, double highKey) {
-		int pos = DoubleLeafArrayMap.binarySearch(entries.keys, lowKey, 0, entries.currentSize - 1);
+		int pos = DoubleLeafArrayMap.binarySearch(entries.keys, lowKey, 0,
+				entries.currentSize - 1);
 
 		double tmp;
 
 		if (pos < 0) {
 			pos = -(pos + 1);
-		} 
+		}
 
 		DoubleLeaf currentLeaf = this;
 
-		//if a value greater than the lowKey was not found , go to the next leaf 
-		if(pos == this.entries.currentSize){
-			currentLeaf=this.nextLeaf;
+		// if a value greater than the lowKey was not found , go to the next
+		// leaf
+		if (pos == this.entries.currentSize) {
+			currentLeaf = this.nextLeaf;
 		}
 
-
-		//while the consequent leaf contains only values smaller than the lowKey, ignore
-		//them and go further
-		while(currentLeaf!=null) {
+		// while the consequent leaf contains only values smaller than the
+		// lowKey, ignore
+		// them and go further
+		while (currentLeaf != null) {
 			if (currentLeaf.entries.currentSize == 0)
 				currentLeaf = currentLeaf.nextLeaf;
-			else if (currentLeaf.entries.keys[currentLeaf.entries.currentSize-1]< lowKey)
-				currentLeaf=currentLeaf.nextLeaf;
-			else break;
+			else if (currentLeaf.entries.keys[currentLeaf.entries.currentSize - 1] < lowKey)
+				currentLeaf = currentLeaf.nextLeaf;
+			else
+				break;
 		}
 
-		//if we didn't reach the end 
-		if(currentLeaf!=null){
-			//in the leaf that contains the first value greater than the lowKey 
-			//do a binary search to locate the position of that key 
-			pos = DoubleLeafArrayMap.binarySearch(currentLeaf.entries.keys, lowKey, 0, currentLeaf.entries.currentSize - 1);
-		}
-		else{
-			//get out of the method;
+		// if we didn't reach the end
+		if (currentLeaf != null) {
+			// in the leaf that contains the first value greater than the lowKey
+			// do a binary search to locate the position of that key
+			pos = DoubleLeafArrayMap.binarySearch(currentLeaf.entries.keys,
+					lowKey, 0, currentLeaf.entries.currentSize - 1);
+		} else {
+			// get out of the method;
 			return;
 		}
 
-
-		//adapt the pos again
+		// adapt the pos again
 		if (pos < 0) {
 			pos = -(pos + 1);
-		} 
-
+		}
 
 		while (currentLeaf != null) {
 			while (pos < currentLeaf.entries.currentSize) {
@@ -333,7 +335,6 @@ public class DoubleLeaf extends Leaf implements DoubleBTreeNode {
 	public String toString() {
 		return "[" + entries.toString() + "]";
 	}
-
 
 	public boolean isEmpty() {
 		return entries.size() == 0;

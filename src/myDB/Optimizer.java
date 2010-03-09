@@ -28,7 +28,6 @@ import util.ComparisonOperator;
 import util.LogicalOperator;
 import util.RelationalOperatorType;
 
-
 public class Optimizer {
 
 	private static Input r,s;
@@ -246,7 +245,7 @@ public class Optimizer {
 		}
 		else if(type== RelationalOperatorType.CROSS_PRODUCT){
 			getPaths(((CrossProduct)tree).getLeftInput(), transform(1, direction));
-			getPaths( ((Join)tree).getRightInput(), transform(2, direction));
+			getPaths( ((CrossProduct)tree).getRightInput(), transform(2, direction));
 		}
 		else if(type== RelationalOperatorType.INPUT){
 
@@ -280,7 +279,7 @@ public class Optimizer {
 	 */
 	private static boolean checkPushProjectionSelection(PredicateTreeNode predicate, String[] prjAttrs){
 
-		/* 
+		/*
 		 *  searching the predicate tree for each of the prjAttrs is worse than
 		 *  traversing the predicate tree in order to gather all the attribute names and 
 		 *  than to compare these attributes with the ones in the prjAttrs

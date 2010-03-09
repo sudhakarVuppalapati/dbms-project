@@ -9,7 +9,7 @@ package myDB.btree.core.btree;
 public class IntInternalNodeArrayMap extends InternalNodeArrayMap {
 
 	/** n keys stored on this internal node */
-	 protected int[] keys;
+	protected int[] keys;
 
 	/**
 	 * n + 1 pointers stored in this internal node - left is index-aligned with
@@ -61,7 +61,8 @@ public class IntInternalNodeArrayMap extends InternalNodeArrayMap {
 	 * @return
 	 */
 	public IntInternalNodeArrayMap split() {
-		IntInternalNodeArrayMap newMap = new IntInternalNodeArrayMap(keys.length);
+		IntInternalNodeArrayMap newMap = new IntInternalNodeArrayMap(
+				keys.length);
 		final int mid = currentSize / 2;
 		int count = 0;
 		newMap.nodes[0] = nodes[mid + 1];

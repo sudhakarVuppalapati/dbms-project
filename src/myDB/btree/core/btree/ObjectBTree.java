@@ -28,7 +28,7 @@ import myDB.btree.util.IntPushOperator;
  * @author jens / marcos
  */
 public class ObjectBTree extends BTree {
-		
+
 	/** the root of the b-tree */
 	protected ObjectBTreeNode root = null;
 
@@ -58,16 +58,18 @@ public class ObjectBTree extends BTree {
 			firstLeaf = new ObjectLeaf(k_star);
 			root = firstLeaf;
 		}
-		ObjectSplitInfo splitInfo = root.add(key, value, Infinity.MIN_VALUE, Infinity.MAX_VALUE, leafCarrier);
+		ObjectSplitInfo splitInfo = root.add(key, value, Infinity.MIN_VALUE,
+				Infinity.MAX_VALUE, leafCarrier);
 		if (splitInfo != null) {
 			ObjectInternalNode newRoot;
 			// root overflow!:
 			if (firstTime) {
-				newRoot = new ObjectInternalNode(root, splitInfo.pivot, splitInfo.rightNode, k);
+				newRoot = new ObjectInternalNode(root, splitInfo.pivot,
+						splitInfo.rightNode, k);
 				firstTime = false;
-			}
-			else
-				newRoot = new ObjectInternalNode(splitInfo.leftNode, splitInfo.pivot, splitInfo.rightNode, k);
+			} else
+				newRoot = new ObjectInternalNode(splitInfo.leftNode,
+						splitInfo.pivot, splitInfo.rightNode, k);
 			root = newRoot;
 		}
 		refreshNeeded = true;
@@ -94,7 +96,8 @@ public class ObjectBTree extends BTree {
 	 * @return
 	 */
 	public void remove(Comparable key) {
-		root.remove(key, BTreeConstants.ALL_MAPPINGS, Infinity.MIN_VALUE, Infinity.MAX_VALUE);
+		root.remove(key, BTreeConstants.ALL_MAPPINGS, Infinity.MIN_VALUE,
+				Infinity.MAX_VALUE);
 		refreshNeeded = true;
 	}
 
@@ -110,7 +113,7 @@ public class ObjectBTree extends BTree {
 		root.remove(key, value, Infinity.MIN_VALUE, Infinity.MAX_VALUE);
 		refreshNeeded = true;
 	}
-	
+
 	public void remove(Comparable lowKey, Comparable highKey) {
 		root.removeRange(lowKey, highKey);
 		refreshNeeded = true;
@@ -125,7 +128,8 @@ public class ObjectBTree extends BTree {
 	 * @param highKey
 	 * @return
 	 */
-	public void queryRange(Comparable lowKey, Comparable highKey, IntPushOperator results) {
+	public void queryRange(Comparable lowKey, Comparable highKey,
+			IntPushOperator results) {
 		root.queryRange(lowKey, highKey, results);
 	}
 
@@ -180,7 +184,8 @@ public class ObjectBTree extends BTree {
 				currentLeaf = currentLeaf.nextLeaf;
 			}
 
-			leafUtilization = (double) elemCount / (double) (leafCount * 2 * k_star);
+			leafUtilization = (double) elemCount
+					/ (double) (leafCount * 2 * k_star);
 			refreshNeeded = false;
 		}
 	}

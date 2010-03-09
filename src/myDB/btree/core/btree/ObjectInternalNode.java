@@ -12,21 +12,21 @@ import myDB.btree.util.IntPushOperator;
  */
 
 public class ObjectInternalNode extends InternalNode implements ObjectBTreeNode {
-	
-	protected static final ObjectInternalNode NULL = new ObjectInternalNode(0, null);
 
+	protected static final ObjectInternalNode NULL = new ObjectInternalNode(0,
+			null);
 
 	protected ObjectInternalNodeArrayMap entries;
 
-//	protected ObjectInternalNode nextNode;
+	// protected ObjectInternalNode nextNode;
 
 	public ObjectInternalNode(int k, ObjectInternalNodeArrayMap entries) {
 		super(k);
 		this.entries = entries;
 	}
 
-	public ObjectInternalNode(ObjectBTreeNode leftChild, Comparable pivot, ObjectBTreeNode rightChild,
-			int k) {
+	public ObjectInternalNode(ObjectBTreeNode leftChild, Comparable pivot,
+			ObjectBTreeNode rightChild, int k) {
 		super(k);
 		this.entries = new ObjectInternalNodeArrayMap(2 * k);
 
@@ -34,15 +34,18 @@ public class ObjectInternalNode extends InternalNode implements ObjectBTreeNode 
 		entries.put(pivot, rightChild);
 	}
 
-	public ObjectSplitInfo add(Comparable key, int value, Comparable lowKey, Comparable highKey, LeafCarrier leafCarrier) {
+	public ObjectSplitInfo add(Comparable key, int value, Comparable lowKey,
+			Comparable highKey, LeafCarrier leafCarrier) {
 		// get next node to recurse insertion
 		int pos = entries.getIntervalPosition(key);
 		ObjectBTreeNode next = entries.nodes[pos];
 
 		// calculate key interval for next node
 		Comparable newLowKey = pos == 0 ? lowKey : entries.keys[pos - 1];
-		Comparable newHighKey = pos == entries.size() ? highKey : entries.keys[pos];
-		ObjectSplitInfo splitInfo = next.add(key, value, newLowKey, newHighKey, leafCarrier);
+		Comparable newHighKey = pos == entries.size() ? highKey
+				: entries.keys[pos];
+		ObjectSplitInfo splitInfo = next.add(key, value, newLowKey, newHighKey,
+				leafCarrier);
 
 		// after recursion, check for split coming from lower levels
 		if (splitInfo != null) {
@@ -63,14 +66,15 @@ public class ObjectInternalNode extends InternalNode implements ObjectBTreeNode 
 		Comparable midKey = entries.getMidKey();
 		ObjectInternalNode newNode = new ObjectInternalNode(k, entries.split());
 
-//		// fix sibling pointers
-//		newNode.nextNode = nextNode;
-//		nextNode = newNode;
+		// // fix sibling pointers
+		// newNode.nextNode = nextNode;
+		// nextNode = newNode;
 
 		return new ObjectSplitInfo(this, midKey, newNode);
 	}
 
-	public void remove(Comparable key, int value, Comparable lowKey, Comparable highKey) {
+	public void remove(Comparable key, int value, Comparable lowKey,
+			Comparable highKey) {
 		// get next node to recurse deletion
 		int pos = entries.getIntervalPosition(key);
 		ObjectBTreeNode next = entries.nodes[pos];
@@ -83,7 +87,7 @@ public class ObjectInternalNode extends InternalNode implements ObjectBTreeNode 
 			next.remove(key, value, newLowKey, newHighKey);
 		}
 	}
-	
+
 	public void removeRange(Comparable lowKey, Comparable highKey) {
 		// get next node to recurse deletion
 		int pos = entries.getIntervalPosition(lowKey);
@@ -133,12 +137,12 @@ public class ObjectInternalNode extends InternalNode implements ObjectBTreeNode 
 				}
 			}
 
-//			// write next, if any
-//			if (nextNode != null) {
-//				dest.write(("\"nodeX" + this.hashCode() + "\":"
-//						+ entries.size() + " -> \"" + "nodeX"
-//						+ nextNode.hashCode() + "\":0;\n").getBytes());
-//			}
+			// // write next, if any
+			// if (nextNode != null) {
+			// dest.write(("\"nodeX" + this.hashCode() + "\":"
+			// + entries.size() + " -> \"" + "nodeX"
+			// + nextNode.hashCode() + "\":0;\n").getBytes());
+			// }
 
 		} catch (IOException e) {
 			System.out.println("could not write dotty");
@@ -147,7 +151,8 @@ public class ObjectInternalNode extends InternalNode implements ObjectBTreeNode 
 
 	}
 
-	public void queryRange(Comparable lowKey, Comparable highKey, IntPushOperator results) {
+	public void queryRange(Comparable lowKey, Comparable highKey,
+			IntPushOperator results) {
 		// look for lowKey and delegate
 		ObjectBTreeNode next = entries.get(lowKey);
 		next.queryRange(lowKey, highKey, results);

@@ -17,7 +17,8 @@ public class ObjectInternalNodeArrayMap extends InternalNodeArrayMap {
 	 */
 	protected ObjectBTreeNode[] nodes;
 
-	public static int binarySearch(Comparable[] a, Comparable key, int from, int to) {
+	public static int binarySearch(Comparable[] a, Comparable key, int from,
+			int to) {
 		int low = from;
 		int high = to;
 
@@ -49,13 +50,14 @@ public class ObjectInternalNodeArrayMap extends InternalNodeArrayMap {
 
 	/**
 	 * Splits this map, keeps entries from 0 to (mid-1) and returns a new map
-	 * with entries from (mid+1) to (currentSize-1). The key mid is no Comparableer
-	 * present in either map and thus should be promoted.
+	 * with entries from (mid+1) to (currentSize-1). The key mid is no
+	 * Comparableer present in either map and thus should be promoted.
 	 * 
 	 * @return
 	 */
 	public ObjectInternalNodeArrayMap split() {
-		ObjectInternalNodeArrayMap newMap = new ObjectInternalNodeArrayMap(keys.length);
+		ObjectInternalNodeArrayMap newMap = new ObjectInternalNodeArrayMap(
+				keys.length);
 		final int mid = currentSize / 2;
 		int count = 0;
 		newMap.nodes[0] = nodes[mid + 1];

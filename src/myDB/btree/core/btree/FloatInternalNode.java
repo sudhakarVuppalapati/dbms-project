@@ -12,21 +12,21 @@ import myDB.btree.util.IntPushOperator;
  */
 
 public class FloatInternalNode extends InternalNode implements FloatBTreeNode {
-	
-	protected static final FloatInternalNode NULL = new FloatInternalNode(0, null);
 
+	protected static final FloatInternalNode NULL = new FloatInternalNode(0,
+			null);
 
 	protected FloatInternalNodeArrayMap entries;
 
-//	protected FloatInternalNode nextNode;
+	// protected FloatInternalNode nextNode;
 
 	public FloatInternalNode(int k, FloatInternalNodeArrayMap entries) {
 		super(k);
 		this.entries = entries;
 	}
 
-	public FloatInternalNode(FloatBTreeNode leftChild, float pivot, FloatBTreeNode rightChild,
-			int k) {
+	public FloatInternalNode(FloatBTreeNode leftChild, float pivot,
+			FloatBTreeNode rightChild, int k) {
 		super(k);
 		this.entries = new FloatInternalNodeArrayMap(2 * k);
 
@@ -34,7 +34,8 @@ public class FloatInternalNode extends InternalNode implements FloatBTreeNode {
 		entries.put(pivot, rightChild);
 	}
 
-	public FloatSplitInfo add(float key, int value, float lowKey, float highKey, LeafCarrier leafCarrier) {
+	public FloatSplitInfo add(float key, int value, float lowKey,
+			float highKey, LeafCarrier leafCarrier) {
 		// get next node to recurse insertion
 		int pos = entries.getIntervalPosition(key);
 		FloatBTreeNode next = entries.nodes[pos];
@@ -42,7 +43,8 @@ public class FloatInternalNode extends InternalNode implements FloatBTreeNode {
 		// calculate key interval for next node
 		float newLowKey = pos == 0 ? lowKey : entries.keys[pos - 1];
 		float newHighKey = pos == entries.size() ? highKey : entries.keys[pos];
-		FloatSplitInfo splitInfo = next.add(key, value, newLowKey, newHighKey, leafCarrier);
+		FloatSplitInfo splitInfo = next.add(key, value, newLowKey, newHighKey,
+				leafCarrier);
 
 		// after recursion, check for split coming from lower levels
 		if (splitInfo != null) {
@@ -63,9 +65,9 @@ public class FloatInternalNode extends InternalNode implements FloatBTreeNode {
 		float midKey = entries.getMidKey();
 		FloatInternalNode newNode = new FloatInternalNode(k, entries.split());
 
-//		// fix sibling pointers
-//		newNode.nextNode = nextNode;
-//		nextNode = newNode;
+		// // fix sibling pointers
+		// newNode.nextNode = nextNode;
+		// nextNode = newNode;
 
 		return new FloatSplitInfo(this, midKey, newNode);
 	}
@@ -83,7 +85,7 @@ public class FloatInternalNode extends InternalNode implements FloatBTreeNode {
 			next.remove(key, value, newLowKey, newHighKey);
 		}
 	}
-	
+
 	public void removeRange(float lowKey, float highKey) {
 		// get next node to recurse deletion
 		int pos = entries.getIntervalPosition(lowKey);
@@ -133,12 +135,12 @@ public class FloatInternalNode extends InternalNode implements FloatBTreeNode {
 				}
 			}
 
-//			// write next, if any
-//			if (nextNode != null) {
-//				dest.write(("\"nodeX" + this.hashCode() + "\":"
-//						+ entries.size() + " -> \"" + "nodeX"
-//						+ nextNode.hashCode() + "\":0;\n").getBytes());
-//			}
+			// // write next, if any
+			// if (nextNode != null) {
+			// dest.write(("\"nodeX" + this.hashCode() + "\":"
+			// + entries.size() + " -> \"" + "nodeX"
+			// + nextNode.hashCode() + "\":0;\n").getBytes());
+			// }
 
 		} catch (IOException e) {
 			System.out.println("could not write dotty");

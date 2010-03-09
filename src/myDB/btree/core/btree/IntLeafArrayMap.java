@@ -2,7 +2,6 @@ package myDB.btree.core.btree;
 
 import myDB.btree.util.IntPushOperator;
 
-
 /**
  * Helper for b-tree leaves. Has to be taylored to different key and value types
  * manually as Generics would use Complex type (inefficent) instead of native
@@ -13,7 +12,7 @@ public class IntLeafArrayMap extends LeafArrayMap {
 	protected int[] keys;
 
 	protected int[] values;
-	
+
 	public int getIntervalPosition(int key) {
 		if (currentSize == 0) {
 			return -1;
@@ -258,7 +257,7 @@ public class IntLeafArrayMap extends LeafArrayMap {
 
 			return continueSearch;
 		}
-	}	
+	}
 
 	@Override
 	public String toString() {

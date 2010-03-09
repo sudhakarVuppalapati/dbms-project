@@ -15,19 +15,19 @@ public class Infinity implements Comparable {
 	@Override
 	public int compareTo(Object o) {
 		try {
-			Comparable c = (Comparable)o;
+			Comparable c = (Comparable) o;
 			if (isMax) {
 				if (c == MAX_VALUE)
 					return 0;
-				else return 1;
-			}
-			else {
+				else
+					return 1;
+			} else {
 				if (c == MIN_VALUE)
 					return 0;
-				else return -1;
+				else
+					return -1;
 			}
-		}
-		catch (ClassCastException cce) {
+		} catch (ClassCastException cce) {
 			cce.printStackTrace();
 			return -1;
 		}
