@@ -1,7 +1,5 @@
 package myDB;
 
-import java.util.ArrayList;
-import java.util.List;
 import metadata.Type;
 import exceptions.NoSuchRowException;
 

@@ -2,17 +2,12 @@ package myDB;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
-
 import exceptions.NoSuchRowException;
 import exceptions.NoSuchTableException;
 import exceptions.SchemaMismatchException;
-
 import operator.Operator;
 import util.LoggedOperation;
-
-import logrecords.DeleteLogPayload;
 import logrecords.InsertLogPayload;
 import logrecords.LogPayload;
 import logrecords.LogRecord;

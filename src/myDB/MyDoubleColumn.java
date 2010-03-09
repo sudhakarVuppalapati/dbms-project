@@ -14,7 +14,7 @@ public class MyDoubleColumn extends MyColumn {
 	
 	public MyDoubleColumn(String name, Type type){
 		super(name, type);
-		data= new double[this.defaulInitialCapacity];
+		data= new double[MyColumn.defaulInitialCapacity];
 		//statuses=new byte[this.defaulInitialCapacity];
 		curSize=0;
 	}
@@ -102,7 +102,8 @@ public class MyDoubleColumn extends MyColumn {
 	
 	@Override
 	public void eraseOldArray(){
-		this.data=null;
+		this.data = null;
+		curSize = 0;
 	}
 
 }

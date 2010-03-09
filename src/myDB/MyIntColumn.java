@@ -14,7 +14,7 @@ public class MyIntColumn extends MyColumn {
 	
 	public MyIntColumn(String name, Type type) {
 		super(name,type);
-		data= new int[this.defaulInitialCapacity];
+		data= new int[MyColumn.defaulInitialCapacity];
 		//statuses=new byte[this.defaulInitialCapacity];
 		curSize=0;
 	}
@@ -30,7 +30,6 @@ public class MyIntColumn extends MyColumn {
 		super(name,type);
 		this.data=data;
 		curSize=data.length;
-		//statuses=new byte[curSize];
 	}
 	
 	@Override

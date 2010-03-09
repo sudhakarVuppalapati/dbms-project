@@ -58,7 +58,7 @@ public class Const {
 		if (typNo % 10 != 7)
 			throw new SchemaMismatchException();
 
-		int length = (int)typNo / 10;
+		int length = typNo / 10;
 
 		if (length == 0) 
 			throw new SchemaMismatchException();

@@ -557,7 +557,7 @@ public class MyStorageLayer implements StorageLayer,Serializable {
 					dos.writeInt(tmpRow);
 
 					columns.open();
-					while ((mc = (MyColumn)columns.next()) != null) {						
+					while ((mc = columns.next()) != null) {						
 						tmpType = mc.getColumnType();
 
 						/** Write to the meta-data the info of current column */

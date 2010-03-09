@@ -96,6 +96,7 @@ public class IntInternalNode extends InternalNode implements IntBTreeNode {
 		}
 	}
 
+	@Override
 	public String toString() {
 		return "[" + entries.toString() + "]";
 	}
@@ -106,6 +107,7 @@ public class IntInternalNode extends InternalNode implements IntBTreeNode {
 		next.get(key, results);
 	}
 
+	@Override
 	public void toDot(OutputStream dest) {
 		StringBuffer sb = new StringBuffer();
 
@@ -152,10 +154,12 @@ public class IntInternalNode extends InternalNode implements IntBTreeNode {
 		next.queryRange(lowKey, highKey, results);
 	}
 
+	@Override
 	public boolean isLeaf() {
 		return false;
 	}
 
+	@Override
 	public boolean isEmpty() {
 		return entries.size() == 0 && entries.nodes[0] == null;
 	}

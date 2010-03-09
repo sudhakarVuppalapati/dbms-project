@@ -148,7 +148,7 @@ public class JoinOperator {
 					str2=(String)objArrRight[j];*/
 					if(objArrLeft[i]!=MyNull.NULLOBJ &&
 							objArrRight[j]!=MyNull.NULLOBJ &&
-							((String)objArrLeft[i]).equals((String)objArrRight[j])){ 
+							((String)objArrLeft[i]).equals(objArrRight[j])){ 
 						leftRows[k]=i;
 						rightRows[k++]=j;
 					}

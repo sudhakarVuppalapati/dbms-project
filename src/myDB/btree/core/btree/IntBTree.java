@@ -133,6 +133,7 @@ public class IntBTree extends BTree {
 	/**
 	 * Prints the root of the tree as a string.
 	 */
+	@Override
 	public String toString() {
 		return root.toString();
 	}
@@ -140,6 +141,7 @@ public class IntBTree extends BTree {
 	/**
 	 * generates a dotty representation of the tree in the given output stream.
 	 */
+	@Override
 	public void toDot(OutputStream dest) {
 		try {
 			// write header
@@ -166,6 +168,7 @@ public class IntBTree extends BTree {
 		}
 	}
 
+	@Override
 	protected void calculateStats() {
 		if (refreshNeeded) {
 			IntLeaf currentLeaf = firstLeaf;
