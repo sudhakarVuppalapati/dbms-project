@@ -78,7 +78,6 @@ public class MyRecoveryManager implements RecoveryManager {
 	@Override
 	public void recover(LogStore logStore){
 		
-		System.out.println("In recover ");
 		
 		// aux vars
 		LogRecord lr; 
@@ -101,7 +100,6 @@ public class MyRecoveryManager implements RecoveryManager {
 				loggedOp=lr.getOperation();
 				tid=lr.getTID();
 				
-				System.out.println(loggedOp);
 				
 				if( loggedOp == LoggedOperation.START_TRANSACTION )
 					tt.put(tid, new  ArrayList<LogRecord>());
