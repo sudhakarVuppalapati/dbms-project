@@ -404,8 +404,7 @@ public class MyTable implements Table {
 					throw new SchemaMismatchException();
 				}
 				
-				
-				
+
 				if(i == 0 ) { // for the first column, fill the matchingRows array
 				
 					//iterate through the columnData and look for the rows having the same value as the
@@ -627,7 +626,7 @@ public class MyTable implements Table {
 		for(int i=0;i<schemaColNames.length;i++){
 			for(int j=0;j<colNames.length;j++)
 				if(schemaColNames[i].equalsIgnoreCase(colNames[j])) {
-					col_found=true;
+					col_found=true;method
 					break;
 				}
 			if(!col_found){
@@ -768,16 +767,14 @@ public class MyTable implements Table {
 	}
 
 	
-	public static long totalTime;
+	//public static long totalTime;
 	
-	private long start,stop;
 	/* (non-Javadoc)
 	 * @see systeminterface.Table#getRows()
 	 */
 	@Override
 	public Operator<Row> getRows() {
 		//filter out the null and than return the resulting operator
-		start=System.currentTimeMillis();
 		List<Row> filteredRows=new ArrayList();
 		Row r=null;
 		for(int i=0;i<rows.size();i++)
@@ -785,8 +782,6 @@ public class MyTable implements Table {
 				filteredRows.add(r);
 		
 		Operator<Row> opRow = new MyOperator<Row>(filteredRows);
-		stop=System.currentTimeMillis();
-		totalTime+=(stop-start);
 		return opRow;
 	}
 
