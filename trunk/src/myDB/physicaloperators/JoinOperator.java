@@ -3,18 +3,23 @@ package myDB.physicaloperators;
 import java.util.Iterator;
 import java.util.Map;
 
+import exceptions.InvalidKeyException;
 import exceptions.NoSuchColumnException;
 
 import metadata.Type;
 import metadata.Types;
+import myDB.Index;
 import myDB.MyColumn;
 import myDB.MyNull;
+import myDB.MyTable;
+import myDB.TreeIndex;
 
 import systeminterface.Column;
 
 /**
  * 
- * @author razvan Implementation of the JOIN relational operator by different
+ * @author razvan 
+ * 			Implementation of the JOIN relational operator by different
  *         strategies/methods (each strategy/method corresponds to a java method
  *         in this class)
  */
@@ -55,18 +60,15 @@ public class JoinOperator {
 		int leftColSize = leftCol.getRowCount();
 		int rightColSize = rightCol.getRowCount();
 		int crossProdSize = leftColSize * rightColSize;
-		int leftRows[] = new int[crossProdSize]; // the size is bigger than
-													// needed
+		int leftRows[] = new int[crossProdSize]; // the size is bigger than needed
 		int rightRows[] = new int[crossProdSize];// but this is the only way
 
 		// initialize the two arrays to -1
 		/*
 		 * for(i=0;i<crossProdSize;i++){ leftRows[i]=rightRows[i]=-1; }
 		 */
-
-		if (leftCol == null || rightCol == null) { // the input relation doesn't
-													// contain prjAttributes[i]
-													// column
+		
+		if (leftCol == null || rightCol == null) { // the input relation doesn't contain prjAttributes[i] column
 			throw new NoSuchColumnException();
 		}
 
@@ -299,4 +301,311 @@ public class JoinOperator {
 
 		return input1;
 	}
+	
+	
+	public static Map<String, Column> joinIndexNested(Map<String, Column> input1,
+																								 Map<String, Column> realInput2,
+																								 Index input2,  
+																								 String leftAttr, String rightAttr) 
+	throws NoSuchColumnException{
+		
+		// set of working array vars
+		int[] intArrLeft = null;
+		long[] longArrLeft = null;
+		float[] floatArrLeft = null;
+		double[] doubleArrLeft = null;
+		Object[] objArrLeft = null;
+
+		
+		
+		// aux column
+		Column c;
+		Type colType;
+		
+		Column col= input1.get(leftAttr);
+		
+		
+		int leftColSize = col.getRowCount();
+		int rightColSize = realInput2.get(rightAttr).getRowCount();
+		int crossProdSize = leftColSize * rightColSize;
+		int leftRows[] = new int[crossProdSize]; // the size is bigger than needed
+		int rightRows[] = new int[crossProdSize];// but this is the only way
+		
+		int[] indexRIds=null;
+		
+		int i,j, k=0;
+		
+		if ( col == null ) { // the input relation doesn't contain prjAttributes[i] column
+			throw new NoSuchColumnException();
+		}
+		
+		colType = col.getColumnType();
+		
+		TreeIndex treeIndex=(TreeIndex)input2;
+		
+		if (colType == Types.getIntegerType()) {
+			intArrLeft = (int[]) (col.getDataArrayAsObject());
+
+			for (i = 0; i < leftColSize; i++)
+				if (intArrLeft[i] != Integer.MAX_VALUE) {
+					
+					//search for this value in the index
+					try {
+						indexRIds=treeIndex.pointQueryRowIDs(intArrLeft[i]);
+					} catch (InvalidKeyException e) {
+						e.printStackTrace();
+					}
+					
+					
+					if(indexRIds.length>0)
+						for(int l=0; l< indexRIds.length ; l++){
+							leftRows[k] = i;
+					        rightRows[k++] = indexRIds[l];
+						}
+				
+				}
+		} else if (colType == Types.getFloatType()) {
+			floatArrLeft = (float[]) (col.getDataArrayAsObject());
+
+			for (i = 0; i < leftColSize; i++)
+				if (floatArrLeft[i] != Float.MAX_VALUE) {
+					
+					//search for this value in the index
+					try {
+						indexRIds=treeIndex.pointQueryRowIDs(floatArrLeft[i]);
+					} catch (InvalidKeyException e) {
+						e.printStackTrace();
+					}
+					
+					
+					if(indexRIds.length>0)
+						for(int l=0; l< indexRIds.length ; l++){
+							leftRows[k] = i;
+					        rightRows[k++] = indexRIds[l];
+						}
+				
+				}
+		} else if (colType == Types.getLongType()) {
+			longArrLeft = (long[]) (col.getDataArrayAsObject());
+
+			for (i = 0; i < leftColSize; i++)
+				if (longArrLeft[i] != Long.MAX_VALUE) {
+					
+					//search for this value in the index
+					try {
+						indexRIds=treeIndex.pointQueryRowIDs(longArrLeft[i]);
+					} catch (InvalidKeyException e) {
+						e.printStackTrace();
+					}
+					
+					
+					if(indexRIds.length>0)
+						for(int l=0; l< indexRIds.length ; l++){
+							leftRows[k] = i;
+					        rightRows[k++] = indexRIds[l];
+						}
+				
+				}
+		} else if (colType == Types.getDoubleType()) {
+			doubleArrLeft = (double[]) (col.getDataArrayAsObject());
+
+			for (i = 0; i < leftColSize; i++)
+				if (doubleArrLeft[i] != Double.MAX_VALUE) {
+					
+					//search for this value in the index
+					try {
+						indexRIds=treeIndex.pointQueryRowIDs(doubleArrLeft[i]);
+					} catch (InvalidKeyException e) {
+						e.printStackTrace();
+					}
+					
+					
+					if(indexRIds.length>0)
+						for(int l=0; l< indexRIds.length ; l++){
+							leftRows[k] = i;
+					        rightRows[k++] = indexRIds[l];
+						}
+				
+				}
+		}
+		/*
+		 * else if(colType== Types.getDateType()){
+		 * dateArrLeft=(Object[])(leftCol.getDataArrayAsObject());
+		 * dateArrRight=(Object[])(rightCol.getDataArrayAsObject());
+		 * for(i=0;i<leftColSize;i++) for(j=0;j<rightColSize;j++){
+		 * if(dateArrLeft[i]!=MyNull.NULLOBJ && dateArrRight[j]!=MyNull.NULLOBJ
+		 * && ((Date)dateArrLeft[i]).equals((Date)dateArrRight[j])){
+		 * leftRows[k]=i; rightRows[k++]=j; } } }
+		 */
+		else { // for the cases of Varchar and Char
+			objArrLeft= (Object[]) (col.getDataArrayAsObject());
+
+			for (i = 0; i < leftColSize; i++)
+				if (objArrLeft[i] != MyNull.NULLOBJ) {
+					
+					//search for this value in the index
+					try {
+						indexRIds=treeIndex.pointQueryRowIDs(objArrLeft[i]);
+					} catch (InvalidKeyException e) {
+						e.printStackTrace();
+					}
+					
+					
+					if(indexRIds.length>0)
+						for(int l=0; l< indexRIds.length ; l++){
+							leftRows[k] = i;
+					        rightRows[k++] = indexRIds[l];
+						}
+				
+				}
+		}
+		
+		
+		
+		
+		Iterator<String> colIter = input1.keySet().iterator();
+
+		while (colIter.hasNext()) { // for each column of the first input
+			c = input1.get(colIter.next());
+			colType = c.getColumnType();
+			if (colType == Types.getIntegerType()) {
+				// declare new array to hold the new column data
+				int[] newColData = new int[k]; // k is the cardinality of the
+												// join
+
+				// copy from the old array of the column
+				intArrLeft = (int[]) c.getDataArrayAsObject();
+				for (i = 0; i < k; i++) {
+					newColData[i] = intArrLeft[leftRows[i]];
+				}
+				((MyColumn) c).eraseOldArray();
+				// set the new array as the new data of the column
+				((MyColumn) c).setData(newColData, k);
+				
+			} else if (colType == Types.getLongType()) {
+				long[] newColData = new long[k]; // k is the cardinality of the
+													// join
+
+				longArrLeft = (long[]) c.getDataArrayAsObject();
+				for (i = 0; i < k; i++) {
+					newColData[i] = longArrLeft[leftRows[i]];
+				}
+				((MyColumn) c).eraseOldArray();
+				((MyColumn) c).setData(newColData, k);
+			} else if (colType == Types.getFloatType()) {
+				float[] newColData = new float[k]; // k is the cardinality of
+													// the join
+
+				floatArrLeft = (float[]) c.getDataArrayAsObject();
+				for (i = 0; i < k; i++) {
+					newColData[i] = floatArrLeft[leftRows[i]];
+				}
+				((MyColumn) c).eraseOldArray();
+				((MyColumn) c).setData(newColData, k);
+			} else if (colType == Types.getDoubleType()) {
+				double[] newColData = new double[k]; // k is the cardinality of
+														// the join
+
+				doubleArrLeft = (double[]) c.getDataArrayAsObject();
+				for (i = 0; i < k; i++) {
+					newColData[i] = doubleArrLeft[leftRows[i]];
+				}
+				((MyColumn) c).eraseOldArray();
+				((MyColumn) c).setData(newColData, k);
+			} else { // if Object type
+				/*
+				 * List newColData=new ArrayList(k); // k is the cardinality of
+				 * the join
+				 */Object[] newColData = new Object[k]; // k is the cardinality
+														// of the join
+				objArrLeft = (Object[]) c.getDataArrayAsObject();
+				for (i = 0; i < k; i++) {
+					// newColData.add(i,objArrLeft[leftRows[i]]);
+					newColData[i] = objArrLeft[leftRows[i]];
+				}
+				((MyColumn) c).eraseOldArray();
+				((MyColumn) c).setData(newColData, k);
+			}
+
+		}
+		
+		colIter = realInput2.keySet().iterator();
+
+		while (colIter.hasNext()) { // for each column of the first input
+			c = realInput2.get(colIter.next());
+			colType = c.getColumnType();
+			if (colType == Types.getIntegerType()) {
+				// declare new array to hold the new column data
+				int[] newColData = new int[k]; // k is the cardinality of the
+												// join
+
+				// copy from the old array of the column
+				intArrLeft = (int[]) c.getDataArrayAsObject();
+				for (i = 0; i < k; i++) {
+					newColData[i] = intArrLeft[rightRows[i]];
+				}
+				((MyColumn) c).eraseOldArray();
+				// set the new array as the new data of the column
+				((MyColumn) c).setData(newColData, k);
+				input1.put(c.getColumnName(), c);
+			} else if (colType == Types.getLongType()) {
+				long[] newColData = new long[k]; // k is the cardinality of the
+													// join
+
+				longArrLeft = (long[]) c.getDataArrayAsObject();
+				for (i = 0; i < k; i++) {
+					newColData[i] = longArrLeft[rightRows[i]];
+				}
+				((MyColumn) c).eraseOldArray();
+				((MyColumn) c).setData(newColData, k);
+				input1.put(c.getColumnName(), c);
+			} else if (colType == Types.getFloatType()) {
+				float[] newColData = new float[k]; // k is the cardinality of
+													// the join
+
+				floatArrLeft = (float[]) c.getDataArrayAsObject();
+				for (i = 0; i < k; i++) {
+					newColData[i] = floatArrLeft[rightRows[i]];
+				}
+				((MyColumn) c).eraseOldArray();
+				((MyColumn) c).setData(newColData, k);
+				input1.put(c.getColumnName(), c);
+			} else if (colType == Types.getDoubleType()) {
+				double[] newColData = new double[k]; // k is the cardinality of
+														// the join
+
+				doubleArrLeft = (double[]) c.getDataArrayAsObject();
+				for (i = 0; i < k; i++) {
+					newColData[i] = doubleArrLeft[rightRows[i]];
+				}
+				((MyColumn) c).eraseOldArray();
+				((MyColumn) c).setData(newColData, k);
+				input1.put(c.getColumnName(), c);
+			} else { // if Object type
+				/*
+				 * List newColData=new ArrayList(k); // k is the cardinality of
+				 * the join
+				 */
+				Object[] newColData = new Object[k]; // k is the cardinality of
+														// the join
+
+				objArrLeft = (Object[]) c.getDataArrayAsObject();
+				for (i = 0; i < k; i++) {
+					// System.out.println("LeftRows: "+leftRows[i]);
+					// System.out.println("ArrLeft: "+dateArrLeft[leftRows[i]]);
+					// newColData.add(i,objArrLeft[rightRows[i]]);
+					newColData[i] = objArrLeft[rightRows[i]];
+				}
+				((MyColumn) c).eraseOldArray();
+				((MyColumn) c).setData(newColData, k);
+				input1.put(c.getColumnName(), c);
+			}
+
+		}
+		
+		
+		return input1;
+	}
+	
+	
 }
