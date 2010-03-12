@@ -496,10 +496,46 @@ public class MyQueryLayer implements QueryLayer {
 
 		} else if (qType == RelationalOperatorType.JOIN) {
 			Join join = (Join) query;
+			
+			RelationalAlgebraExpression rae1=join.getRightInput();
+			
+			Index index = null;
+			
+			//if the right table is an original/physical table , not a table corresponding to a temporary result
+			if(rae1.getType() == RelationalOperatorType.INPUT ){
+				String[] indexNames= this.indexLayer.findIndex(((Input)rae1).getRelationName(), join.getRightJoinAttribute());
+				if( indexNames !=null && indexNames.length !=0){
+					index = ((MyIndexLayer)indexLayer).getIndexByName(indexNames[0]); //get the first index in the array
+					//probably here I should also check that the index  doesn't support rangeQuery which means it's a hash index 
+					
+					//System.out.println("Using index join on " + indexNames[0]);
+					
+					return JoinOperator.joinIndexNested(adaptedQuery(join.getLeftInput()),adaptedQuery(join.getRightInput()),
+							index, join.getLeftJoinAttribute(), join.getRightJoinAttribute());
+				}
+				
+				
+			}
+			
+			RelationalAlgebraExpression rae2= join.getLeftInput();
+			
+			if(rae2.getType() == RelationalOperatorType.INPUT ){
+				String[] indexNames= this.indexLayer.findIndex(((Input)rae2).getRelationName(), join.getLeftJoinAttribute());
+				if( indexNames !=null && indexNames.length !=0){
+					index = ((MyIndexLayer)indexLayer).getIndexByName(indexNames[0]); //get the first index in the array
+					//probably here I should also check that the index  doesn't support rangeQuery which means it's a hash index 
+					
+					return JoinOperator.joinIndexNested(adaptedQuery(join.getRightInput()),adaptedQuery(join.getLeftInput()),
+																					index, join.getRightJoinAttribute(),  join.getLeftJoinAttribute());
+				}
+			
+			}
+			
+			//System.out.println("Using simple join");
+			
 			return JoinOperator.joinSimple(adaptedQuery(join.getLeftInput()),
-					adaptedQuery(join.getRightInput()), join
-					.getLeftJoinAttribute(), join
-					.getRightJoinAttribute());
+					adaptedQuery(join.getRightInput()), join.getLeftJoinAttribute(), join.getRightJoinAttribute());
+			
 		} else { // for cross product
 			CrossProduct curNode = (CrossProduct) query;
 			RelationalAlgebraExpression leftInput = curNode.getLeftInput();
