@@ -28,13 +28,13 @@ import util.ComparisonOperator;
 import util.LogicalOperator;
 import util.RelationalOperatorType;
 
+/**
+ * 
+ * @author attran
+ *
+ */
 public class Optimizer {
 
-	private static Input r,s;
-	private static CrossProduct cp;
-	private static Join j;
-	private static Projection pr;
-	private static Selection sel;
 	private StorageLayer storageLayer;
 	private HashMap< String , Integer> colPaths;
 
@@ -47,20 +47,130 @@ public class Optimizer {
 	public RelationalAlgebraExpression optimize(RelationalAlgebraExpression inputTree)
 	throws InvalidPredicateException, NoSuchColumnException {
 
-		getPaths(inputTree, 0);
+		getPaths(inputTree, 1);
 		return pushSelection(pushProjection(inputTree, 1), 1);
 	}
 
 
-	private RelationalAlgebraExpression pushProjection(RelationalAlgebraExpression inputTree, int level){
-		/*RelationalOperatorType type = inputTree.getType(), subType;
+	private RelationalAlgebraExpression pushProjection(RelationalAlgebraExpression inputTree, int level)
+	throws NoSuchColumnException, InvalidPredicateException {
+		RelationalOperatorType type = inputTree.getType(), subType;
+		RelationalAlgebraExpression left, right, child, subLeft, subRight;
 		int branch;
 		if (type == RelationalOperatorType.INPUT)
 			return inputTree;
 		else if (type == RelationalOperatorType.SELECTION) {
 			return new Selection(pushProjection(((Selection)inputTree).getInput(), level),((Selection)inputTree).getPredicate());
-		}*/
-		//else if (type == RelationalOperatorType.)
+		}
+		else if (type == RelationalOperatorType.JOIN) {
+			left = ((Join)inputTree).getLeftInput();
+			right = ((Join)inputTree).getRightInput();
+			return new Join(pushProjection(left, level + 1), pushProjection(right, level + 1), 
+					((Join)inputTree).getLeftJoinAttribute(), ((Join)inputTree).getRightJoinAttribute());	
+		}
+		else if (type == RelationalOperatorType.CROSS_PRODUCT) {
+			left = ((CrossProduct)inputTree).getLeftInput();
+			right = ((CrossProduct)inputTree).getRightInput();
+
+			return new CrossProduct(pushProjection(left, level + 1), pushProjection(right, level + 1));
+		}
+		else { // if (type == RelationalOperatorType.PROJECTION) {
+			child = ((Projection) inputTree).getInput();
+			String[] attrs = ((Projection) inputTree).getProjectionAttributes();
+			subType = child.getType();
+			if (subType == RelationalOperatorType.INPUT) {
+				return inputTree;
+			}
+			else if (subType == RelationalOperatorType.SELECTION) {
+
+				//check if it's possible to move the projection in front of this selection
+				if (checkPushProjectionSelection(((Selection)child).getPredicate(),attrs ))
+					return new Selection(pushProjection(new Projection(((Selection)child).getInput(), attrs), level),((Selection)child).getPredicate());
+			}
+			else if (subType == RelationalOperatorType.PROJECTION) {
+				String[] subAttrs = ((Projection) child).getProjectionAttributes();
+				if (containAllAttributes(subAttrs, attrs)) {
+					return new Projection(((Projection)child).getInput(), attrs);
+				}
+				else throw new NoSuchColumnException(); 
+			}
+			else if (subType == RelationalOperatorType.JOIN) {
+				subLeft = ((Join)child).getLeftInput();
+				subRight = ((Join)child).getRightInput();
+
+				List<String> leftAttrs = new ArrayList<String>();
+				List<String> rightAttrs = new ArrayList<String>();
+				String leftJoinAttr = ((Join) child).getLeftJoinAttribute();
+				String rightJoinAttr = ((Join) child).getRightJoinAttribute();
+				boolean turnLeft = containAllAttributes(attrs, new String[]{leftJoinAttr});
+				boolean turnRight = containAllAttributes(attrs, new String[]{rightJoinAttr});
+				for (String attr : attrs) {
+					if (colPaths.containsKey(attr)) {
+						branch = (int) (colPaths.get(attr).intValue() % Math.pow(10, level));
+						if (branch == 1 && turnLeft) {//go left
+							leftAttrs.add(attr);
+						}
+						else if (branch == 2 && turnRight) { //go right
+							rightAttrs.add(attr);
+						}
+						else {
+							throw new InvalidPredicateException();
+						} 
+					}
+					else throw new NoSuchColumnException();
+				}
+				if (leftAttrs.size() > 0)
+					if (rightAttrs.size() > 0)
+						return new Join(pushProjection(new Projection(subLeft, leftAttrs.toArray(new String[0])), level + 1), 
+								pushProjection(new Projection(subRight, rightAttrs.toArray(new String[0])), level + 1),
+								leftJoinAttr, rightJoinAttr);
+					else
+						return new Projection(new Join(pushProjection(new Projection(subLeft, leftAttrs.toArray(new String[0])), level + 1), 
+								pushProjection(subRight, level + 1),
+								leftJoinAttr, rightJoinAttr), attrs);
+				else if (rightAttrs.size() > 0)
+					return new Projection(new Join(pushProjection(subLeft, level + 1), 
+							pushProjection(new Projection(subRight, rightAttrs.toArray(new String[0])), level + 1),
+							leftJoinAttr, rightJoinAttr), attrs);
+				else //Dont push projection
+					return new Projection(new Join(pushProjection(subLeft, level + 1), pushProjection(subRight, level + 1), leftJoinAttr, rightJoinAttr), attrs);
+			}
+			else if (subType == RelationalOperatorType.CROSS_PRODUCT) {
+				subLeft = ((CrossProduct)child).getLeftInput();
+				subRight = ((CrossProduct)child).getRightInput();
+				List<String> leftAttrs = new ArrayList<String>();
+				List<String> rightAttrs = new ArrayList<String>();
+				for (String attr : attrs) {
+					if (colPaths.containsKey(attr)) {
+						branch = (int) (colPaths.get(attr).intValue() % Math.pow(10, level));
+						if (branch == 1) {//go left
+							leftAttrs.add(attr);
+						}
+						else if (branch == 2) { //go right
+							rightAttrs.add(attr);
+						}
+						else {
+							throw new InvalidPredicateException();
+						} 
+					}
+					else throw new NoSuchColumnException();
+				}
+				if (leftAttrs.size() > 0)
+					if (rightAttrs.size() > 0)
+						return new CrossProduct(pushProjection(new Projection(subLeft, leftAttrs.toArray(new String[0])), level + 1), 
+								pushProjection(new Projection(subRight, rightAttrs.toArray(new String[0])), level + 1));
+					else
+						return new Projection(new CrossProduct(pushProjection(new Projection(subLeft, leftAttrs.toArray(new String[0])), level + 1), 
+								pushProjection(subRight, level + 1)), attrs);
+				else if (rightAttrs.size() > 0)
+					return new Projection(new CrossProduct(pushProjection(subLeft, level + 1), 
+							pushProjection(new Projection(subRight, rightAttrs.toArray(new String[0])), level + 1)), attrs);
+				else //Dont push projection
+					return new Projection(new CrossProduct(pushProjection(subLeft, level + 1), pushProjection(subRight, level + 1)), attrs);
+			}
+			else throw new InvalidPredicateException();
+
+		}
 		return inputTree;
 	}
 
@@ -93,21 +203,22 @@ public class Optimizer {
 		 * - The selection predicate doesn't contain any strange attributes
 		 */
 		else {
+			/** Firstly, we check that if the current treeNode is dummy node, then we push down, ignoring current node */
+			predicate = ((Selection)inputTree).getPredicate();	
+			
 			child = ((Selection)inputTree).getInput();
 			subType = child.getType();
 			if (subType == RelationalOperatorType.PROJECTION || subType == RelationalOperatorType.INPUT)
 				return inputTree;
 			else if (subType == RelationalOperatorType.SELECTION) {
-				predicate = ((Selection)inputTree).getPredicate();
 				return new Selection(((Selection)child).getInput(), 
 						new MyPredicateTreeNode(((Selection)child).getPredicate(),LogicalOperator.AND, predicate));
 			}
 			//Push Selection through the Join
 			else if (subType == RelationalOperatorType.JOIN) {
-				predicate = ((Selection)inputTree).getPredicate();
 				subLeft = ((Join)child).getLeftInput();
 				subRight = ((Join)child).getRightInput();
-				try {
+				try {	
 					if (predicate.isLeaf()) {
 						if (colPaths.containsKey(predicate.getColumnName())) {
 							branch = (int) (colPaths.get(predicate.getColumnName()).intValue() % Math.pow(10, level));
@@ -124,52 +235,20 @@ public class Optimizer {
 										((Join)child).getRightJoinAttribute());
 							}
 							else {
-								System.out.println("branch = " + branch);
 								throw new InvalidPredicateException();
 							}
 						}
 						else throw new NoSuchColumnException();
 					}
-					
-					else if (predicate.getLogicalOperator() == LogicalOperator.OR)
+
+					else
 						//Not a conjunctive form, do not pass through join
 						return new Selection(new Join(pushSelection(subLeft, level + 1), 
-											  pushSelection(subRight, level + 1),
-											 ((Join)child).getLeftJoinAttribute(),
-											 ((Join)child).getRightJoinAttribute()), predicate);
-					else {
-						try {
-							List<PredicateTreeNode> conjuncts = new ArrayList<PredicateTreeNode>();
-							getConjuncts(predicate, conjuncts);
-							MyPredicateTreeNode lefPredicate = new MyPredicateTreeNode();
-							MyPredicateTreeNode righPredicate= new MyPredicateTreeNode();
-							for (PredicateTreeNode conjunct : conjuncts) {
-								if (colPaths.containsKey(conjunct.getColumnName())) {
-									branch = (int) (colPaths.get(conjunct.getColumnName()).intValue() % Math.pow(10, level));
-									if (branch == 1)
-										lefPredicate.addConjunct(conjunct, LogicalOperator.AND);
-									else if (branch == 2)
-										righPredicate.addConjunct(conjunct, LogicalOperator.AND);
-									else throw new InvalidPredicateException();
-								}
-								else throw new InvalidPredicateException();
-							}
-							return new Join(pushSelection(new Selection(subLeft, lefPredicate), level + 1),
-										    pushSelection(new Selection(subRight, righPredicate), level + 1),
-										    ((Join)child).getLeftJoinAttribute(),
-										    ((Join)child).getRightJoinAttribute());
-						}
-						catch (SchemaMismatchException e) {
-							return new Selection(new Join(pushSelection(subLeft, level + 1), 
-									  pushSelection(subRight, level + 1),
-									 ((Join)child).getLeftJoinAttribute(),
-									 ((Join)child).getRightJoinAttribute()), predicate);
+								pushSelection(subRight, level + 1),
+								((Join)child).getLeftJoinAttribute(),
+								((Join)child).getRightJoinAttribute()), predicate);
 					
-						}
-					}
 				} catch (NotLeafNodeException e) {
-					e.printStackTrace();
-				} catch (IsLeafException e) {
 					e.printStackTrace();
 				}
 			}
@@ -194,40 +273,13 @@ public class Optimizer {
 						}
 						else throw new NoSuchColumnException();
 					}
-					
-					else if (predicate.getLogicalOperator() == LogicalOperator.OR)
+
+					else
 						//Not a conjunctive form, do not pass through join
 						return new Selection(new CrossProduct(pushSelection(subLeft, level + 1), 
-											  pushSelection(subRight, level + 1)), predicate);
-					else {
-						try {
-							List<PredicateTreeNode> conjuncts = new ArrayList<PredicateTreeNode>();
-							getConjuncts(predicate, conjuncts);
-							MyPredicateTreeNode lefPredicate = new MyPredicateTreeNode();
-							MyPredicateTreeNode righPredicate= new MyPredicateTreeNode();
-							for (PredicateTreeNode conjunct : conjuncts) {
-								if (colPaths.containsKey(conjunct.getColumnName())) {
-									branch = (int) (colPaths.get(conjunct.getColumnName()).intValue() % Math.pow(10, level));
-									if (branch == 1)
-										lefPredicate.addConjunct(conjunct, LogicalOperator.AND);
-									else if (branch == 2)
-										righPredicate.addConjunct(conjunct, LogicalOperator.AND);
-									else throw new InvalidPredicateException();
-								}
-								else throw new InvalidPredicateException();
-							}
-							return new CrossProduct(pushSelection(new Selection(subLeft, lefPredicate), level + 1),
-										    pushSelection(new Selection(subRight, righPredicate), level + 1));
-						}
-						catch (SchemaMismatchException e) {
-							return new Selection(new CrossProduct(pushSelection(subLeft, level + 1), 
-									  pushSelection(subRight, level + 1)), predicate);
+								pushSelection(subRight, level + 1)), predicate);
 					
-						}
-					}
 				} catch (NotLeafNodeException e) {
-					e.printStackTrace();
-				} catch (IsLeafException e) {
 					e.printStackTrace();
 				}
 			}
@@ -262,10 +314,11 @@ public class Optimizer {
 		}
 		else if( type== RelationalOperatorType.PROJECTION){
 
-			String attributes[]= ((Projection)tree).getProjectionAttributes();
+			/*String attributes[]= ((Projection)tree).getProjectionAttributes();
 			for(String attr: attributes){
 				colPaths.put(attr, direction);
-			}			
+			}*/
+			getPaths(((Projection)tree).getInput(),direction);
 		}
 		else {
 			getPaths(((Selection)tree).getInput(),direction);
@@ -287,23 +340,44 @@ public class Optimizer {
 
 		//traverse the entire predicate tree to get all the existing attributes and put them in a
 		//HMap
-		HashMap<String,Object> attrs=new HashMap<String,Object>();
+		List<String> attrs = new ArrayList<String>();
 		getAllAttributesInPredicateTree(predicate, attrs);
 
+		boolean found;
 
-		for(int i=0; i<prjAttrs.length; i++){
-			if(! attrs.containsKey(prjAttrs[i])) return false;
+		for (String selAttr : attrs) {
+			found = false;
+			for (String prjAttr : prjAttrs) {
+				if (prjAttr.equalsIgnoreCase(selAttr)) {
+					found = true; break;
+				}
+			}
+			if (!found) return false;
 		}
-
 		return true;
 	}
 
+	private static boolean containAllAttributes(String[] bigAttrs, String[] smallAttrs) {
+		boolean found = false;
+		for (String attr : smallAttrs) {
+			found = false;
+			for (String bigAttr : bigAttrs) {
+				if (bigAttr.equalsIgnoreCase(attr)) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) return false;
+		}
+		return true;
+	}
 
-	private static void getAllAttributesInPredicateTree(PredicateTreeNode root, HashMap<String,Object> attrs){
+	private static void getAllAttributesInPredicateTree(PredicateTreeNode root, List<String> attrs){
 
 		try {
-			attrs.put(root.getColumnName(), null);
-			if(! root.isLeaf()){
+			
+			if (root.isLeaf()) attrs.add(root.getColumnName());
+			else {
 				getAllAttributesInPredicateTree(root.getLeftChild(), attrs);
 				getAllAttributesInPredicateTree(root.getRightChild(), attrs);
 			}
@@ -311,24 +385,6 @@ public class Optimizer {
 			e.printStackTrace();
 		} catch (IsLeafException e) {
 			e.printStackTrace();
-		}
-
-	}
-
-	private static boolean searchAttrInPredicateTree(PredicateTreeNode predicate, String attr){
-		try {
-			if(predicate.getColumnName().equals(attr)) return true;
-			if(predicate.isLeaf()) return false;
-			else {
-				return  searchAttrInPredicateTree(predicate.getLeftChild(), attr) || 
-				searchAttrInPredicateTree(predicate.getRightChild(), attr);
-			}
-		} catch (NotLeafNodeException e) {
-			e.printStackTrace();
-			return false;
-		} catch (IsLeafException e) {
-			e.printStackTrace();
-			return false;
 		}
 
 	}
@@ -348,61 +404,8 @@ public class Optimizer {
 		printRAE(j);*/
 		System.out.println(transform(12, 63443));
 		System.out.println(12343 % 1000);
-		
-		
-	}
+		System.out.println(containAllAttributes(new String[]{"hello", " ", "World"}, new String[]{"Hello", "world"}));
 
-	private static void printRAE(RelationalAlgebraExpression root){
-		if(root.getType() == RelationalOperatorType.JOIN){
-
-			System.out.print("( ");
-			printRAE(((Join)root).getLeftInput());
-			System.out.print(" )");
-
-			//System.out.println("\u27D7");
-			System.out.print(" JOIN ");
-
-			System.out.print("( ");
-			printRAE(((Join)root).getRightInput());
-			System.out.print(" )");
-		}
-
-		else if(root.getType() == RelationalOperatorType.CROSS_PRODUCT){
-
-			System.out.print("( ");
-			printRAE(((CrossProduct)root).getLeftInput());
-			System.out.print(" )");
-
-			System.out.print("X");
-
-			System.out.print("( ");
-			printRAE(((CrossProduct)root).getRightInput());
-			System.out.print(" )");
-		}
-
-		else if(root.getType() == RelationalOperatorType.PROJECTION){
-
-			/*System.out.println("\u03A0");*/
-			System.out.print(" PRJ ");
-			System.out.print("( ");
-			printRAE(((Projection)root).getInput());
-			System.out.print(" )");
-
-		}
-
-		else if(root.getType() == RelationalOperatorType.SELECTION){
-
-			/*System.out.println("\u03C3");*/
-			System.out.print(" SELECT ");
-			System.out.print("( ");
-			printRAE(((Selection)root).getInput());
-			System.out.print(" )");
-
-		}
-
-		else{
-			System.out.print(((Input)root).getRelationName());
-		}
 	}
 
 	private static int transform(int b, int a) {
@@ -411,9 +414,12 @@ public class Optimizer {
 		while ((double)(a / (Math.pow(10, ++i))) >= 1.0d);
 		return (int)(b * Math.pow(10, i) + a);
 	}
-	
-	private static void getConjuncts(PredicateTreeNode predicate, List<PredicateTreeNode> conjuncts) 
+
+	/*private static void getConjuncts(PredicateTreeNode predicate, List<PredicateTreeNode> conjuncts) 
 	throws SchemaMismatchException {
+
+		
+
 		if (predicate.isLeaf()) conjuncts.add(predicate);
 		else
 			try {
@@ -425,5 +431,5 @@ public class Optimizer {
 			} catch (IsLeafException e) {
 				e.printStackTrace();
 			} 
-	}
+	}*/
 }
